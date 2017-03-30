@@ -1,29 +1,29 @@
 CREATE TABLE IF NOT EXISTS FILES(
-    FileName varchar(50),
-    FileDirectory varchar(100),
-    FileID int,
-    Hits int,
-    PRIMARY KEY (FileID)
+    FileID INTEGER PRIMARY KEY,
+    FileName varchar(50) not null,
+    FilePath varchar(100) not null,
+    LastModDate DATE not null,
+    DateAdded DATE DEFAULT CURRENT_TIMESTAMP,
+    Hits int DEFAULT 0,
+    UNIQUE (FilePath)
 );
 
 CREATE TABLE IF NOT EXISTS TAGS(
-    TagID int not null,
-    TagName varchar(50),
-    PRIMARY KEY(TagID)
-);
-
-CREATE TABLE IF NOT EXISTS TAG_RELATIONS(
-    TagID1 int not null,
-    TagID2 int not null,
-    FOREIGN KEY (TagID1) REFERENCES TAGS(TagID),
-    FOREIGN KEY (TagID1) REFERENCES TAGS(TagID),
-    PRIMARY KEY (TagID1,TagID2)
+    TagID INTEGER PRIMARY KEY,
+    TagText varchar(50) not null,
+    UNIQUE (TagText)
 );
 
 CREATE TABLE IF NOT EXISTS FILE_TAGS(
     FileID int not null,
     TagID int not null,
     FOREIGN KEY (FileID) REFERENCES FILES(FileID),
-    FOREIGN KEY (TagID) REFERENCES TAGS(TagID),
+    FOREIGN KEY (TagID) REFERENCES TAGS(rowid),
     PRIMARY KEY (FileID,TagID)
 );
+
+CREATE VIEW IF NOT EXISTS TAG_ASSOCIATIONS AS
+SELECT ft1.TagID AS tag1, ft2.TagID AS tag2, COUNT(ft1.FileID) AS count
+FROM FILE_TAGS ft1, FILE_TAGS ft2
+WHERE ft1.FileID=ft2.FileID AND ft1.rowid <> ft2.rowid
+GROUP BY ft1.TagID, ft2.TagID
