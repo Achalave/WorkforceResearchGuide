@@ -5,6 +5,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TopDocs;
 import org.apache.tika.Tika;
 import org.apache.tika.exception.TikaException;
 
@@ -55,4 +58,14 @@ public class Utils {
         }
     }
 
+    public static void printTopScores(IndexReader reader,TopDocs td) throws IOException{
+        ScoreDoc[] sds = td.scoreDocs;
+        for (ScoreDoc sd : sds) {
+            System.out.println(sd.doc + "\t" + reader.document(sd.doc).get("title") + "\t" + sd.score);
+        }
+        if (td.totalHits == 0) {
+            System.out.println("No matches found...");
+        }
+    }
+    
 }

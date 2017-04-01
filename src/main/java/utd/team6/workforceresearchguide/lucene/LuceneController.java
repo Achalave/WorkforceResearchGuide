@@ -3,32 +3,22 @@ package utd.team6.workforceresearchguide.lucene;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
-import java.util.ArrayList;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.IndexableField;
-import org.apache.lucene.index.LeafReader;
-import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Collector;
 import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.MultiPhraseQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
-import org.apache.lucene.search.TopScoreDocCollector;
 import org.apache.lucene.store.FSDirectory;
 import org.apache.tika.exception.TikaException;
 import utd.team6.workforceresearchguide.main.Utils;
@@ -80,30 +70,36 @@ public class LuceneController {
 //        
 //        cont.stopReadSession();
 //        cont.stopIndexingSession();
+        
 //        cont.startIndexingSession();
 //        cont.deleteDocument(filePaths[0]);
 //        cont.stopIndexingSession();
-//        cont.startReadSession();
-//        cont.basicSearchTest("tag2");
-//        cont.stopReadSession();
-        long time = System.currentTimeMillis();
-        String files = "C:\\Users\\Michael\\Downloads\\TESTDOCS\\TESTDOCS";
-        ArrayList<String> paths = Utils.extractAllPaths(files);
 
-        cont.startIndexingSession();
-        for (int i = 0; i < paths.size(); i++) {
-            long time2 = System.currentTimeMillis();
-            try {
-                cont.indexNewDocument(paths.get(i));
-            } catch (TikaException ex) {
-                System.err.println(ex);
-            }
+        cont.startReadSession();
+        LuceneSearchSession sess = cont.search("There are several potential benifits", 10);
+        sess.startSearch();
+//        cont.basicSearchTest("There are several potential benifits");
+//        cont.stopReadSession();
+        
+        
+//        long time = System.currentTimeMillis();
+//        String files = "C:\\Users\\Michael\\Downloads\\TESTDOCS\\TESTDOCS";
+//        ArrayList<String> paths = Utils.extractAllPaths(files);
+//
+//        cont.startIndexingSession();
+//        for (int i = 0; i < paths.size(); i++) {
+//            long time2 = System.currentTimeMillis();
+//            try {
+//                cont.indexNewDocument(paths.get(i));
+//            } catch (TikaException ex) {
+//                System.err.println(ex);
+//            }
 //            System.out.println("DocNum: "+i+"/"+paths.size()+"\tTime: "+(System.currentTimeMillis()-time2));
-        }
-        long time2 = System.currentTimeMillis();
-        cont.stopIndexingSession();
-        System.out.println("END SESSION: " + (System.currentTimeMillis() - time2));
-        System.out.println(System.currentTimeMillis() - time);
+//        }
+//        long time2 = System.currentTimeMillis();
+//        cont.stopIndexingSession();
+//        System.out.println("END SESSION: " + (System.currentTimeMillis() - time2));
+//        System.out.println(System.currentTimeMillis() - time);
     }
 
     /**
@@ -298,84 +294,18 @@ public class LuceneController {
      *
      * @param query
      * @param numTopScores
+     * @return 
      * @throws IOException
      * @throws
      * utd.team6.workforceresearchguide.lucene.ReadSessionNotStartedException
      */
-    public void search(String query, int numTopScores) throws IOException, ReadSessionNotStartedException {
-        //TermQuery - Matches a single term (can be combined with BooleanQuery)
-        //BooleanQuery
-        //WildcardQuery
-        //PhraseQuery - Matches a particular sequence of terms
-        //PrefixQuery
-        //MultiPhraseQuery
-
-        //LeafReader.terms(String)
-        //Build the query into multiple phases
-        //Phase 1: tags, titles, dates
-        //Phase 2: content
+    public LuceneSearchSession search(String query, int numTopScores) throws IOException, ReadSessionNotStartedException {
         if (!readSessionActive()) {
             throw new ReadSessionNotStartedException();
         }
 
-        BooleanQuery.Builder phase1QueryBuilder = new BooleanQuery.Builder();
-        BooleanQuery.Builder phase2QueryBuilder = new BooleanQuery.Builder();
-        String[] terms = query.split(" ");
-        for (String term : terms) {
-            phase1QueryBuilder.add(new BooleanClause(new TermQuery(new Term("tag", term)), BooleanClause.Occur.SHOULD));
-            phase1QueryBuilder.add(new BooleanClause(new TermQuery(new Term("title", term)), BooleanClause.Occur.SHOULD));
-            phase2QueryBuilder.add(new BooleanClause(new TermQuery(new Term("content", term)), BooleanClause.Occur.SHOULD));
-        }
-
-        BooleanQuery phase1Query = phase1QueryBuilder.build();
-        BooleanQuery phase2Query = phase2QueryBuilder.build();
-
-        LuceneSearchSession search = new LuceneSearchSession(reader, NUM_SEARCH_THREADS, numTopScores, phase1Query, phase2Query);
-
-        //SimpleCollector
-        //TopDocsCollector
-    }
-
-    private void basicSearchTest(String query) throws IOException, ReadSessionNotStartedException {
-        if (!readSessionActive()) {
-            throw new ReadSessionNotStartedException();
-        }
-        BooleanQuery.Builder phase1QueryBuilder = new BooleanQuery.Builder();
-        BooleanQuery.Builder phase2QueryBuilder = new BooleanQuery.Builder();
-        String[] terms = query.split(" ");
-        for (String term : terms) {
-            System.out.println("Adding Term to Query: " + term);
-            phase1QueryBuilder.add(new BooleanClause(new TermQuery(new Term("tag", term)), BooleanClause.Occur.SHOULD));
-            phase1QueryBuilder.add(new BooleanClause(new TermQuery(new Term("title", term)), BooleanClause.Occur.SHOULD));
-            phase2QueryBuilder.add(new BooleanClause(new TermQuery(new Term("content", term)), BooleanClause.Occur.SHOULD));
-        }
-
-        BooleanQuery phase1Query = phase1QueryBuilder.build();
-        BooleanQuery phase2Query = phase2QueryBuilder.build();
-
-        IndexSearcher search = new IndexSearcher(reader);
-
-        System.out.println("Beginning phase 1 search");
-        TopDocs td = search.search(phase1Query, 10);
-        ScoreDoc[] sds = td.scoreDocs;
-        for (ScoreDoc sd : sds) {
-            System.out.println(sd.doc + "\t" + reader.document(sd.doc).get("title") + "\t" + sd.score);
-        }
-        if (td.totalHits == 0) {
-            System.out.println("No matches found...");
-        }
-
-        System.out.println("\nBeginning phase 2 search");
-        td = search.search(phase2Query, 10);
-        sds = td.scoreDocs;
-        for (ScoreDoc sd : sds) {
-            System.out.println(sd.doc + "\t" + reader.document(sd.doc).get("title") + "\t" + sd.score);
-        }
-        if (td.totalHits == 0) {
-            System.out.println("No matches found...");
-        }
-
-        reader.close();
+        LuceneSearchSession search = new LuceneSearchSession(reader, numTopScores, query);
+        return search;
     }
 
 }
