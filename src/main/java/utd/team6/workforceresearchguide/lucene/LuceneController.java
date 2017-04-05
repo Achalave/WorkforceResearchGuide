@@ -3,6 +3,7 @@ package utd.team6.workforceresearchguide.lucene;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
+import java.util.ArrayList;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
@@ -35,6 +36,9 @@ public class LuceneController {
     IndexWriter writer;
 
     DirectoryReader reader;
+    
+    //Used to determine if we are creating a new index or updating existing
+    boolean create = true;
 
     private LuceneController() {
         analyzer = new StandardAnalyzer();
@@ -48,6 +52,21 @@ public class LuceneController {
 
     public static void main(String[] args) throws IOException, TikaException, IndexingSessionNotStartedException, ReadSessionNotStartedException {
         LuceneController cont = new LuceneController("_lucene_files_");
+        
+//        //index testing:joharteaga
+//        //set documents path
+//        String docDir = "C:\\testdocs";
+        
+//        cont.startIndexingSession();
+        
+//        //get file heirarchy in documents path
+//        ArrayList<String> tempDocPaths = Utils.extractAllPaths(docDir);
+//        //convert file heirarchy to String[]
+//        String[] docPaths = new String[tempDocPaths.size()];
+//        docPaths = tempDocPaths.toArray(docPaths);
+        
+//        cont.indexNewDocuments(docPaths);
+        
         String filePaths[] = {
             "C:\\Users\\Michael\\Google Drive\\School\\UTD Year 4\\Semester 2\\CV Readings\\Attached at the Hip.docx",
             "C:\\Users\\Michael\\Google Drive\\School\\UTD Year 4\\Semester 2\\CV Readings\\LifeDegredationPlan.docx",
@@ -110,6 +129,18 @@ public class LuceneController {
      */
     public void startIndexingSession() throws IOException {
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
+
+//        //testing index updating
+//      create = false;    
+        
+        if (create) {
+            //create new index (drops any existing index)
+            config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
+        } else {
+            //add to existing index
+            config.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
+        }
+        
         writer = new IndexWriter(dir, config);
     }
 
