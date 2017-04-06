@@ -5,7 +5,8 @@ CREATE TABLE IF NOT EXISTS FILES(
     LastModDate DATE not null,
     DateAdded DATE DEFAULT CURRENT_TIMESTAMP,
     Hits int DEFAULT 0,
-    UNIQUE (FilePath)
+    Hash CHAR(32),
+    UNIQUE (FilePath),
 );
 
 CREATE TABLE IF NOT EXISTS TAGS(

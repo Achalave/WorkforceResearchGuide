@@ -9,8 +9,9 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.sql.Date;
+import java.util.Date;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
 import java.util.logging.Level;
@@ -44,9 +45,9 @@ public class DatabaseController {
             Date testDate = new Date(System.currentTimeMillis());
 
             System.out.println("----->" + new SimpleDateFormat("yyy-MM-dd HH:mm:ss").format(testDate));
-            dbc.addDocument(con, "test/home/file1.txt", new Date(System.currentTimeMillis()));
-            dbc.addDocument(con, "test/home/file2.txt", new Date(System.currentTimeMillis()));
-            dbc.addDocument(con, "test/home/file3.txt", new Date(System.currentTimeMillis()));
+            dbc.addDocument(con, "test/home/file1.txt", new Date(System.currentTimeMillis()), "A");
+            dbc.addDocument(con, "test/home/file2.txt", new Date(System.currentTimeMillis()), "B");
+            dbc.addDocument(con, "test/home/file3.txt", new Date(System.currentTimeMillis()), "C");
 
             dbc.addTag(con, "tag1");
             dbc.addTag(con, "tag2");
@@ -197,15 +198,46 @@ public class DatabaseController {
     }
 
     /**
+     * Gets the integer ID for the specified document.
+     *
+     * @param path
+     * @return
+     * @throws SQLException
+     */
+    public int getDocumentID(String path) throws SQLException {
+        try (Connection con = getConnection()) {
+            return this.getDocumentID(con, path);
+        }
+    }
+
+    /**
+     * Gets the integer ID for the specified document.
+     *
+     * @param con
+     * @param path
+     * @return
+     * @throws SQLException
+     */
+    private int getDocumentID(Connection con, String path) throws SQLException {
+        ResultSet result = this.executeQuery(con, "SELECT FileID FROM FILES WHERE FilePath=\'" + path + "\'");
+        if (result.next()) {
+            return result.getInt(1);
+        } else {
+            return -1;
+        }
+    }
+
+    /**
      * Adds a document to the database.
      *
      * @param documentPath
      * @param lastModDate
+     * @param hash
      * @throws SQLException
      */
-    public void addDocument(String documentPath, Date lastModDate) throws SQLException {
+    public void addDocument(String documentPath, Date lastModDate, String hash) throws SQLException {
         try (Connection con = getConnection()) {
-            this.addDocument(con, documentPath, lastModDate);
+            this.addDocument(con, documentPath, lastModDate, hash);
         }
     }
 
@@ -215,34 +247,105 @@ public class DatabaseController {
      * @param con
      * @param documentPath The full, unique path to the represented file.
      * @param lastModDate The last modified date associated with the file.
+     * @param hash
      * @throws SQLException
      */
-    protected void addDocument(Connection con, String documentPath, Date lastModDate) throws SQLException {
+    protected void addDocument(Connection con, String documentPath, Date lastModDate, String hash) throws SQLException {
         String documentName = new File(documentPath).getName();
-        executeUpdate(con, "INSERT INTO FILES(FilePath, FileName, LastModDate) VALUES(\'" + documentPath + "\',\'" + documentName + "\', \'" + new SimpleDateFormat("yyy-MM-dd HH:mm:ss").format(lastModDate) + "\')");
+        executeUpdate(con, "INSERT INTO FILES(FilePath, FileName, LastModDate, Hash) VALUES(\'"
+                + documentPath + "\',\'" + documentName + "\', \'"
+                + dateToString(lastModDate)
+                + "\', \'" + hash + "\')");
+    }
+
+    /**
+     * Converts a Date object to a string that will be accepted by a SQLite
+     * query.
+     *
+     * @param date
+     * @return
+     */
+    private String dateToString(Date date) {
+        return new SimpleDateFormat("yyy-MM-dd HH:mm:ss").format(date);
+    }
+
+    /**
+     * Gets a list of all the file paths currently in the database.
+     *
+     * @return
+     * @throws SQLException
+     */
+    public String[] getAllKnownFiles() throws SQLException {
+        try (Connection con = getConnection()) {
+            return this.getAllKnownFiles(con);
+        }
+    }
+
+    /**
+     * Gets a list of all the file paths currently in the database.
+     *
+     * @param con
+     * @return
+     * @throws SQLException
+     */
+    private String[] getAllKnownFiles(Connection con) throws SQLException {
+        ArrayList<String> files = new ArrayList<>();
+        ResultSet results = executeQuery(con, "SELECT FilePath FROM FILES");
+        while (results.next()) {
+            files.add(results.getString(0));
+        }
+        String[] tmp = new String[files.size()];
+        return files.toArray(tmp);
+    }
+
+    /**
+     * Updates the last modified date recorded for the specified document.
+     *
+     * @param docID
+     * @param date
+     * @throws SQLException
+     */
+    public void updateDocumentModifiedDate(int docID, Date date) throws SQLException {
+        try (Connection con = getConnection()) {
+            this.updateDocumentModifiedDate(con, docID, date);
+        }
+    }
+
+    /**
+     * Updates the last modified date recorded for the specified document.
+     *
+     * @param con
+     * @param docID
+     * @param date
+     * @throws SQLException
+     */
+    private void updateDocumentModifiedDate(Connection con, int docID, Date date) throws SQLException {
+        executeUpdate(con, "UPDATE FILES SET LastModDate=\'" + dateToString(date) + "\' WHERE FileID=\'" + docID + "\'");
     }
 
     /**
      * Deletes a document and its associations.
+     *
      * @param documentPath
-     * @throws SQLException 
+     * @throws SQLException
      */
-    public void deleteDocument(String documentPath) throws SQLException{
+    public void deleteDocument(String documentPath) throws SQLException {
         try (Connection con = getConnection()) {
             this.deleteDocument(con, documentPath);
         }
     }
-    
+
     /**
      * Deletes a document and its associations.
+     *
      * @param con
-     * @param documentPath 
+     * @param documentPath
      */
-    private void deleteDocument(Connection con,String documentPath) throws SQLException{
-        executeUpdate(con,"DELETE FROM FILE_TAGS WHERE FileID = (SELECT FileID FROM FILES WHERE FilePath=\'"+documentPath+"\')");
-        executeUpdate(con,"DELETE FROM FILES WHERE FilePath=\'"+documentPath+"\'");
+    private void deleteDocument(Connection con, String documentPath) throws SQLException {
+        executeUpdate(con, "DELETE FROM FILE_TAGS WHERE FileID = (SELECT FileID FROM FILES WHERE FilePath=\'" + documentPath + "\')");
+        executeUpdate(con, "DELETE FROM FILES WHERE FilePath=\'" + documentPath + "\'");
     }
-    
+
     /**
      * Collects and returns the integer ID of the specified tag.
      *
@@ -364,6 +467,23 @@ public class DatabaseController {
         return associations;
     }
 
+    public DocumentData getDocumentData(int fileID) throws SQLException, DatabaseFileDoesNotExistException {
+        try (Connection con = getConnection()) {
+            return this.getDocumentData(con, fileID);
+        }
+    }
+
+    protected DocumentData getDocumentData(Connection con, int fileID) throws SQLException, DatabaseFileDoesNotExistException {
+        String query = "SELECT(FilePath,FileName,LastModDate,Hits,Hash FROM FILES WHERE FileID=\'" + fileID + "\')";
+        try (ResultSet results = executeQuery(con, query)) {
+            if (!results.next()) {
+                throw new DatabaseFileDoesNotExistException();
+            }
+            DocumentData docData = new DocumentData(results.getString(1), results.getString(2), results.getDate(3), results.getInt(4), results.getString(5));
+            return docData;
+        }
+    }
+
     /**
      *
      * Retrieves all data in the database pertaining to the specified document.
@@ -389,12 +509,12 @@ public class DatabaseController {
      * @throws DatabaseFileDoesNotExistException
      */
     protected DocumentData getDocumentData(Connection con, String docPath) throws SQLException, DatabaseFileDoesNotExistException {
-        String query = "SELECT(FilePath,FileName,LastModDate,Hits FROM FILES WHERE FilePath=\'" + docPath + "\')";
+        String query = "SELECT(FilePath,FileName,LastModDate,Hits,Hash FROM FILES WHERE FilePath=\'" + docPath + "\')";
         try (ResultSet results = executeQuery(con, query)) {
             if (!results.next()) {
                 throw new DatabaseFileDoesNotExistException();
             }
-            DocumentData docData = new DocumentData(results.getString(1), results.getString(2), results.getDate(3), results.getInt(4));
+            DocumentData docData = new DocumentData(results.getString(1), results.getString(2), results.getDate(3), results.getInt(4), results.getString(5));
             return docData;
         }
     }

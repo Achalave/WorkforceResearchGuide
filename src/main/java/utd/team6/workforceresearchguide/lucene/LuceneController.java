@@ -27,8 +27,6 @@ import utd.team6.workforceresearchguide.main.Utils;
 // If possible it is best to reulse the IndexWriter as much as possible
 public class LuceneController {
 
-    private static int NUM_SEARCH_THREADS = 5;
-
     FSDirectory dir;
     StandardAnalyzer analyzer;
 
@@ -287,6 +285,17 @@ public class LuceneController {
         writer.updateDocument(new Term("path", docPath), doc);
     }
 
+    public void updateDocumentContent(String docPath) throws IndexingSessionNotStartedException, IOException, ReadSessionNotStartedException, TikaException{
+        if (!indexingSessionActive()) {
+            throw new IndexingSessionNotStartedException();
+        }
+        String content = Utils.readDocument(docPath);
+        Document doc = getDocument(docPath);
+        doc.removeField("content");
+        doc.add(new TextField("content",content,Store.YES));
+        writer.updateDocument(new Term("path", docPath), doc);
+    }
+    
     /**
      * Conducts a search based off a String query. This search function uses
      * BooleanQueries created from the whitespace separated terms within the

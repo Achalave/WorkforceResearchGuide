@@ -4,7 +4,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
@@ -47,18 +55,18 @@ public class Utils {
             }
         }
     }
-    
-    public static String readDocument(String path) throws IOException, TikaException{
+
+    public static String readDocument(String path) throws IOException, TikaException {
         String file = "C:\\Users\\Michael\\Google Drive\\School\\UTD Year 4\\Semester 2\\SE Project\\test1.pdf";
-        
+
         Tika tika = new Tika();
-        try(InputStream fis = new FileInputStream(path)){
+        try (InputStream fis = new FileInputStream(path)) {
             String out = tika.parseToString(fis);
             return out;
         }
     }
 
-    public static void printTopScores(IndexReader reader,TopDocs td) throws IOException{
+    public static void printTopScores(IndexReader reader, TopDocs td) throws IOException {
         ScoreDoc[] sds = td.scoreDocs;
         for (ScoreDoc sd : sds) {
             System.out.println(sd.doc + "\t" + reader.document(sd.doc).get("title") + "\t" + sd.score);
@@ -67,5 +75,12 @@ public class Utils {
             System.out.println("No matches found...");
         }
     }
-    
+
+    public static String hashFile(String filePath) throws IOException {
+        String md5;
+        try (InputStream is = Files.newInputStream(Paths.get(filePath))) {
+            md5 = DigestUtils.md5Hex(is);
+        }
+        return md5;
+    }
 }

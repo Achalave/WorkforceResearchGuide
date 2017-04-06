@@ -93,6 +93,16 @@ public class LuceneSearchSession {
 
     }
 
+    public void cancelSearch(){
+        if(tagThread.isAlive()){
+            tagThread.interrupt();
+        }
+        
+        if(contentThread.isAlive()){
+            contentThread.interrupt();
+        }
+    }
+    
     public TopDocs getTagHits(){
         return tagCollector.topDocs();
     }
