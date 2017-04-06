@@ -6,12 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.security.DigestInputStream;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.ScoreDoc;
@@ -81,12 +76,5 @@ public class Utils {
             System.out.println("No matches found...");
         }
     }
-
-    public static String hashFile(String filePath) throws IOException {
-        String md5;
-        try (InputStream is = Files.newInputStream(Paths.get(filePath))) {
-            md5 = DigestUtils.md5Hex(is);
-        }
-        return md5;
-    }
+    
 }

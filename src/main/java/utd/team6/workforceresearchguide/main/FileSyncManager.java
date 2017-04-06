@@ -101,7 +101,7 @@ public class FileSyncManager {
                 movedFiles.put(file, relFile);
                 fileIterator.remove();
                 //Remove from added files using binary search, since it should still be sorted
-                int index = Collections.binarySearch(addedFiles, relFile.path);
+                int index = Collections.binarySearch(addedFiles, relFile.getPath());
                 existingFiles.remove(index);
             }
         }
@@ -123,11 +123,12 @@ public class FileSyncManager {
         Date lmd = new Date(f.lastModified());
         //Check if the file has been modified
         DocumentData data = db.getDocumentData(fileID);
-        if (data.lastModDate.compareTo(lmd) != 0) {
+        if (data.getLastModDate().compareTo(lmd) != 0) {
             //The file may be modified
             //Hash it and compare the hash values
-            String hash = Utils.hashFile(file);
-            if (!hash.equals(data.hash)) {
+            data.fillHash();
+            String hash = data.getHash();
+            if (!hash.equals(data.getHash())) {
                 return true;
             }
         }
@@ -150,12 +151,13 @@ public class FileSyncManager {
                 Date newLMD = new Date(f.lastModified());
                 DocumentData data = db.getDocumentData(file);
                 //Compare last modification dates
-                if (newLMD.compareTo(data.lastModDate) == 0) {
+                if (newLMD.compareTo(data.getLastModDate()) == 0) {
                     //Compare hash values
-                    String hash = Utils.hashFile(pf);
-                    if (hash.equals(data.hash)) {
+                    data.fillHash();
+                    String hash = data.getHash();
+                    if (hash.equals(data.getHash())) {
                         //This is probably the same file
-                        return new DocumentData(pf, data.name, data.lastModDate, data.hits, hash);
+                        return new DocumentData(pf, data.getName(), data.getLastModDate(), data.getHits(), hash);
                     }
                 }
             }
