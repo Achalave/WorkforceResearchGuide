@@ -62,6 +62,12 @@ public class Utils {
         Tika tika = new Tika();
         try (InputStream fis = new FileInputStream(path)) {
             String out = tika.parseToString(fis);
+            //release
+            fis.close();
+            
+            //for testing: locating corrupt/unreadable files
+            System.out.println(path);
+            
             return out;
         }
     }
