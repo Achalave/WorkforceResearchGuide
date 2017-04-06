@@ -3,7 +3,6 @@ package utd.team6.workforceresearchguide.lucene;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
-import java.util.ArrayList;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
@@ -13,11 +12,8 @@ import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause;
-import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.store.FSDirectory;
@@ -321,10 +317,14 @@ public class LuceneController {
             throw new IndexingSessionNotStartedException();
         }
         String content = Utils.readDocument(docPath);
-        Document doc = getDocument(docPath);
-        doc.removeField("content");
-        doc.add(new TextField("content",content,Store.YES));
-        writer.updateDocument(new Term("path", docPath), doc);
+        writer.updateDocValues(new Term("path", docPath), new TextField("content",content,Store.YES));
+    }
+    
+    public void updateDocumentPath(String oldPath, String newPath) throws IndexingSessionNotStartedException, IOException, ReadSessionNotStartedException{
+        if (!indexingSessionActive()) {
+            throw new IndexingSessionNotStartedException();
+        }
+        writer.updateDocValues(new Term("path",oldPath), new TextField("path",newPath,Store.YES));
     }
     
     /**

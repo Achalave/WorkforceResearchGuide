@@ -1,5 +1,6 @@
 package utd.team6.workforceresearchguide.main;
 
+import utd.team6.workforceresearchguide.main.issues.FileSynchIssue;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -176,6 +177,12 @@ public class FileSyncManager {
     public FileSynchIssue[] examineDifferences() throws SQLException, DatabaseFileDoesNotExistException, IOException {
         scanRepository();
         //Generate a list of FileSynchIssue(s)
+        
+        //Look at missing files
+        
+        //Look at moved files
+        
+        //Look at outdated files
         
         return null;
     }
