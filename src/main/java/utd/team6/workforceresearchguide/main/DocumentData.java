@@ -9,6 +9,7 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.Date;
 import org.apache.commons.codec.digest.DigestUtils;
+import utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException;
 import utd.team6.workforceresearchguide.sqlite.DatabaseController;
 import utd.team6.workforceresearchguide.sqlite.DatabaseFileDoesNotExistException;
 
@@ -79,11 +80,12 @@ public class DocumentData {
      * This function attempts to fill out any fields that are empty upon being
      * called. The data is generated using the physical file specified in the
      * path.
+     *
      * @throws java.io.IOException
      */
     public void fillFromFile() throws IOException {
         File f = new File(path);
-        if(!f.exists()){
+        if (!f.exists()) {
             throw new FileNotFoundException();
         }
         if (name == null) {
@@ -101,11 +103,13 @@ public class DocumentData {
     }
 
     /**
-     * Fills the name field whether it is empty or not. The data is generated
-     * using the physical file specified in the path.
+     * Fills the name field if it is empty. The data is generated using the
+     * physical file specified in the path.
      */
     public void fillName() {
-        fillName(new File(path));
+        if (name == null) {
+            fillName(new File(path));
+        }
     }
 
     /**
@@ -119,11 +123,13 @@ public class DocumentData {
     }
 
     /**
-     * Fills the lastModDate field whether it is empty or not. The data is
-     * generated using the physical file specified in the path.
+     * Fills the lastModDate field if it is empty. The data is generated using
+     * the physical file specified in the path.
      */
     public void fillLastModDate() {
-        fillLastModDate(new File(path));
+        if (lastModDate == null) {
+            fillLastModDate(new File(path));
+        }
     }
 
     /**
@@ -137,20 +143,24 @@ public class DocumentData {
     }
 
     /**
-     * Fills the hash field whether it is empty or not. The data is generated
-     * using the physical file specified in the path.
+     * Fills the hash field if it is empty. The data is generated using the
+     * physical file specified in the path.
      *
      * @throws java.io.IOException
      */
     public void fillHash() throws IOException {
-        setHash(hashFile(path));
+        if (hash == null) {
+            setHash(hashFile(path));
+        }
     }
 
     /**
      * Sets the hits field to its default value of 0.
      */
     public void fillHits() {
-        setHits(0);
+        if (hits == null) {
+            setHits(0);
+        }
     }
 
     /**
@@ -161,8 +171,9 @@ public class DocumentData {
      * @throws java.sql.SQLException
      * @throws
      * utd.team6.workforceresearchguide.sqlite.DatabaseFileDoesNotExistException
+     * @throws utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
      */
-    public void fillFromDatabase(DatabaseController db) throws SQLException, DatabaseFileDoesNotExistException {
+    public void fillFromDatabase(DatabaseController db) throws SQLException, DatabaseFileDoesNotExistException, ConnectionNotStartedException {
         copy(db.getDocumentData(path));
     }
 
@@ -177,7 +188,7 @@ public class DocumentData {
     /**
      *
      * @param filePath
-     * @return The md5 hash of the specified file in the form of a String.
+     * @return The MD5 hash of the specified file in the form of a String.
      * @throws IOException
      */
     private static String hashFile(String filePath) throws IOException {

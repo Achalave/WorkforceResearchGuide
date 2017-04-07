@@ -2,6 +2,7 @@ package utd.team6.workforceresearchguide.main.issues;
 
 //@author Michael Haertling
 import utd.team6.workforceresearchguide.lucene.LuceneController;
+import utd.team6.workforceresearchguide.main.DocumentData;
 import utd.team6.workforceresearchguide.sqlite.DatabaseController;
 
 /**
@@ -15,9 +16,9 @@ public class OutdatedFileIssue extends FileSynchIssue {
     public static final int RESPONSE_UPDATE = 0;
     public static final int RESPONSE_IGNORE = 1;
 
-    String outdatedFile;
+    DocumentData outdatedFile;
 
-    public OutdatedFileIssue(String outdatedFile) {
+    public OutdatedFileIssue(DocumentData outdatedFile) {
         this.outdatedFile = outdatedFile;
     }
 

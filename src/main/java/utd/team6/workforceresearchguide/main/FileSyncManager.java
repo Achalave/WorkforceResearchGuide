@@ -20,6 +20,10 @@ import org.apache.tika.exception.TikaException;
 import utd.team6.workforceresearchguide.lucene.IndexingSessionNotStartedException;
 import utd.team6.workforceresearchguide.lucene.LuceneController;
 import utd.team6.workforceresearchguide.lucene.ReadSessionNotStartedException;
+import utd.team6.workforceresearchguide.main.issues.MissingFileIssue;
+import utd.team6.workforceresearchguide.main.issues.MovedFileIssue;
+import utd.team6.workforceresearchguide.main.issues.OutdatedFileIssue;
+import utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException;
 import utd.team6.workforceresearchguide.sqlite.DatabaseController;
 import utd.team6.workforceresearchguide.sqlite.DatabaseFileDoesNotExistException;
 
@@ -30,11 +34,7 @@ public class FileSyncManager {
     private final DatabaseController db;
     private final String[] files;
 
-    private final ArrayList<String> missingFiles;
-    private final ArrayList<String> addedFiles;
-    private final ArrayList<String> existingFiles;
-    private final ArrayList<String> outdatedFiles;
-    private final HashMap<String, DocumentData> movedFiles;
+    private FileSynchIssue[] issues;
 
     BlockingQueue<IndexReadyFile> indexReadyFiles;
 
@@ -55,60 +55,11 @@ public class FileSyncManager {
         this.lucene = lucene;
         this.db = db;
         this.files = files;
-        missingFiles = new ArrayList<>();
-        addedFiles = new ArrayList<>();
-        existingFiles = new ArrayList<>();
-        outdatedFiles = new ArrayList<>();
-        movedFiles = new HashMap<>();
     }
 
     /**
-     * This function finds all files that are missing from and added to the
-     * physical repository by comparing the list of files to those recorded in
-     * the database.
-     */
-    private void scanRepository() throws SQLException, IOException, DatabaseFileDoesNotExistException {
-        Collections.addAll(addedFiles, files);
-        Collections.sort(addedFiles);
-
-        //Get a list of the files in the SQL database
-        String[] dbFiles = db.getAllKnownFiles();
-        Collections.addAll(missingFiles, dbFiles);
-
-        Iterator<String> fileIterator = missingFiles.iterator();
-        while (fileIterator.hasNext()) {
-            int index = Collections.binarySearch(addedFiles, fileIterator.next());
-            if (index >= 0) {
-                fileIterator.remove();
-                String file = addedFiles.remove(index);
-                existingFiles.add(file);
-            }
-        }
-
-        //For the files that exist, check if they are up to date
-        for (String file : existingFiles) {
-            if (fileIsOutdated(file)) {
-                outdatedFiles.add(file);
-            }
-        }
-
-        //Check if any of the new files are simply relocated ones
-        fileIterator = missingFiles.iterator();
-        while (fileIterator.hasNext()) {
-            String file = fileIterator.next();
-            DocumentData relFile = this.identifyRelocatedFile(file, addedFiles);
-            if (relFile != null) {
-                movedFiles.put(file, relFile);
-                fileIterator.remove();
-                //Remove from added files using binary search, since it should still be sorted
-                int index = Collections.binarySearch(addedFiles, relFile.getPath());
-                existingFiles.remove(index);
-            }
-        }
-
-    }
-
-    /**
+     * Note: The DocumentData file provided is filled out completely if it is
+     * determined to be outdated.
      *
      * @param file
      * @return True if the specified file is out of date with regards to the
@@ -117,18 +68,18 @@ public class FileSyncManager {
      * @throws DatabaseFileDoesNotExistException
      * @throws IOException
      */
-    private boolean fileIsOutdated(String file) throws SQLException, DatabaseFileDoesNotExistException, IOException {
-        int fileID = db.getDocumentID(file);
-        File f = new File(file);
-        Date lmd = new Date(f.lastModified());
+    private boolean fileIsOutdated(DocumentData file) throws SQLException, DatabaseFileDoesNotExistException, IOException, ConnectionNotStartedException {
+        file.fillLastModDate();
         //Check if the file has been modified
-        DocumentData data = db.getDocumentData(fileID);
-        if (data.getLastModDate().compareTo(lmd) != 0) {
+        DocumentData data = db.getDocumentData(file.getPath());
+        if (data.getLastModDate().compareTo(file.getLastModDate()) != 0) {
             //The file may be modified
             //Hash it and compare the hash values
-            data.fillHash();
+            file.fillHash();
             String hash = data.getHash();
-            if (!hash.equals(data.getHash())) {
+            if (!hash.equals(file.getHash())) {
+                file.setHits(data.getHits());
+                file.setName(data.getName());
                 return true;
             }
         }
@@ -137,27 +88,25 @@ public class FileSyncManager {
 
     /**
      *
-     * @param file
+     * @param oldDoc
      * @param addedFiles This is a list of the files that are new to the system
      * or candidates for being a relocated file.
      * @return The file path to the possible moved file location or null if no
      * replacement potential was found.
      */
-    private DocumentData identifyRelocatedFile(String file, List<String> addedFiles) throws SQLException, DatabaseFileDoesNotExistException, IOException {
-        File f = new File(file);
+    private DocumentData identifyRelocatedFile(DocumentData oldDoc, List<String> addedFiles) throws SQLException, DatabaseFileDoesNotExistException, IOException {
         for (String pf : addedFiles) {
             //Compare names
-            if (pf.endsWith(f.getName())) {
-                Date newLMD = new Date(f.lastModified());
-                DocumentData data = db.getDocumentData(file);
+            if (pf.endsWith(oldDoc.getName())) {
+                DocumentData newDoc = new DocumentData(pf);
+                newDoc.fillLastModDate();
                 //Compare last modification dates
-                if (newLMD.compareTo(data.getLastModDate()) == 0) {
+                if (newDoc.getLastModDate().compareTo(oldDoc.getLastModDate()) == 0) {
                     //Compare hash values
-                    data.fillHash();
-                    String hash = data.getHash();
-                    if (hash.equals(data.getHash())) {
+                    newDoc.fillHash();
+                    if (oldDoc.getHash().equals(newDoc.getHash())) {
                         //This is probably the same file
-                        return new DocumentData(pf, data.getName(), data.getLastModDate(), data.getHits(), hash);
+                        return newDoc;
                     }
                 }
             }
@@ -170,23 +119,64 @@ public class FileSyncManager {
      * currently in the repository and compiles any issues to be resolved into a
      * set of issue objects that should be displayed to the user.
      *
-     * @return 
+     * @return
      * @throws java.sql.SQLException
      * @throws
      * utd.team6.workforceresearchguide.sqlite.DatabaseFileDoesNotExistException
      * @throws java.io.IOException
+     * @throws utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
      */
-    public FileSynchIssue[] examineDifferences() throws SQLException, DatabaseFileDoesNotExistException, IOException {
-        scanRepository();
-        //Generate a list of FileSynchIssue(s)
-        
-        //Look at missing files
-        
-        //Look at moved files
-        
-        //Look at outdated files
-        
-        return null;
+    public FileSynchIssue[] examineDifferences() throws SQLException, DatabaseFileDoesNotExistException, IOException, ConnectionNotStartedException {
+        ArrayList<FileSynchIssue> isus = new ArrayList<>();
+
+        ArrayList<String> missingFiles = new ArrayList<>();
+        ArrayList<String> addedFiles = new ArrayList<>();
+        ArrayList<String> existingFiles = new ArrayList<>();
+
+        Collections.addAll(addedFiles, files);
+
+        Collections.sort(addedFiles);
+
+        //Get a list of the files in the SQL database
+        String[] dbFiles = db.getAllKnownFiles();
+
+        Collections.addAll(missingFiles, dbFiles);
+
+        Iterator<String> fileIterator = missingFiles.iterator();
+
+        while (fileIterator.hasNext()) {
+            int index = Collections.binarySearch(addedFiles, fileIterator.next());
+            if (index >= 0) {
+                fileIterator.remove();
+                String file = addedFiles.remove(index);
+                existingFiles.add(file);
+            }
+        }
+
+        //For the files that exist, check if they are up to date
+        for (String file : existingFiles) {
+            DocumentData f = new DocumentData(file);
+            if (fileIsOutdated(f)) {
+                isus.add(new OutdatedFileIssue(f));
+            }
+        }
+
+        //Check if any of the new files are simply relocated ones
+        fileIterator = missingFiles.iterator();
+
+        while (fileIterator.hasNext()) {
+            String file = fileIterator.next();
+            DocumentData oldFile = db.getDocumentData(file);
+            DocumentData relFile = this.identifyRelocatedFile(oldFile, addedFiles);
+            if (relFile != null) {
+                isus.add(new MovedFileIssue(oldFile, relFile));
+            } else {
+                isus.add(new MissingFileIssue(oldFile));
+            }
+        }
+        this.issues = new FileSynchIssue[isus.size()];
+        this.issues = isus.toArray(this.issues);
+        return this.issues;
     }
 
     /**
@@ -200,8 +190,6 @@ public class FileSyncManager {
      * @throws DatabaseFileDoesNotExistException
      */
     public void startIndexingProcess() throws IOException, SQLException, DatabaseFileDoesNotExistException {
-        scanRepository();
-
         lucene.startIndexingSession();
         lucene.startReadSession();
 
@@ -214,9 +202,16 @@ public class FileSyncManager {
         luceneThread.start();
     }
 
+    /**
+     * Stops the synchronization process.
+     *
+     * @throws IOException
+     */
     public void cancelSynch() throws IOException {
         lucene.rollbackIndexingSession();
         lucene.stopIndexingSession();
+        //Stop the threads
+
     }
 
     class LuceneThread extends Thread {
