@@ -1,25 +1,20 @@
 package utd.team6.workforceresearchguide.main;
 
 import utd.team6.workforceresearchguide.main.issues.FileSynchIssue;
-import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.tika.exception.TikaException;
 import utd.team6.workforceresearchguide.lucene.IndexingSessionNotStartedException;
 import utd.team6.workforceresearchguide.lucene.LuceneController;
 import utd.team6.workforceresearchguide.lucene.ReadSessionNotStartedException;
+import utd.team6.workforceresearchguide.main.issues.FailedFileSynchIssue;
+import utd.team6.workforceresearchguide.main.issues.InvalidResponseException;
+import utd.team6.workforceresearchguide.main.issues.InvalidResponseFaliure;
 import utd.team6.workforceresearchguide.main.issues.MissingFileIssue;
 import utd.team6.workforceresearchguide.main.issues.MovedFileIssue;
 import utd.team6.workforceresearchguide.main.issues.OutdatedFileIssue;
@@ -36,20 +31,7 @@ public class FileSyncManager {
 
     private FileSynchIssue[] issues;
 
-    BlockingQueue<IndexReadyFile> indexReadyFiles;
-
-    DatabaseThread databaseThread;
-    LuceneThread luceneThread;
-
-    private class IndexReadyFile {
-
-        String path, hash;
-
-        public IndexReadyFile(String path, String hash) {
-            this.path = path;
-            this.hash = hash;
-        }
-    }
+    IssueResolutionThread[] resolutionThreads;
 
     public FileSyncManager(LuceneController lucene, DatabaseController db, String[] files) {
         this.lucene = lucene;
@@ -124,7 +106,8 @@ public class FileSyncManager {
      * @throws
      * utd.team6.workforceresearchguide.sqlite.DatabaseFileDoesNotExistException
      * @throws java.io.IOException
-     * @throws utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
+     * @throws
+     * utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
      */
     public FileSynchIssue[] examineDifferences() throws SQLException, DatabaseFileDoesNotExistException, IOException, ConnectionNotStartedException {
         ArrayList<FileSynchIssue> isus = new ArrayList<>();
@@ -180,66 +163,161 @@ public class FileSyncManager {
     }
 
     /**
-     * Begins the indexing process between the application files and the
+     * Begins the issue resolution process between the application files and the
      * repository files. This function should only be called after the
      * examineDifferences function has been called and all issues have been
      * resolved with the user.
      *
+     * @param numThreads The number of threads to perform this operation with.
+     * Must be greater than 0.
      * @throws IOException
      * @throws SQLException
      * @throws DatabaseFileDoesNotExistException
      */
-    public void startIndexingProcess() throws IOException, SQLException, DatabaseFileDoesNotExistException {
+    public void startResolutionProcess(int numThreads) throws IOException, SQLException, DatabaseFileDoesNotExistException {
+        if (numThreads <= 0) {
+            throw new IllegalArgumentException("The argument numThreads must be >= 0.");
+        }
         lucene.startIndexingSession();
         lucene.startReadSession();
 
-        indexReadyFiles = new LinkedBlockingQueue<>();
+        int startIndex = 0;
+        int numIssues = issues.length;
+        int div = numIssues / numThreads;
+        int rem = numIssues % numThreads;
 
-        databaseThread = new DatabaseThread();
-        luceneThread = new LuceneThread();
+        resolutionThreads = new IssueResolutionThread[numThreads];
 
-        databaseThread.start();
-        luceneThread.start();
+        //Create the issue threads
+        for (int i = resolutionThreads.length - 1; i > -1; i--) {
+            if (i > 0) {
+                resolutionThreads[i] = new IssueResolutionThread(issues, startIndex, div);
+                resolutionThreads[i].start();
+                //Increment the start index
+                startIndex += div;
+            } else {
+                resolutionThreads[i] = new IssueResolutionThread(issues, startIndex, div + rem);
+                resolutionThreads[i].start();
+                //The start index does not need to be incremented because the loop will close
+            }
+        }
+
     }
 
     /**
-     * Stops the synchronization process.
+     *
+     * @return The ratio of completion for an ongoing resolution process. This
+     * is will return 0 if there is no ongoing resolution process.
+     */
+    public double getCompletionRatio() {
+        if (resolutionThreads == null) {
+            return 0;
+        }
+        double sum = 0;
+        for (IssueResolutionThread t : resolutionThreads) {
+            sum += t.getCompletionRatio();
+        }
+        return sum / resolutionThreads.length;
+    }
+
+    /**
+     *
+     * @return True if there is an ongoing resolution process and false
+     * otherwise.
+     */
+    public boolean isResolutionActive() {
+        for (IssueResolutionThread t : resolutionThreads) {
+            if (t.isAlive()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * This function should only be called when the resolution process is not
+     * running.
+     *
+     * @return A list of all failed file issues. Returns null if the resolution
+     * process was never started.
+     */
+    public List<FailedFileSynchIssue> getFileSynchIssues() {
+        ArrayList<FailedFileSynchIssue> faliures = new ArrayList<>();
+        for (IssueResolutionThread t : resolutionThreads) {
+            faliures.addAll(t.faliures);
+        }
+        return faliures;
+    }
+
+    /**
+     * Stops the resolution process.
      *
      * @throws IOException
      */
-    public void cancelSynch() throws IOException {
+    public void cancelResolutionProcess() throws IOException {
+        //Stop the threads
+        for (IssueResolutionThread t : resolutionThreads) {
+            t.interrupt();
+        }
         lucene.rollbackIndexingSession();
         lucene.stopIndexingSession();
-        //Stop the threads
-
     }
 
-    class LuceneThread extends Thread {
+    class IssueResolutionThread extends Thread {
 
-        boolean expectInputs = true;
+        int index;
+        FileSynchIssue[] issues;
+        ArrayList<FailedFileSynchIssue> faliures;
+
+        /**
+         * Instantiates this thread object with num FileSynchIssue(s) from the
+         * start position of the provided array of issues.
+         *
+         * @param isus
+         * @param start
+         * @param num
+         */
+        public IssueResolutionThread(FileSynchIssue[] isus, int start, int num) {
+            issues = new FileSynchIssue[num];
+            for (int i = 0; i < issues.length; i++) {
+                issues[i] = isus[i + start];
+            }
+            index = 0;
+            faliures = new ArrayList<>();
+        }
+
+        public IssueResolutionThread(FileSynchIssue[] issues) {
+            this.issues = issues;
+            index = 0;
+            faliures = new ArrayList<>();
+        }
 
         @Override
         public void run() {
-
+            while (index < issues.length) {
+                if (this.isInterrupted()) {
+                    break;
+                }
+                try {
+                    issues[index].resolve(db, lucene);
+                } catch (InvalidResponseException ex) {
+                    //Create a new file error issue
+                    faliures.add(new InvalidResponseFaliure(issues[index]));
+                } catch (IndexingSessionNotStartedException | ReadSessionNotStartedException ex) {
+                    if (this.isInterrupted()) {
+                        break;
+                    } else {
+                        Logger.getLogger(FileSyncManager.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                } catch (IOException ex) {
+                    Logger.getLogger(FileSyncManager.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                index++;
+            }
         }
 
-        public void inputsComplete() {
-            expectInputs = false;
-        }
-    }
-
-    class DatabaseThread extends Thread {
-
-        @Override
-        public void run() {
-
-            //Check if any of the new files are simply relocated ones
-            //Add the file to the databse
-//                        String hash = Utils.hashFile(file);
-//                        db.addDocument(file, lmd, hash);
-//                        //Add the file to the queue
-//                        indexReadyFiles.put(new IndexReadyFile(file, hash));
-            luceneThread.inputsComplete();
+        public double getCompletionRatio() {
+            return (double) index / issues.length;
         }
     }
 
