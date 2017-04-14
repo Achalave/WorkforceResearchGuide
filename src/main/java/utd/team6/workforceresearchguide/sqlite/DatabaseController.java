@@ -60,6 +60,7 @@ public class DatabaseController {
         if (dbConnect != null) {
             dbConnect.commit();
             dbConnect.close();
+            dbConnect = null;
         }
     }
 
@@ -67,6 +68,7 @@ public class DatabaseController {
         if (dbConnect != null) {
             dbConnect.rollback();
             dbConnect.close();
+            dbConnect = null;
         }
     }
 
@@ -78,7 +80,7 @@ public class DatabaseController {
      * @throws
      * utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
      */
-    public void updateDatabaseSchema() throws SQLException, ConnectionNotStartedException {
+    public void updateDatabaseSchema() throws SQLException {
         //Load the query file into a string
         String query = "";
         ClassLoader classLoader = getClass().getClassLoader();
@@ -94,12 +96,11 @@ public class DatabaseController {
         try {
             //Execute the setup query
             this.startConnection();
-        } catch (ConnectionAlreadyActiveException ex) {
+            executeUpdate(query);
+            this.stopConnection();
+        } catch (ConnectionAlreadyActiveException | ConnectionNotStartedException ex) {
             Logger.getLogger(DatabaseController.class.getName()).log(Level.SEVERE, null, ex);
         }
-
-        executeUpdate(query);
-        this.stopConnection();
 
     }
 
@@ -170,16 +171,20 @@ public class DatabaseController {
      *
      * @param path
      * @param data
-     * @throws utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
+     * @throws
+     * utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
+     * @throws
+     * utd.team6.workforceresearchguide.sqlite.DatabaseFileDoesNotExistException
+     * @throws java.sql.SQLException
      */
     public void updateDocument(String path, DocumentData data) throws ConnectionNotStartedException, DatabaseFileDoesNotExistException, SQLException {
         try {
-            executeUpdate("UPDATE FILES SET FilePath=\'" + data.getPath() 
-                    + "\', Hash=\'"+data.getHash()
-                    + "\', FileName=\'"+data.getName()
-                    + "\', LastModDate=\'"+this.dateToString(data.getLastModDate())
-                    + "\', DateAdded=\'"+this.dateToString(data.getDateAdded())
-                    + "\', Hits=\'"+data.getHits()
+            executeUpdate("UPDATE FILES SET FilePath=\'" + data.getPath()
+                    + "\', Hash=\'" + data.getHash()
+                    + "\', FileName=\'" + data.getName()
+                    + "\', LastModDate=\'" + this.dateToString(data.getLastModDate())
+                    + "\', DateAdded=\'" + this.dateToString(data.getDateAdded())
+                    + "\', Hits=\'" + data.getHits()
                     + "\' WHERE FilePath=\'" + path + "\'");
         } catch (SQLException ex) {
             //Checks the top level exception to see if it was caused by a tag or file missing
@@ -235,6 +240,8 @@ public class DatabaseController {
      * @param path
      * @return
      * @throws SQLException
+     * @throws
+     * utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
      */
     public int getDocumentID(String path) throws SQLException, ConnectionNotStartedException {
         ResultSet result = this.executeQuery("SELECT FileID FROM FILES WHERE FilePath=\'" + path + "\'");
@@ -252,8 +259,10 @@ public class DatabaseController {
      * @param lastModDate The last modified date associated with the file.
      * @param hash
      * @throws SQLException
+     * @throws
+     * utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
      */
-    public void addDocument(String documentPath, Date lastModDate, String hash) throws SQLException, ConnectionNotStartedException {
+    public void addDocument(String documentPath, Date lastModDate, String hash, int hits) throws SQLException, ConnectionNotStartedException {
         String documentName = new File(documentPath).getName();
         executeUpdate("INSERT INTO FILES(FilePath, FileName, LastModDate, Hash) VALUES(\'"
                 + documentPath + "\',\'" + documentName + "\', \'"
@@ -263,14 +272,16 @@ public class DatabaseController {
 
     /**
      * Adds a document to the database.
-     * @param doc 
-     * @throws java.sql.SQLException 
-     * @throws utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException 
+     *
+     * @param doc
+     * @throws java.sql.SQLException
+     * @throws
+     * utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
      */
-    public void addDocument(DocumentData doc) throws SQLException, ConnectionNotStartedException{
-        this.addDocument(doc.getPath(), doc.getLastModDate(), doc.getHash());
+    public void addDocument(DocumentData doc) throws SQLException, ConnectionNotStartedException {
+        this.addDocument(doc.getPath(), doc.getLastModDate(), doc.getHash(),doc.getHits());
     }
-    
+
     /**
      * Converts a Date object to a string that will be accepted by a SQLite
      * query.
