@@ -9,6 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.tika.exception.TikaException;
 import utd.team6.workforceresearchguide.lucene.IndexingSessionNotStartedException;
 import utd.team6.workforceresearchguide.lucene.LuceneController;
 import utd.team6.workforceresearchguide.lucene.ReadSessionNotStartedException;
@@ -309,7 +310,7 @@ public class FileSyncManager {
                     } else {
                         Logger.getLogger(FileSyncManager.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                } catch (IOException ex) {
+                } catch (IOException | TikaException | ConnectionNotStartedException | SQLException ex) {
                     Logger.getLogger(FileSyncManager.class.getName()).log(Level.SEVERE, null, ex);
                 }
                 index++;

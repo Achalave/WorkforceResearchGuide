@@ -1,9 +1,12 @@
 package utd.team6.workforceresearchguide.main.issues;
 
 import java.io.IOException;
+import java.sql.SQLException;
+import org.apache.tika.exception.TikaException;
 import utd.team6.workforceresearchguide.lucene.IndexingSessionNotStartedException;
 import utd.team6.workforceresearchguide.lucene.LuceneController;
 import utd.team6.workforceresearchguide.lucene.ReadSessionNotStartedException;
+import utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException;
 import utd.team6.workforceresearchguide.sqlite.DatabaseController;
 
 //@author Michael Haertling
@@ -20,8 +23,14 @@ public abstract class FileSynchIssue {
      * @param lucene
      * @throws
      * utd.team6.workforceresearchguide.main.issues.InvalidResponseException
+     * @throws utd.team6.workforceresearchguide.lucene.IndexingSessionNotStartedException
+     * @throws utd.team6.workforceresearchguide.lucene.ReadSessionNotStartedException
+     * @throws java.io.IOException
+     * @throws org.apache.tika.exception.TikaException
+     * @throws utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
+     * @throws java.sql.SQLException
      */
-    public abstract void resolve(DatabaseController db, LuceneController lucene) throws InvalidResponseException,IndexingSessionNotStartedException,ReadSessionNotStartedException,IOException;
+    public abstract void resolve(DatabaseController db, LuceneController lucene) throws InvalidResponseException,IndexingSessionNotStartedException,ReadSessionNotStartedException,IOException,TikaException,ConnectionNotStartedException,SQLException;
 
     public void setUserResponse(int res) {
         this.userResponse = res;

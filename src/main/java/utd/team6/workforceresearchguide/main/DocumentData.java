@@ -28,6 +28,7 @@ public class DocumentData {
     private String path;
     private String name;
     private Date lastModDate;
+    private Date dateAdded;
     /**
      * This is the number of times this document has been successfully returned
      * in search results. The object version of int is used in order to track if
@@ -100,6 +101,9 @@ public class DocumentData {
         if (hits == null) {
             this.fillHits();
         }
+        if (dateAdded == null) {
+            dateAdded = new Date(System.currentTimeMillis());
+        }
     }
 
     /**
@@ -171,18 +175,47 @@ public class DocumentData {
      * @throws java.sql.SQLException
      * @throws
      * utd.team6.workforceresearchguide.sqlite.DatabaseFileDoesNotExistException
-     * @throws utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
+     * @throws
+     * utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
      */
     public void fillFromDatabase(DatabaseController db) throws SQLException, DatabaseFileDoesNotExistException, ConnectionNotStartedException {
         copy(db.getDocumentData(path));
     }
 
+    /**
+     * Copies all the data from the parameter to this object.
+     *
+     * @param data
+     */
     public void copy(DocumentData data) {
         this.path = data.path;
         this.name = data.name;
         this.lastModDate = data.lastModDate;
         this.hits = data.hits;
         this.hash = data.hash;
+    }
+
+    /**
+     * Copies data from the parameter only where data is null in this object.
+     *
+     * @param data
+     */
+    public void conditionalCopy(DocumentData data) {
+        if (path == null) {
+            this.path = data.path;
+        }
+        if (name == null) {
+            this.name = data.name;
+        }
+        if (lastModDate == null) {
+            this.lastModDate = data.lastModDate;
+        }
+        if (hits == null) {
+            this.hits = data.hits;
+        }
+        if (hash == null) {
+            this.hash = data.hash;
+        }
     }
 
     /**
@@ -237,6 +270,14 @@ public class DocumentData {
 
     public void setHash(String hash) {
         this.hash = hash;
+    }
+
+    public Date getDateAdded() {
+        return dateAdded;
+    }
+
+    public void setDateAdded(Date dateAdded) {
+        this.dateAdded = dateAdded;
     }
 
 }

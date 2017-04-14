@@ -142,6 +142,58 @@ public class DatabaseController {
     }
 
     /**
+     *
+     * @param oldPath
+     * @param newPath
+     * @throws DatabaseFileDoesNotExistException
+     * @throws SQLException
+     * @throws ConnectionNotStartedException
+     */
+    public void updateDocumentPath(String oldPath, String newPath) throws DatabaseFileDoesNotExistException, SQLException, ConnectionNotStartedException {
+        try {
+            executeUpdate("UPDATE FILES SET FilePath=\'" + newPath + "\' WHERE FilePath=\'" + oldPath + "\'");
+        } catch (SQLException ex) {
+            //Checks the top level exception to see if it was caused by a tag or file missing
+            if (ex.getErrorCode() == 19) {
+                if (ex.toString().contains("NOT NULL constraint failed: FILE_TAGS.FileID")) {
+                    throw new DatabaseFileDoesNotExistException();
+                }
+            } else {
+                throw ex;
+            }
+        }
+    }
+
+    /**
+     * Updates the document's data to match that described in the DocumentData
+     * parameter.
+     *
+     * @param path
+     * @param data
+     * @throws utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
+     */
+    public void updateDocument(String path, DocumentData data) throws ConnectionNotStartedException, DatabaseFileDoesNotExistException, SQLException {
+        try {
+            executeUpdate("UPDATE FILES SET FilePath=\'" + data.getPath() 
+                    + "\', Hash=\'"+data.getHash()
+                    + "\', FileName=\'"+data.getName()
+                    + "\', LastModDate=\'"+this.dateToString(data.getLastModDate())
+                    + "\', DateAdded=\'"+this.dateToString(data.getDateAdded())
+                    + "\', Hits=\'"+data.getHits()
+                    + "\' WHERE FilePath=\'" + path + "\'");
+        } catch (SQLException ex) {
+            //Checks the top level exception to see if it was caused by a tag or file missing
+            if (ex.getErrorCode() == 19) {
+                if (ex.toString().contains("NOT NULL constraint failed: FILE_TAGS.FileID")) {
+                    throw new DatabaseFileDoesNotExistException();
+                }
+            } else {
+                throw ex;
+            }
+        }
+    }
+
+    /**
      * Associates the given tag with the document denoted by the path. It is
      * assumed that the tag and the document already reside in the database. If
      * this is not so, an SQLException will be thrown.
@@ -196,13 +248,12 @@ public class DatabaseController {
     /**
      * Adds a document to the database.
      *
-     * @param con
      * @param documentPath The full, unique path to the represented file.
      * @param lastModDate The last modified date associated with the file.
      * @param hash
      * @throws SQLException
      */
-    public void addDocument(Connection con, String documentPath, Date lastModDate, String hash) throws SQLException, ConnectionNotStartedException {
+    public void addDocument(String documentPath, Date lastModDate, String hash) throws SQLException, ConnectionNotStartedException {
         String documentName = new File(documentPath).getName();
         executeUpdate("INSERT INTO FILES(FilePath, FileName, LastModDate, Hash) VALUES(\'"
                 + documentPath + "\',\'" + documentName + "\', \'"
@@ -210,6 +261,16 @@ public class DatabaseController {
                 + "\', \'" + hash + "\')");
     }
 
+    /**
+     * Adds a document to the database.
+     * @param doc 
+     * @throws java.sql.SQLException 
+     * @throws utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException 
+     */
+    public void addDocument(DocumentData doc) throws SQLException, ConnectionNotStartedException{
+        this.addDocument(doc.getPath(), doc.getLastModDate(), doc.getHash());
+    }
+    
     /**
      * Converts a Date object to a string that will be accepted by a SQLite
      * query.

@@ -2,11 +2,14 @@ package utd.team6.workforceresearchguide.main.issues;
 
 //@author Michael Haertling
 import java.io.IOException;
+import java.sql.SQLException;
+import org.apache.tika.exception.TikaException;
 import utd.team6.workforceresearchguide.lucene.IndexingSessionNotStartedException;
 import utd.team6.workforceresearchguide.lucene.LuceneController;
 import utd.team6.workforceresearchguide.lucene.ReadSessionNotStartedException;
 import utd.team6.workforceresearchguide.main.DocumentData;
 import static utd.team6.workforceresearchguide.main.issues.MissingFileIssue.RESPONSE_FILE_REMOVED;
+import utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException;
 import utd.team6.workforceresearchguide.sqlite.DatabaseController;
 
 /**
@@ -21,7 +24,7 @@ public class MovedFileIssue extends MissingFileIssue {
 
     public MovedFileIssue(DocumentData missingFile, DocumentData newFileLocation) {
         super(missingFile);
-        this.newFileLocation = newFileLocation;
+        this.newFile = newFileLocation;
     }
 
     /**
@@ -33,11 +36,15 @@ public class MovedFileIssue extends MissingFileIssue {
     }
 
     @Override
-    public void resolve(DatabaseController db, LuceneController lucene) throws InvalidResponseException, IndexingSessionNotStartedException, IOException, ReadSessionNotStartedException {
+    public void resolve(DatabaseController db, LuceneController lucene) throws InvalidResponseException, IndexingSessionNotStartedException, IOException, ReadSessionNotStartedException, TikaException, ConnectionNotStartedException, SQLException {
         super.resolve(db, lucene);
         switch (userResponse) {
             case RESPONSE_FILE_REMOVED:
                 //Import the new data
+                newFile.fillFromFile();
+                lucene.indexNewDocument(newFile.getPath());
+                //Add the data to the database
+                db.addDocument(newFile);
                 break;
             default:
                 throw new InvalidResponseException();
