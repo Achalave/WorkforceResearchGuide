@@ -3,6 +3,7 @@ package utd.team6.workforceresearchguide.lucene;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
+import java.util.ArrayList;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
@@ -47,24 +48,20 @@ public class LuceneController {
     public static void main(String[] args) throws IOException, TikaException, IndexingSessionNotStartedException, ReadSessionNotStartedException {
         LuceneController cont = new LuceneController("_lucene_files_");
         
-//        //index testing:joharteaga
-//        //set documents path
-//        String docDir = "C:\\testdocs";
+        cont.startIndexingSession(true);
         
-//        cont.startIndexingSession();
+        //small temp directory for testing
+        String[] testPaths = cont.getFilePaths(System.getProperty("user.dir") + "\\testing");
+        cont.indexNewDocuments(testPaths);
         
-//        //get file heirarchy in documents path
-//        ArrayList<String> tempDocPaths = Utils.extractAllPaths(docDir);
-//        //convert file heirarchy to String[]
-//        String[] docPaths = new String[tempDocPaths.size()];
-//        docPaths = tempDocPaths.toArray(docPaths);
+        cont.startReadSession();
+        LuceneSearchSession session = cont.search("dog", 10);
+        session.startSearch();
         
-//        cont.indexNewDocuments(docPaths);
-        
-        String filePaths[] = {
-            "C:\\Users\\Michael\\Google Drive\\School\\UTD Year 4\\Semester 2\\CV Readings\\Attached at the Hip.docx",
-            "C:\\Users\\Michael\\Google Drive\\School\\UTD Year 4\\Semester 2\\CV Readings\\LifeDegredationPlan.docx",
-            "C:\\Users\\Michael\\Google Drive\\School\\UTD Year 4\\Semester 2\\CV Readings\\ItsComplicated.pdf"};
+//        String filePaths[] = {
+//            "C:\\Users\\Michael\\Google Drive\\School\\UTD Year 4\\Semester 2\\CV Readings\\Attached at the Hip.docx",
+//            "C:\\Users\\Michael\\Google Drive\\School\\UTD Year 4\\Semester 2\\CV Readings\\LifeDegredationPlan.docx",
+//            "C:\\Users\\Michael\\Google Drive\\School\\UTD Year 4\\Semester 2\\CV Readings\\ItsComplicated.pdf"};
         //System.out.println(DocumentReader.readDocument(filePaths[0]));
 
 //        cont.startIndexingSession();
@@ -88,9 +85,9 @@ public class LuceneController {
 //        cont.deleteDocument(filePaths[0]);
 //        cont.stopIndexingSession();
 
-        cont.startReadSession();
-        LuceneSearchSession sess = cont.search("There are several potential benifits", 10);
-        sess.startSearch();
+//        cont.startReadSession();
+//        LuceneSearchSession sess = cont.search("There are several potential benifits", 10);
+//        sess.startSearch();
 //        cont.basicSearchTest("There are several potential benifits");
 //        cont.stopReadSession();
         
@@ -116,17 +113,35 @@ public class LuceneController {
     }
 
     /**
-     * Start a new indexing session. This must be done before any Lucene
-     * indexing can take place.
+     * Calls Util.extractAllPaths to get the document path hierarchy.
+     * Converts the returned ArrayList hierarchy to the filePaths array. 
+     * 
      *
+     * @param path
+     * @return String[]
+     */
+    public String[] getFilePaths(String path) {
+        //get file heirarchy in documents path
+        ArrayList<String> tempDocPaths = Utils.extractAllPaths(path);
+        
+        //convert ArrayList file heirarchy to String[]
+        return tempDocPaths.toArray(new String[tempDocPaths.size()]);
+        
+        //System.out.println(Arrays.toString(filePaths));
+    }
+    
+    /**
+     * Start a new indexing session. This must be done before any Lucene
+     * indexing can take place. Receives a boolean to determine if we are
+     * creating a new index or updating an existing and sets config mode.
+     *
+     * @param create
      * @throws IOException
      */
-    public void startIndexingSession() throws IOException {
+    public void startIndexingSession(boolean create) throws IOException {
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
 
-//        //testing index updating
-//      create = false;    
-        
+//      If create true then create new index; if false append/update index
         if (create) {
             //create new index (drops any existing index)
             config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);

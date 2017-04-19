@@ -10,6 +10,8 @@ import java.util.logging.Logger;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
+import org.apache.tika.exception.TikaException;
+import utd.team6.workforceresearchguide.lucene.IndexingSessionNotStartedException;
 import utd.team6.workforceresearchguide.lucene.LuceneController;
 import utd.team6.workforceresearchguide.lucene.LuceneSearchSession;
 import utd.team6.workforceresearchguide.lucene.ReadSessionNotStartedException;
@@ -47,8 +49,63 @@ public class ApplicationController {
         
     }
     
+    /**
+     * Creates the initial lucene index based on provided root file directory.
+     * 
+     *
+     * @param path
+     * @throws IOException
+     * @throws TikaException
+     * @throws IndexingSessionNotStartedException
+     */
+    public void createIndex(String path) throws IOException, TikaException, 
+            IndexingSessionNotStartedException {
+        
+        //Get file hierarchy
+        String[] filePaths = lucene.getFilePaths(path);
+        
+        //set indexing session to create NEW index
+        lucene.startIndexingSession(true);
+        lucene.startReadSession();
+        
+        //indexes files
+        lucene.indexNewDocuments(filePaths);
+        
+        lucene.stopIndexingSession();
+        lucene.stopReadSession();
+
+    }
+    
+    
+    /**
+     * Adds files to the existing lucene index from provided String[].
+     * 
+     *
+     * @param paths
+     * @throws IOException
+     * @throws TikaException
+     * @throws IndexingSessionNotStartedException
+     */
+    public void addDocuments(String[] paths) throws IOException, TikaException, 
+            IndexingSessionNotStartedException {
+        
+        //Get current file hierarchy
+        String[] filePaths = paths;
+        
+        //set indexing session to APPEND index
+        lucene.startIndexingSession(false);
+        lucene.startReadSession();
+        
+        //indexes files
+        lucene.indexNewDocuments(filePaths);
+        
+        lucene.stopIndexingSession();
+        lucene.stopReadSession();
+
+    }
+    
     public void beginSearch(String query) throws IOException, ReadSessionNotStartedException{
-        lucene.startIndexingSession();
+        lucene.startIndexingSession(false);
         search = lucene.search(query, 100);
         search.startSearch();
         //Instantiate the result set
