@@ -4,15 +4,15 @@ package utd.team6.workforceresearchguide.main.issues;
 
 //@author Michael Haertling
 
-public abstract class FailedFileSynchIssue {
+public abstract class FailedFileSyncIssue {
     
-    protected FileSynchIssue issue;
+    protected FileSyncIssue issue;
     
-    public FailedFileSynchIssue(FileSynchIssue is){
+    public FailedFileSyncIssue(FileSyncIssue is){
         this.issue = is;
     }
 
-    public FileSynchIssue getIssue() {
+    public FileSyncIssue getIssue() {
         return issue;
     }
     

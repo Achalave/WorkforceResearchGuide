@@ -1,8 +1,9 @@
 package utd.team6.workforceresearchguide.main;
 
-import utd.team6.workforceresearchguide.main.issues.FileSynchIssue;
+import utd.team6.workforceresearchguide.main.issues.FileSyncIssue;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -13,7 +14,8 @@ import org.apache.tika.exception.TikaException;
 import utd.team6.workforceresearchguide.lucene.IndexingSessionNotStartedException;
 import utd.team6.workforceresearchguide.lucene.LuceneController;
 import utd.team6.workforceresearchguide.lucene.ReadSessionNotStartedException;
-import utd.team6.workforceresearchguide.main.issues.FailedFileSynchIssue;
+import utd.team6.workforceresearchguide.main.issues.AddedFileIssue;
+import utd.team6.workforceresearchguide.main.issues.FailedFileSyncIssue;
 import utd.team6.workforceresearchguide.main.issues.InvalidResponseException;
 import utd.team6.workforceresearchguide.main.issues.InvalidResponseFaliure;
 import utd.team6.workforceresearchguide.main.issues.MissingFileIssue;
@@ -30,7 +32,7 @@ public class FileSyncManager {
     private final DatabaseController db;
     private final String[] files;
 
-    private FileSynchIssue[] issues;
+    private FileSyncIssue[] issues;
 
     IssueResolutionThread[] resolutionThreads;
 
@@ -51,7 +53,7 @@ public class FileSyncManager {
      * @throws DatabaseFileDoesNotExistException
      * @throws IOException
      */
-    private boolean fileIsOutdated(DocumentData file) throws SQLException, DatabaseFileDoesNotExistException, IOException, ConnectionNotStartedException {
+    private boolean fileIsOutdated(DocumentData file) throws SQLException, DatabaseFileDoesNotExistException, IOException, ConnectionNotStartedException, ParseException {
         file.fillLastModDate();
         //Check if the file has been modified
         DocumentData data = db.getDocumentData(file.getPath());
@@ -74,27 +76,32 @@ public class FileSyncManager {
      * @param oldDoc
      * @param addedFiles This is a list of the files that are new to the system
      * or candidates for being a relocated file.
-     * @return The file path to the possible moved file location or null if no
-     * replacement potential was found.
+     * @return The index of the added file that is suspected to the the
+     * relocated version of the oldDoc parameter. Returns -1 if no such document
+     * is found.
      */
-    private DocumentData identifyRelocatedFile(DocumentData oldDoc, List<String> addedFiles) throws SQLException, DatabaseFileDoesNotExistException, IOException {
-        for (String pf : addedFiles) {
+    private int identifyRelocatedFile(DocumentData oldDoc, List<DocumentData> addedFiles) throws SQLException, DatabaseFileDoesNotExistException, IOException {
+        for (int i = 0; i < addedFiles.size(); i++) {
+            DocumentData newDoc = addedFiles.get(i);
+            newDoc.fillName();
             //Compare names
-            if (pf.endsWith(oldDoc.getName())) {
-                DocumentData newDoc = new DocumentData(pf);
+            System.out.println("COMPARE\n"+newDoc.getName()+"\n"+oldDoc.getName());
+            if (newDoc.getName().equals(oldDoc.getName())) {
                 newDoc.fillLastModDate();
                 //Compare last modification dates
-                if (newDoc.getLastModDate().compareTo(oldDoc.getLastModDate()) == 0) {
+                System.out.println("COMPARE LMD\n"+newDoc.getLastModDate().getTime()+"\n"+oldDoc.getLastModDate().getTime()+"\n"+newDoc.getLastModDate().compareTo(oldDoc.getLastModDate()));
+                if (Utils.equalDates(newDoc.getLastModDate(), oldDoc.getLastModDate())) {
                     //Compare hash values
                     newDoc.fillHash();
+                    System.out.println("COMPARE HASH\n"+newDoc.getHash()+"\n"+oldDoc.getHash());
                     if (oldDoc.getHash().equals(newDoc.getHash())) {
                         //This is probably the same file
-                        return newDoc;
+                        return i;
                     }
                 }
             }
         }
-        return null;
+        return -1;
     }
 
     /**
@@ -110,8 +117,8 @@ public class FileSyncManager {
      * @throws
      * utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
      */
-    public FileSynchIssue[] examineDifferences() throws SQLException, DatabaseFileDoesNotExistException, IOException, ConnectionNotStartedException {
-        ArrayList<FileSynchIssue> isus = new ArrayList<>();
+    public FileSyncIssue[] examineDifferences() throws SQLException, DatabaseFileDoesNotExistException, IOException, ConnectionNotStartedException, ParseException {
+        ArrayList<FileSyncIssue> isus = new ArrayList<>();
 
         ArrayList<String> missingFiles = new ArrayList<>();
         ArrayList<String> addedFiles = new ArrayList<>();
@@ -128,6 +135,9 @@ public class FileSyncManager {
 
         Iterator<String> fileIterator = missingFiles.iterator();
 
+        System.out.println("INTERNAL SCANNED FILES: "+addedFiles);
+        System.out.println("INTERNAL DB FILES: "+missingFiles);
+        
         while (fileIterator.hasNext()) {
             int index = Collections.binarySearch(addedFiles, fileIterator.next());
             if (index >= 0) {
@@ -137,6 +147,8 @@ public class FileSyncManager {
             }
         }
 
+        System.out.println("INTERNAL: "+missingFiles);
+        
         //For the files that exist, check if they are up to date
         for (String file : existingFiles) {
             DocumentData f = new DocumentData(file);
@@ -145,20 +157,33 @@ public class FileSyncManager {
             }
         }
 
+        //Create DocumentData objects for all added files.
+        ArrayList<DocumentData> addedFileData = new ArrayList<>();
+        for (String addFile : addedFiles) {
+            addedFileData.add(new DocumentData(addFile));
+        }
+
         //Check if any of the new files are simply relocated ones
         fileIterator = missingFiles.iterator();
 
         while (fileIterator.hasNext()) {
             String file = fileIterator.next();
-            DocumentData oldFile = db.getDocumentData(file);
-            DocumentData relFile = this.identifyRelocatedFile(oldFile, addedFiles);
-            if (relFile != null) {
-                isus.add(new MovedFileIssue(oldFile, relFile));
+            DocumentData missingFile = db.getDocumentData(file);
+            int relocatedFile = this.identifyRelocatedFile(missingFile, addedFileData);
+            System.out.println("RELOCATION: "+missingFile.getPath()+"\t"+relocatedFile);
+            if (relocatedFile >= 0) {
+                isus.add(new MovedFileIssue(missingFile, addedFileData.remove(relocatedFile)));
             } else {
-                isus.add(new MissingFileIssue(oldFile));
+                isus.add(new MissingFileIssue(missingFile));
             }
         }
-        this.issues = new FileSynchIssue[isus.size()];
+
+        //Create issues for the remaining added files
+        for(DocumentData add:addedFileData){
+            isus.add(new AddedFileIssue(add));
+        }
+        
+        this.issues = new FileSyncIssue[isus.size()];
         this.issues = isus.toArray(this.issues);
         return this.issues;
     }
@@ -242,8 +267,8 @@ public class FileSyncManager {
      * @return A list of all failed file issues. Returns null if the resolution
      * process was never started.
      */
-    public List<FailedFileSynchIssue> getFileSynchIssues() {
-        ArrayList<FailedFileSynchIssue> faliures = new ArrayList<>();
+    public List<FailedFileSyncIssue> getFileSynchIssues() {
+        ArrayList<FailedFileSyncIssue> faliures = new ArrayList<>();
         for (IssueResolutionThread t : resolutionThreads) {
             faliures.addAll(t.faliures);
         }
@@ -267,8 +292,8 @@ public class FileSyncManager {
     class IssueResolutionThread extends Thread {
 
         int index;
-        FileSynchIssue[] issues;
-        ArrayList<FailedFileSynchIssue> faliures;
+        FileSyncIssue[] issues;
+        ArrayList<FailedFileSyncIssue> faliures;
 
         /**
          * Instantiates this thread object with num FileSynchIssue(s) from the
@@ -278,8 +303,8 @@ public class FileSyncManager {
          * @param start
          * @param num
          */
-        public IssueResolutionThread(FileSynchIssue[] isus, int start, int num) {
-            issues = new FileSynchIssue[num];
+        public IssueResolutionThread(FileSyncIssue[] isus, int start, int num) {
+            issues = new FileSyncIssue[num];
             for (int i = 0; i < issues.length; i++) {
                 issues[i] = isus[i + start];
             }
@@ -287,7 +312,7 @@ public class FileSyncManager {
             faliures = new ArrayList<>();
         }
 
-        public IssueResolutionThread(FileSynchIssue[] issues) {
+        public IssueResolutionThread(FileSyncIssue[] issues) {
             this.issues = issues;
             index = 0;
             faliures = new ArrayList<>();

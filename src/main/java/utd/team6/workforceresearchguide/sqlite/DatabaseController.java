@@ -9,6 +9,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.ParseException;
 import java.util.Date;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -77,8 +78,6 @@ public class DatabaseController {
      * relations created. This should be called upon startup.
      *
      * @throws java.sql.SQLException
-     * @throws
-     * utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
      */
     public void updateDatabaseSchema() throws SQLException {
         //Load the query file into a string
@@ -279,7 +278,7 @@ public class DatabaseController {
      * utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
      */
     public void addDocument(DocumentData doc) throws SQLException, ConnectionNotStartedException {
-        this.addDocument(doc.getPath(), doc.getLastModDate(), doc.getHash(),doc.getHits());
+        this.addDocument(doc.getPath(), doc.getLastModDate(), doc.getHash(), doc.getHits());
     }
 
     /**
@@ -294,6 +293,18 @@ public class DatabaseController {
     }
 
     /**
+     * Converts a String to a Date object.
+     *
+     * @param date
+     * @return
+     * @throws ParseException
+     */
+    private Date stringToDate(String date) throws ParseException {
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        return df.parse(date);
+    }
+
+    /**
      * Gets a list of all the file paths currently in the database.
      *
      * @return
@@ -305,7 +316,7 @@ public class DatabaseController {
         ArrayList<String> files = new ArrayList<>();
         ResultSet results = executeQuery("SELECT FilePath FROM FILES");
         while (results.next()) {
-            files.add(results.getString(0));
+            files.add(results.getString(1));
         }
         String[] tmp = new String[files.size()];
         return files.toArray(tmp);
@@ -417,14 +428,15 @@ public class DatabaseController {
      * @throws SQLException
      * @throws DatabaseFileDoesNotExistException
      * @throws ConnectionNotStartedException
+     * @throws java.text.ParseException
      */
-    public DocumentData getDocumentData(int fileID) throws SQLException, DatabaseFileDoesNotExistException, ConnectionNotStartedException {
+    public DocumentData getDocumentData(int fileID) throws SQLException, DatabaseFileDoesNotExistException, ConnectionNotStartedException, ParseException {
         String query = "SELECT(FilePath,FileName,LastModDate,Hits,Hash FROM FILES WHERE FileID=\'" + fileID + "\')";
         try (ResultSet results = executeQuery(query)) {
             if (!results.next()) {
                 throw new DatabaseFileDoesNotExistException();
             }
-            DocumentData docData = new DocumentData(results.getString(1), results.getString(2), results.getDate(3), results.getInt(4), results.getString(5));
+            DocumentData docData = new DocumentData(results.getString(1), results.getString(2), this.stringToDate(results.getString(3)), results.getInt(4), results.getString(5));
             return docData;
         }
     }
@@ -438,14 +450,15 @@ public class DatabaseController {
      * @throws DatabaseFileDoesNotExistException
      * @throws
      * utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
+     * @throws java.text.ParseException
      */
-    public DocumentData getDocumentData(String docPath) throws SQLException, DatabaseFileDoesNotExistException, ConnectionNotStartedException {
-        String query = "SELECT(FilePath,FileName,LastModDate,Hits,Hash FROM FILES WHERE FilePath=\'" + docPath + "\')";
+    public DocumentData getDocumentData(String docPath) throws SQLException, DatabaseFileDoesNotExistException, ConnectionNotStartedException, ParseException {
+        String query = "SELECT FilePath,FileName,LastModDate,Hits,Hash FROM FILES WHERE FilePath=\'" + docPath + "\'";
         try (ResultSet results = executeQuery(query)) {
             if (!results.next()) {
                 throw new DatabaseFileDoesNotExistException();
             }
-            DocumentData docData = new DocumentData(results.getString(1), results.getString(2), results.getDate(3), results.getInt(4), results.getString(5));
+            DocumentData docData = new DocumentData(results.getString(1), results.getString(2), this.stringToDate(results.getString(3)), results.getInt(4), results.getString(5));
             return docData;
         }
     }

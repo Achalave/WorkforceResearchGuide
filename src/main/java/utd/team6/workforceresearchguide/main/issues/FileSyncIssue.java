@@ -10,9 +10,9 @@ import utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException;
 import utd.team6.workforceresearchguide.sqlite.DatabaseController;
 
 //@author Michael Haertling
-public abstract class FileSynchIssue {
+public abstract class FileSyncIssue {
 
-    int userResponse;
+    int userResponse = -1;
 
     /**
      * This function will resolve this issue based on the set user response. It

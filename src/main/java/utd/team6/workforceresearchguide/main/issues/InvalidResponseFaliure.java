@@ -4,9 +4,9 @@ package utd.team6.workforceresearchguide.main.issues;
 
 //@author Michael Haertling
 
-public class InvalidResponseFaliure extends FailedFileSynchIssue{
+public class InvalidResponseFaliure extends FailedFileSyncIssue{
 
-    public InvalidResponseFaliure(FileSynchIssue is) {
+    public InvalidResponseFaliure(FileSyncIssue is) {
         super(is);
     }
 

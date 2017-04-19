@@ -20,7 +20,7 @@ import utd.team6.workforceresearchguide.sqlite.DatabaseFileDoesNotExistException
  *
  * @author Michael
  */
-public class MissingFileIssue extends FileSynchIssue {
+public class MissingFileIssue extends FileSyncIssue {
 
     /**
      * This response value indicates that the file has been removed.

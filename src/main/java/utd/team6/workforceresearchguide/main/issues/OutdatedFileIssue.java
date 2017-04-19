@@ -20,7 +20,7 @@ import utd.team6.workforceresearchguide.sqlite.DatabaseFileDoesNotExistException
  *
  * @author Michael
  */
-public class OutdatedFileIssue extends FileSynchIssue {
+public class OutdatedFileIssue extends FileSyncIssue {
 
     public static final int RESPONSE_UPDATE = 0;
     public static final int RESPONSE_IGNORE = 1;

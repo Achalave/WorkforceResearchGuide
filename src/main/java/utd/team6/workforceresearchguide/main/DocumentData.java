@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.SQLException;
+import java.text.ParseException;
 import java.util.Date;
 import org.apache.commons.codec.digest.DigestUtils;
 import utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException;
@@ -178,7 +179,7 @@ public class DocumentData {
      * @throws
      * utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
      */
-    public void fillFromDatabase(DatabaseController db) throws SQLException, DatabaseFileDoesNotExistException, ConnectionNotStartedException {
+    public void fillFromDatabase(DatabaseController db) throws SQLException, DatabaseFileDoesNotExistException, ConnectionNotStartedException, ParseException {
         copy(db.getDocumentData(path));
     }
 

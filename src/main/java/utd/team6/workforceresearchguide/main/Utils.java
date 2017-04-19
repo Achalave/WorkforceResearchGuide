@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Date;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.ScoreDoc;
@@ -59,10 +60,10 @@ public class Utils {
             String out = tika.parseToString(fis);
             //release
             fis.close();
-            
+
             //for testing: locating corrupt/unreadable files
             System.out.println(path);
-            
+
             return out;
         }
     }
@@ -76,5 +77,18 @@ public class Utils {
             System.out.println("No matches found...");
         }
     }
-    
+
+    /**
+     * Loosely compares two dates. This is needed because the database truncates
+     * the milliseconds on any date. Although this is not a perfect comparison,
+     * it is close enough for this application.
+     *
+     * @param d1
+     * @param d2
+     * @return
+     */
+    public static boolean equalDates(Date d1, Date d2) {
+        return Math.abs(d1.getTime() - d2.getTime()) < 1000;
+    }
+
 }
