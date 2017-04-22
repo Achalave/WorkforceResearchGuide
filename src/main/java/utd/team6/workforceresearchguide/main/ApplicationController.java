@@ -10,6 +10,8 @@ import java.util.logging.Logger;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
+import org.apache.tika.exception.TikaException;
+import utd.team6.workforceresearchguide.lucene.IndexingSessionNotStartedException;
 import utd.team6.workforceresearchguide.lucene.LuceneController;
 import utd.team6.workforceresearchguide.lucene.LuceneSearchSession;
 import utd.team6.workforceresearchguide.lucene.ReadSessionNotStartedException;

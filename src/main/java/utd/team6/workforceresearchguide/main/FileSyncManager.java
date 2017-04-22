@@ -204,7 +204,7 @@ public class FileSyncManager {
         if (numThreads <= 0) {
             throw new IllegalArgumentException("The argument numThreads must be >= 0.");
         }
-        lucene.startIndexingSession();
+        lucene.startIndexingSession(false);
         lucene.startReadSession();
 
         int startIndex = 0;

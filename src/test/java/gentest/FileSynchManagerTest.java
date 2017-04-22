@@ -94,7 +94,7 @@ public class FileSynchManagerTest {
     public void testStage1Extended() throws ParseException {
         try {
             db.startConnection();
-            lucene.startIndexingSession();
+            lucene.startIndexingSession(false);
             System.out.println("PASS 1");
             FileSyncIssue[] issues = sync.examineDifferences();
             System.out.println(Arrays.toString(issues));
@@ -120,7 +120,7 @@ public class FileSynchManagerTest {
     public void testDocumentMoveP1() {
         try {
             db.startConnection();
-            lucene.startIndexingSession();
+            lucene.startIndexingSession(false);
 
             System.out.println("PASS 1");
             FileSyncIssue[] issues = sync.examineDifferences();
@@ -167,7 +167,7 @@ public class FileSynchManagerTest {
     public void testAddedFileResolution(){
         try {
             db.startConnection();
-            lucene.startIndexingSession();
+            lucene.startIndexingSession(false);
             AddedFileIssue iss = new AddedFileIssue(new DocumentData(TestUtils.PATH_TO_RESOURCES+"/test1.txt"));
             iss.addFile();
             iss.resolve(db, lucene);
@@ -184,7 +184,7 @@ public class FileSynchManagerTest {
     public void testMovedFileResolution(){
         try {
             db.startConnection();
-            lucene.startIndexingSession();
+            lucene.startIndexingSession(false);
             AddedFileIssue iss = new AddedFileIssue(new DocumentData(TestUtils.PATH_TO_RESOURCES+"/test1.txt"));
             iss.addFile();
             iss.resolve(db, lucene);

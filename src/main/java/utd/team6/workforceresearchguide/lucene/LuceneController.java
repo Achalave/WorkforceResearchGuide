@@ -3,6 +3,7 @@ package utd.team6.workforceresearchguide.lucene;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
+import java.util.ArrayList;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
@@ -119,12 +120,32 @@ public class LuceneController {
     }
 
     /**
-     * Start a new indexing session. This must be done before any Lucene
-     * indexing can take place.
+     * Calls Util.extractAllPaths to get the document path hierarchy.
+     * Converts the returned ArrayList hierarchy to the filePaths array. 
+     * 
      *
+     * @param path
+     * @return String[]
+     */
+    public String[] getFilePaths(String path) {
+        //get file heirarchy in documents path
+        ArrayList<String> tempDocPaths = Utils.extractAllPaths(path);
+        
+        //convert ArrayList file heirarchy to String[]
+        return tempDocPaths.toArray(new String[tempDocPaths.size()]);
+        
+        //System.out.println(Arrays.toString(filePaths));
+    }
+    
+    /**
+     * Start a new indexing session. This must be done before any Lucene
+     * indexing can take place. Receives a boolean to determine if we are
+     * creating a new index or updating an existing and sets config mode.
+     *
+     * @param create
      * @throws IOException
      */
-    public void startIndexingSession() throws IOException {
+    public void startIndexingSession(boolean create) throws IOException {
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
 
 //        //testing index updating
