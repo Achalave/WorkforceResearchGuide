@@ -44,7 +44,62 @@ public class ApplicationController {
         applicationTimer = new Timer(true);
 
     }
+    
+    /**
+     * Creates the initial lucene index based on provided root file directory.
+     * 
+     *
+     * @param path
+     * @throws IOException
+     * @throws TikaException
+     * @throws IndexingSessionNotStartedException
+     */
+    public void createIndex(String path) throws IOException, TikaException, 
+            IndexingSessionNotStartedException {
+        
+        //Get file hierarchy
+        String[] filePaths = lucene.getFilePaths(path);
+        
+        //set indexing session to create NEW index
+        lucene.startIndexingSession(true);
+        lucene.startReadSession();
+        
+        //indexes files
+        lucene.indexNewDocuments(filePaths);
+        
+        lucene.stopIndexingSession();
+        lucene.stopReadSession();
 
+    }
+    
+    
+    /**
+     * Adds files to the existing lucene index from provided String[].
+     * 
+     *
+     * @param paths
+     * @throws IOException
+     * @throws TikaException
+     * @throws IndexingSessionNotStartedException
+     */
+    public void addDocuments(String[] paths) throws IOException, TikaException, 
+            IndexingSessionNotStartedException {
+        
+        //Get current file hierarchy
+        String[] filePaths = paths;
+        
+        //set indexing session to APPEND index
+        lucene.startIndexingSession(false);
+        lucene.startReadSession();
+        
+        //indexes files
+        lucene.indexNewDocuments(filePaths);
+        
+        lucene.stopIndexingSession();
+        lucene.stopReadSession();
+
+    }
+    
     public void beginSearch(String query) throws IOException, ReadSessionNotStartedException {
         lucene.startReadSession();
         search = lucene.search(query, 100);
