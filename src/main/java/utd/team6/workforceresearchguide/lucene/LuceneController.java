@@ -21,7 +21,14 @@ import org.apache.tika.exception.TikaException;
 import utd.team6.workforceresearchguide.main.Utils;
 
 //@author Michael Haertling
-// If possible it is best to reulse the IndexWriter as much as possible
+/**
+ * This class handles all interactions with the Lucene API. It should be
+ * instantiated with a path to a directory containing Lucene index files. Search
+ * and read sessions must be stated and stopped before certain functions are
+ * called. These sessions should be reused as much as possible.
+ *
+ * @author Michael
+ */
 public class LuceneController {
 
     FSDirectory dir;
@@ -30,9 +37,12 @@ public class LuceneController {
     IndexWriter writer;
 
     DirectoryReader reader;
-    
-    //Used to determine if we are creating a new index or updating existing
-    boolean create = true;
+
+    /**
+     * Used to determine if we are creating a new index or updating existing. If
+     * set to true, the index files will be overwritten.
+     */
+    boolean createOnly = false;
 
     private LuceneController() {
         analyzer = new StandardAnalyzer();
@@ -46,21 +56,17 @@ public class LuceneController {
 
     public static void main(String[] args) throws IOException, TikaException, IndexingSessionNotStartedException, ReadSessionNotStartedException {
         LuceneController cont = new LuceneController("_lucene_files_");
-        
+
 //        //index testing:joharteaga
 //        //set documents path
 //        String docDir = "C:\\testdocs";
-        
 //        cont.startIndexingSession();
-        
 //        //get file heirarchy in documents path
 //        ArrayList<String> tempDocPaths = Utils.extractAllPaths(docDir);
 //        //convert file heirarchy to String[]
 //        String[] docPaths = new String[tempDocPaths.size()];
 //        docPaths = tempDocPaths.toArray(docPaths);
-        
 //        cont.indexNewDocuments(docPaths);
-        
         String filePaths[] = {
             "C:\\Users\\Michael\\Google Drive\\School\\UTD Year 4\\Semester 2\\CV Readings\\Attached at the Hip.docx",
             "C:\\Users\\Michael\\Google Drive\\School\\UTD Year 4\\Semester 2\\CV Readings\\LifeDegredationPlan.docx",
@@ -83,18 +89,15 @@ public class LuceneController {
 //        
 //        cont.stopReadSession();
 //        cont.stopIndexingSession();
-        
 //        cont.startIndexingSession();
 //        cont.deleteDocument(filePaths[0]);
 //        cont.stopIndexingSession();
-
         cont.startReadSession();
         LuceneSearchSession sess = cont.search("There are several potential benifits", 10);
         sess.startSearch();
 //        cont.basicSearchTest("There are several potential benifits");
 //        cont.stopReadSession();
-        
-        
+
 //        long time = System.currentTimeMillis();
 //        String files = "C:\\Users\\Michael\\Downloads\\TESTDOCS\\TESTDOCS";
 //        ArrayList<String> paths = Utils.extractAllPaths(files);
@@ -126,15 +129,14 @@ public class LuceneController {
 
 //        //testing index updating
 //      create = false;    
-        
-        if (create) {
+        if (createOnly) {
             //create new index (drops any existing index)
             config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
         } else {
             //add to existing index
             config.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
         }
-        
+
         writer = new IndexWriter(dir, config);
     }
 
@@ -312,21 +314,21 @@ public class LuceneController {
         writer.updateDocument(new Term("path", docPath), doc);
     }
 
-    public void updateDocumentContent(String docPath) throws IndexingSessionNotStartedException, IOException, ReadSessionNotStartedException, TikaException{
+    public void updateDocumentContent(String docPath) throws IndexingSessionNotStartedException, IOException, ReadSessionNotStartedException, TikaException {
         if (!indexingSessionActive()) {
             throw new IndexingSessionNotStartedException();
         }
         String content = Utils.readDocument(docPath);
-        writer.updateDocValues(new Term("path", docPath), new TextField("content",content,Store.YES));
+        writer.updateDocValues(new Term("path", docPath), new TextField("content", content, Store.YES));
     }
-    
-    public void updateDocumentPath(String oldPath, String newPath) throws IndexingSessionNotStartedException, IOException, ReadSessionNotStartedException{
+
+    public void updateDocumentPath(String oldPath, String newPath) throws IndexingSessionNotStartedException, IOException, ReadSessionNotStartedException {
         if (!indexingSessionActive()) {
             throw new IndexingSessionNotStartedException();
         }
-        writer.updateDocValues(new Term("path",oldPath), new TextField("path",newPath,Store.YES));
+        writer.updateDocValues(new Term("path", oldPath), new TextField("path", newPath, Store.YES));
     }
-    
+
     /**
      * Conducts a search based off a String query. This search function uses
      * BooleanQueries created from the whitespace separated terms within the
@@ -334,7 +336,7 @@ public class LuceneController {
      *
      * @param query
      * @param numTopScores
-     * @return 
+     * @return
      * @throws IOException
      * @throws
      * utd.team6.workforceresearchguide.lucene.ReadSessionNotStartedException

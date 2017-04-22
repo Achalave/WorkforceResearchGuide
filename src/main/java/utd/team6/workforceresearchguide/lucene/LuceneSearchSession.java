@@ -217,6 +217,10 @@ public class LuceneSearchSession {
         return reader.document(docID);
     }
     
+    public boolean searchInProgress(){
+        return tagThread.isAlive()&&contentThread.isAlive();
+    }
+    
 //    public TopDocs getCurrentDocs() throws IOException{
 //        TopDocs[] tds = new TopDocs[collectors.length];
 //        for(int i=0;i<collectors.length;i++){
