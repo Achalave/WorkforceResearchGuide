@@ -10,16 +10,22 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.ParseException;
-import java.util.Date;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import utd.team6.workforceresearchguide.main.DocumentData;
 
-//@author Michael Haertling
+/**
+ * This class is used to interface with the SQLite database used by this
+ * application. All necessary modifications and extractions from the database
+ * can be performed through methods within this class.
+ *
+ * @author Michael
+ */
 public class DatabaseController {
 
     private static final String DB_BUILD_FILE_PATH = "DatabaseBuild.sql";
@@ -29,46 +35,64 @@ public class DatabaseController {
     String dbURL;
     Connection dbConnect;
 
-    public DatabaseController(String dbPath) throws SQLException {
+    /**
+     * Instantiates an object of this class using the provided path to an SQLite
+     * database file. If the file does not exist, it will be created.
+     *
+     * @param dbPath
+     */
+    public DatabaseController(String dbPath) {
         this.dbPath = dbPath;
         this.dbURL = DB_URL_PREFIX + dbPath;
-    }
-
-    public static void main(String[] args) throws SQLException, DatabaseTagDoesNotExistException, DatabaseFileDoesNotExistException {
     }
 
     /**
      * Starts a new SQL connection.
      *
-     * @throws SQLException
      * @throws ConnectionAlreadyActiveException
      */
-    public void startConnection() throws SQLException, ConnectionAlreadyActiveException {
-        if (dbConnect != null) {
-            throw new ConnectionAlreadyActiveException();
+    public void startConnection() throws ConnectionAlreadyActiveException {
+        try {
+            if (dbConnect != null) {
+                throw new ConnectionAlreadyActiveException();
+            }
+            dbConnect = DriverManager.getConnection(dbURL);
+            dbConnect.setAutoCommit(false);
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseController.class.getName()).log(Level.SEVERE, null, ex);
         }
-        dbConnect = DriverManager.getConnection(dbURL);
-        dbConnect.setAutoCommit(false);
     }
 
     /**
      * Closes the active SQL connection and commits all the changes to the
      * database. This function does nothing if there is no active connection.
      *
-     * @throws SQLException
      */
-    public void stopConnection() throws SQLException {
+    public void stopConnection() {
         if (dbConnect != null) {
-            dbConnect.commit();
-            dbConnect.close();
+            try {
+                dbConnect.commit();
+                dbConnect.close();
+            } catch (SQLException ex) {
+                Logger.getLogger(DatabaseController.class.getName()).log(Level.SEVERE, null, ex);
+            }
             dbConnect = null;
         }
     }
 
-    public void rollbackConnection() throws SQLException {
+    /**
+     * Closes the active SQL connection and disregards all changes that were
+     * made on the connection.
+     *
+     */
+    public void rollbackConnection() {
         if (dbConnect != null) {
-            dbConnect.rollback();
-            dbConnect.close();
+            try {
+                dbConnect.rollback();
+                dbConnect.close();
+            } catch (SQLException ex) {
+                Logger.getLogger(DatabaseController.class.getName()).log(Level.SEVERE, null, ex);
+            }
             dbConnect = null;
         }
     }
@@ -77,9 +101,10 @@ public class DatabaseController {
      * This method ensures that the database has all the appropriate tables and
      * relations created. This should be called upon startup.
      *
-     * @throws java.sql.SQLException
+     * @throws
+     * utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
      */
-    public void updateDatabaseSchema() throws SQLException {
+    public void updateDatabaseSchema() throws ConnectionNotStartedException {
         //Load the query file into a string
         String query = "";
         ClassLoader classLoader = getClass().getClassLoader();
@@ -94,10 +119,8 @@ public class DatabaseController {
 
         try {
             //Execute the setup query
-            this.startConnection();
             executeUpdate(query);
-            this.stopConnection();
-        } catch (ConnectionAlreadyActiveException | ConnectionNotStartedException ex) {
+        } catch (SQLException ex) {
             Logger.getLogger(DatabaseController.class.getName()).log(Level.SEVERE, null, ex);
         }
 
@@ -143,13 +166,113 @@ public class DatabaseController {
 
     /**
      *
+     * @return The names of all groups saved in the system.
+     * @throws ConnectionNotStartedException
+     */
+    public ArrayList<String> getGroups() throws ConnectionNotStartedException {
+        ArrayList<String> groups = new ArrayList<>();
+        try (ResultSet result = this.executeQuery("SELECT GroupName FROM GROUPS")) {
+            while (result.next()) {
+                groups.add(result.getString(1));
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return groups;
+    }
+
+    /**
+     *
+     * @param group
+     * @return A list of files contained within the specified group.
+     * @throws ConnectionNotStartedException
+     */
+    public ArrayList<String> getGroupFiles(String group) throws ConnectionNotStartedException {
+        ArrayList<String> files = new ArrayList<>();
+        try (ResultSet result = this.executeQuery("SELECT f.FileName FROM GROUPS g, FILES f WHERE g.GroupName=\'" + group + "\' AND f.FileID=g.FileID")) {
+            while (result.next()) {
+                files.add(result.getString(1));
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return files;
+    }
+
+    /**
+     * Adds a new group to the database.
+     *
+     * @param group
+     * @throws ConnectionNotStartedException
+     */
+    public void addGroup(String group) throws ConnectionNotStartedException {
+        try {
+            this.executeUpdate("INSERT INTO GROUPS(GroupName) VALUES (\'" + group + "\')");
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    /**
+     * Deletes the specified group.
+     *
+     * @param group
+     * @throws ConnectionNotStartedException
+     */
+    public void deleteGroup(String group) throws ConnectionNotStartedException {
+        try {
+            //Delete all the file associations
+            this.executeUpdate("DELETE FROM GROUP_FILES WHERE GroupID=(SELECT GroupID FROM GROUPS WHERE GroupName='" + group + "')");
+            //Delete the group
+            this.executeUpdate("DELETE FROM GROUPS WHERE GroupName=\'" + group + "\'");
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    /**
+     * Adds the specified file to the group.
+     *
+     * @param group
+     * @param filePath
+     * @throws
+     * utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
+     */
+    public void addFileToGroup(String group, String filePath) throws ConnectionNotStartedException {
+        try {
+            this.executeUpdate("INSERT INTO GROUP_FILES VALUES ("
+                    + "(SELECT GroupID FROM GROUPS WHERE GroupName=\'" + group + "\'),"
+                    + "(SELECT FileID FROM FILES WHERE FilePath=\'" + filePath + "\'))");
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    /**
+     * Deletes the specified file from the specified group.
+     *
+     * @param group
+     * @param filePath
+     * @throws ConnectionNotStartedException
+     */
+    public void deleteFileFromGroup(String group, String filePath) throws ConnectionNotStartedException {
+        try {
+            this.executeUpdate("DELETE FROM GROUP_FILES WHERE "
+                    + "GroupID=(SELECT GroupID FROM GROUPS WHERE GroupName=\'" + group + "\') AND "
+                    + "FileID=(SELECT FileID FROM FILES WHERE FilePath=\'" + filePath + "\')");
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    /**
+     *
      * @param oldPath
      * @param newPath
      * @throws DatabaseFileDoesNotExistException
-     * @throws SQLException
      * @throws ConnectionNotStartedException
      */
-    public void updateDocumentPath(String oldPath, String newPath) throws DatabaseFileDoesNotExistException, SQLException, ConnectionNotStartedException {
+    public void updateDocumentPath(String oldPath, String newPath) throws DatabaseFileDoesNotExistException, ConnectionNotStartedException {
         try {
             executeUpdate("UPDATE FILES SET FilePath=\'" + newPath + "\' WHERE FilePath=\'" + oldPath + "\'");
         } catch (SQLException ex) {
@@ -159,7 +282,7 @@ public class DatabaseController {
                     throw new DatabaseFileDoesNotExistException();
                 }
             } else {
-                throw ex;
+                Logger.getLogger(DatabaseController.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -174,9 +297,8 @@ public class DatabaseController {
      * utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
      * @throws
      * utd.team6.workforceresearchguide.sqlite.DatabaseFileDoesNotExistException
-     * @throws java.sql.SQLException
      */
-    public void updateDocument(String path, DocumentData data) throws ConnectionNotStartedException, DatabaseFileDoesNotExistException, SQLException {
+    public void updateDocument(String path, DocumentData data) throws ConnectionNotStartedException, DatabaseFileDoesNotExistException {
         try {
             executeUpdate("UPDATE FILES SET FilePath=\'" + data.getPath()
                     + "\', Hash=\'" + data.getHash()
@@ -192,7 +314,7 @@ public class DatabaseController {
                     throw new DatabaseFileDoesNotExistException();
                 }
             } else {
-                throw ex;
+                Logger.getLogger(DatabaseController.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -204,7 +326,6 @@ public class DatabaseController {
      *
      * @param docPath
      * @param tag
-     * @throws SQLException
      * @throws
      * utd.team6.workforceresearchguide.sqlite.DatabaseTagDoesNotExistException
      * @throws
@@ -213,7 +334,7 @@ public class DatabaseController {
      * utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
      */
     public void tagDocument(String docPath, String tag) throws
-            SQLException, DatabaseTagDoesNotExistException, DatabaseFileDoesNotExistException, ConnectionNotStartedException {
+            DatabaseTagDoesNotExistException, DatabaseFileDoesNotExistException, ConnectionNotStartedException {
         try {
             executeUpdate("INSERT INTO FILE_TAGS(FileID,TagID) VALUES("
                     + "(SELECT rowid FROM FILES WHERE FilePath=\'" + docPath + "\'),"
@@ -228,7 +349,7 @@ public class DatabaseController {
                     throw new DatabaseFileDoesNotExistException();
                 }
             } else {
-                throw ex;
+                Logger.getLogger(DatabaseController.class.getName()).log(Level.SEVERE, null, ex);
             }
         }
     }
@@ -238,17 +359,19 @@ public class DatabaseController {
      *
      * @param path
      * @return
-     * @throws SQLException
      * @throws
      * utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
      */
-    public int getDocumentID(String path) throws SQLException, ConnectionNotStartedException {
-        ResultSet result = this.executeQuery("SELECT FileID FROM FILES WHERE FilePath=\'" + path + "\'");
-        if (result.next()) {
-            return result.getInt(1);
-        } else {
-            return -1;
+    public int getDocumentID(String path) throws ConnectionNotStartedException {
+        try {
+            ResultSet result = this.executeQuery("SELECT FileID FROM FILES WHERE FilePath=\'" + path + "\'");
+            if (result.next()) {
+                return result.getInt(1);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseController.class.getName()).log(Level.SEVERE, null, ex);
         }
+        return -1;
     }
 
     /**
@@ -257,27 +380,30 @@ public class DatabaseController {
      * @param documentPath The full, unique path to the represented file.
      * @param lastModDate The last modified date associated with the file.
      * @param hash
-     * @throws SQLException
+     * @param hits
      * @throws
      * utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
      */
-    public void addDocument(String documentPath, Date lastModDate, String hash, int hits) throws SQLException, ConnectionNotStartedException {
-        String documentName = new File(documentPath).getName();
-        executeUpdate("INSERT INTO FILES(FilePath, FileName, LastModDate, Hash) VALUES(\'"
-                + documentPath + "\',\'" + documentName + "\', \'"
-                + dateToString(lastModDate)
-                + "\', \'" + hash + "\')");
+    public void addDocument(String documentPath, Date lastModDate, String hash, int hits) throws ConnectionNotStartedException {
+        try {
+            String documentName = new File(documentPath).getName();
+            executeUpdate("INSERT INTO FILES(FilePath, FileName, LastModDate, Hash) VALUES(\'"
+                    + documentPath + "\',\'" + documentName + "\', \'"
+                    + dateToString(lastModDate)
+                    + "\', \'" + hash + "\')");
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseController.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
      * Adds a document to the database.
      *
      * @param doc
-     * @throws java.sql.SQLException
      * @throws
      * utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
      */
-    public void addDocument(DocumentData doc) throws SQLException, ConnectionNotStartedException {
+    public void addDocument(DocumentData doc) throws ConnectionNotStartedException {
         this.addDocument(doc.getPath(), doc.getLastModDate(), doc.getHash(), doc.getHits());
     }
 
@@ -308,15 +434,18 @@ public class DatabaseController {
      * Gets a list of all the file paths currently in the database.
      *
      * @return
-     * @throws SQLException
      * @throws
      * utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
      */
-    public String[] getAllKnownFiles() throws SQLException, ConnectionNotStartedException {
+    public String[] getAllKnownFiles() throws ConnectionNotStartedException {
         ArrayList<String> files = new ArrayList<>();
-        ResultSet results = executeQuery("SELECT FilePath FROM FILES");
-        while (results.next()) {
-            files.add(results.getString(1));
+        try {
+            ResultSet results = executeQuery("SELECT FilePath FROM FILES");
+            while (results.next()) {
+                files.add(results.getString(1));
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseController.class.getName()).log(Level.SEVERE, null, ex);
         }
         String[] tmp = new String[files.size()];
         return files.toArray(tmp);
@@ -327,25 +456,35 @@ public class DatabaseController {
      *
      * @param docID
      * @param date
-     * @throws SQLException
      * @throws
      * utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
      */
-    public void updateDocumentModifiedDate(int docID, Date date) throws SQLException, ConnectionNotStartedException {
-        executeUpdate("UPDATE FILES SET LastModDate=\'" + dateToString(date) + "\' WHERE FileID=\'" + docID + "\'");
+    public void updateDocumentModifiedDate(int docID, Date date) throws ConnectionNotStartedException {
+        try {
+            executeUpdate("UPDATE FILES SET LastModDate=\'" + dateToString(date) + "\' WHERE FileID=\'" + docID + "\'");
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseController.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
      * Deletes a document and its associations.
      *
      * @param documentPath
-     * @throws java.sql.SQLException
      * @throws
      * utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
      */
-    public void deleteDocument(String documentPath) throws SQLException, ConnectionNotStartedException {
-        executeUpdate("DELETE FROM FILE_TAGS WHERE FileID = (SELECT FileID FROM FILES WHERE FilePath=\'" + documentPath + "\')");
-        executeUpdate("DELETE FROM FILES WHERE FilePath=\'" + documentPath + "\'");
+    public void deleteDocument(String documentPath) throws ConnectionNotStartedException {
+        try {
+            //Delete the file from any groups it is in
+            executeUpdate("DELETE FROM GROUP_FILES WHERE FileID = (SELECT FileID FROM FILES WHERE FilePath=\'" + documentPath + "\')");
+            //Delete the file from all tag associations
+            executeUpdate("DELETE FROM FILE_TAGS WHERE FileID = (SELECT FileID FROM FILES WHERE FilePath=\'" + documentPath + "\')");
+            //Delete the file itself
+            executeUpdate("DELETE FROM FILES WHERE FilePath=\'" + documentPath + "\'");
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseController.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
@@ -353,11 +492,10 @@ public class DatabaseController {
      *
      * @param tag A string representation of a tag currently in the system.
      * @return The integer ID of the specified tag or -1 if not found.
-     * @throws SQLException
      * @throws
      * utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
      */
-    public int getTagID(String tag) throws SQLException, ConnectionNotStartedException {
+    public int getTagID(String tag) throws ConnectionNotStartedException {
         String query = "SELECT rowid FROM TAGS WHERE TagText=\'" + tag + "\'";
         try {
             Array value;
@@ -367,33 +505,42 @@ public class DatabaseController {
             return ((int[]) value.getArray())[0];
         } catch (NullPointerException | ArrayIndexOutOfBoundsException ex) {
             return -1;
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseController.class.getName()).log(Level.SEVERE, null, ex);
         }
+        return -1;
     }
 
     /**
      * Adds a tag to the database.
      *
      * @param tag
-     * @throws java.sql.SQLException
      * @throws
      * utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
      */
-    public void addTag(String tag) throws SQLException, ConnectionNotStartedException {
-        String query = "INSERT INTO TAGS(TagText) VALUES(\'" + tag + "\')";
-        this.executeUpdate(query);
+    public void addTag(String tag) throws ConnectionNotStartedException {
+        try {
+            String query = "INSERT INTO TAGS(TagText) VALUES(\'" + tag + "\')";
+            this.executeUpdate(query);
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseController.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
      * Deletes a tag and its associations from the database.
      *
      * @param tag
-     * @throws SQLException
      * @throws
      * utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
      */
-    public void deleteTag(String tag) throws SQLException, ConnectionNotStartedException {
-        executeUpdate("DELETE FROM FILE_TAGS WHERE TagID=(SELECT TagID FROM TAGS WHERE TagText=\'" + tag + "\')");
-        executeUpdate("DELETE FROM TAGS WHERE TagText=\'" + tag + "\'");
+    public void deleteTag(String tag) throws ConnectionNotStartedException {
+        try {
+            executeUpdate("DELETE FROM FILE_TAGS WHERE TagID=(SELECT TagID FROM TAGS WHERE TagText=\'" + tag + "\')");
+            executeUpdate("DELETE FROM TAGS WHERE TagText=\'" + tag + "\'");
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseController.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
@@ -403,20 +550,20 @@ public class DatabaseController {
      * @param tagText
      * @return A hash map with keys corresponding to tags associated with
      * tagText and values representing the number of associations present.
-     * @throws SQLException
      * @throws
      * utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
      */
-    public HashMap<String, Integer> getTagAssociation(String tagText) throws SQLException, ConnectionNotStartedException {
+    public HashMap<String, Integer> getTagAssociation(String tagText) throws ConnectionNotStartedException {
         String query = "SELECT tag1.TagText, tag2.TagText, ta.count "
                 + "FROM TAG_ASSOCIATIONS ta, TAGS tag1, TAGS tag2 "
                 + "WHERE tag1.TagText=\'" + tagText + "\' AND tag1.TagID=ta.tag1 AND tag2.tagID=ta.tag2";
-        HashMap<String, Integer> associations;
+        HashMap<String, Integer> associations = new HashMap<>();
         try (ResultSet results = executeQuery(query)) {
-            associations = new HashMap<>();
             while (results.next()) {
                 associations.put(results.getString(2), results.getInt(3));
             }
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseController.class.getName()).log(Level.SEVERE, null, ex);
         }
         return associations;
     }
@@ -425,12 +572,11 @@ public class DatabaseController {
      *
      * @param fileID
      * @return
-     * @throws SQLException
      * @throws DatabaseFileDoesNotExistException
      * @throws ConnectionNotStartedException
      * @throws java.text.ParseException
      */
-    public DocumentData getDocumentData(int fileID) throws SQLException, DatabaseFileDoesNotExistException, ConnectionNotStartedException, ParseException {
+    public DocumentData getDocumentData(int fileID) throws DatabaseFileDoesNotExistException, ConnectionNotStartedException, ParseException {
         String query = "SELECT(FilePath,FileName,LastModDate,Hits,Hash FROM FILES WHERE FileID=\'" + fileID + "\')";
         try (ResultSet results = executeQuery(query)) {
             if (!results.next()) {
@@ -438,7 +584,10 @@ public class DatabaseController {
             }
             DocumentData docData = new DocumentData(results.getString(1), results.getString(2), this.stringToDate(results.getString(3)), results.getInt(4), results.getString(5));
             return docData;
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseController.class.getName()).log(Level.SEVERE, null, ex);
         }
+        throw new DatabaseFileDoesNotExistException();
     }
 
     /**
@@ -446,13 +595,12 @@ public class DatabaseController {
      *
      * @param docPath
      * @return
-     * @throws SQLException
      * @throws DatabaseFileDoesNotExistException
      * @throws
      * utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
      * @throws java.text.ParseException
      */
-    public DocumentData getDocumentData(String docPath) throws SQLException, DatabaseFileDoesNotExistException, ConnectionNotStartedException, ParseException {
+    public DocumentData getDocumentData(String docPath) throws DatabaseFileDoesNotExistException, ConnectionNotStartedException, ParseException {
         String query = "SELECT FilePath,FileName,LastModDate,Hits,Hash FROM FILES WHERE FilePath=\'" + docPath + "\'";
         try (ResultSet results = executeQuery(query)) {
             if (!results.next()) {
@@ -460,7 +608,10 @@ public class DatabaseController {
             }
             DocumentData docData = new DocumentData(results.getString(1), results.getString(2), this.stringToDate(results.getString(3)), results.getInt(4), results.getString(5));
             return docData;
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseController.class.getName()).log(Level.SEVERE, null, ex);
         }
+        throw new DatabaseFileDoesNotExistException();
     }
 
     /**
@@ -468,11 +619,10 @@ public class DatabaseController {
      * debug use only.
      *
      * @param query An SQL query that will produce a ResultSet.
-     * @throws SQLException
      * @throws
      * utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
      */
-    public void printQuery(String query) throws SQLException, ConnectionNotStartedException {
+    public void printQuery(String query) throws ConnectionNotStartedException {
         System.out.println(query);
         try (ResultSet results = this.executeQuery(query)) {
             ResultSetMetaData mdata = results.getMetaData();
@@ -489,6 +639,8 @@ public class DatabaseController {
                 }
                 System.out.println("[" + line.substring(0, line.length() - 2) + "]");
             }
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseController.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 }

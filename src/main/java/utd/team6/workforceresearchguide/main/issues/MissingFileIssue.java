@@ -41,6 +41,10 @@ public class MissingFileIssue extends FileSyncIssue {
      */
     boolean contentChanged = false;
 
+    /**
+     * Creates a new MissingFileIssue object.
+     * @param missingFile 
+     */
     public MissingFileIssue(DocumentData missingFile) {
         this.missingFile = missingFile;
     }

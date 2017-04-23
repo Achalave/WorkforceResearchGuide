@@ -1,7 +1,6 @@
 package utd.team6.workforceresearchguide.main;
 
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -17,7 +16,13 @@ import utd.team6.workforceresearchguide.lucene.LuceneSearchSession;
 import utd.team6.workforceresearchguide.lucene.ReadSessionNotStartedException;
 import utd.team6.workforceresearchguide.sqlite.DatabaseController;
 
-//@author Michael Haertling
+/**
+ * This is the primary controller for the entire application. It is responsible
+ * for connecting the various controllers and other management classes into
+ * cohesive functions.
+ *
+ * @author Michael
+ */
 public class ApplicationController {
 
     private static final String LUCENE_FILE_PATH = "_lucene_files_";
@@ -34,72 +39,80 @@ public class ApplicationController {
 
     Timer applicationTimer;
 
+    /**
+     * Creates a new ApplicationController object.
+     */
     public ApplicationController() {
         try {
             lucene = new LuceneController(LUCENE_FILE_PATH);
             db = new DatabaseController(DATABASE_PATH);
-        } catch (IOException | SQLException ex) {
+        } catch (IOException ex) {
             Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
         }
         applicationTimer = new Timer(true);
 
     }
-    
+
     /**
      * Creates the initial lucene index based on provided root file directory.
-     * 
+     *
      *
      * @param path
      * @throws IOException
      * @throws TikaException
      * @throws IndexingSessionNotStartedException
      */
-    public void createIndex(String path) throws IOException, TikaException, 
+    public void createIndex(String path) throws IOException, TikaException,
             IndexingSessionNotStartedException {
-        
+
         //Get file hierarchy
         String[] filePaths = lucene.getFilePaths(path);
-        
+
         //set indexing session to create NEW index
         lucene.startIndexingSession(true);
         lucene.startReadSession();
-        
+
         //indexes files
         lucene.indexNewDocuments(filePaths);
-        
+
         lucene.stopIndexingSession();
         lucene.stopReadSession();
 
     }
-    
-    
+
     /**
      * Adds files to the existing lucene index from provided String[].
-     * 
+     *
      *
      * @param paths
      * @throws IOException
      * @throws TikaException
      * @throws IndexingSessionNotStartedException
      */
-    public void addDocuments(String[] paths) throws IOException, TikaException, 
+    public void addDocuments(String[] paths) throws IOException, TikaException,
             IndexingSessionNotStartedException {
-        
+
         //Get current file hierarchy
         String[] filePaths = paths;
-        
+
         //set indexing session to APPEND index
         lucene.startIndexingSession(false);
         lucene.startReadSession();
-        
+
         //indexes files
         lucene.indexNewDocuments(filePaths);
-        
+
         lucene.stopIndexingSession();
         lucene.stopReadSession();
 
     }
-    
+
+    /**
+     * Starts a new search with the provided query.
+     * @param query
+     * @throws IOException
+     * @throws ReadSessionNotStartedException 
+     */
     public void beginSearch(String query) throws IOException, ReadSessionNotStartedException {
         lucene.startReadSession();
         search = lucene.search(query, 100);
@@ -182,7 +195,5 @@ public class ApplicationController {
             }
         }
     }
-
-    
 
 }

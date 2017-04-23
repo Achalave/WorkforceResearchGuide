@@ -22,19 +22,35 @@ import utd.team6.workforceresearchguide.sqlite.DatabaseFileDoesNotExistException
  */
 public class OutdatedFileIssue extends FileSyncIssue {
 
+    /**
+     * Indicates that the outdated file should be updated.
+     */
     public static final int RESPONSE_UPDATE = 0;
+    /**
+     * Indicates that the outdated file should be ignored and left as it is.
+     */
     public static final int RESPONSE_IGNORE = 1;
 
     DocumentData outdatedFile;
 
+    /**
+     * Creates a new OutdatedFileIssue object.
+     * @param outdatedFile 
+     */
     public OutdatedFileIssue(DocumentData outdatedFile) {
         this.outdatedFile = outdatedFile;
     }
 
+    /**
+     * Sets the user response to ignore the outdated file.
+     */
     public void ignoreOutdatedFile() {
         userResponse = RESPONSE_IGNORE;
     }
 
+    /**
+     * Sets the user response to update the outdated file.
+     */
     public void updateOutdatedFile() {
         userResponse = RESPONSE_UPDATE;
     }

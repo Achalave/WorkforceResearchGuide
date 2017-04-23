@@ -22,6 +22,11 @@ import utd.team6.workforceresearchguide.sqlite.DatabaseController;
  */
 public class MovedFileIssue extends MissingFileIssue {
 
+    /**
+     * Creates a new MovedFileIssue object.
+     * @param missingFile
+     * @param newFileLocation 
+     */
     public MovedFileIssue(DocumentData missingFile, DocumentData newFileLocation) {
         super(missingFile);
         this.newFile = newFileLocation;

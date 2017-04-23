@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS FILES(
     FileID INTEGER PRIMARY KEY,
     FileName varchar(50) not null,
-    FilePath varchar(100) not null,
+    FilePath varchar(500) not null,
     LastModDate DATE not null,
     DateAdded DATE DEFAULT CURRENT_TIMESTAMP,
     Hits int DEFAULT 0,
@@ -21,6 +21,19 @@ CREATE TABLE IF NOT EXISTS FILE_TAGS(
     FOREIGN KEY (FileID) REFERENCES FILES(FileID),
     FOREIGN KEY (TagID) REFERENCES TAGS(rowid),
     PRIMARY KEY (FileID,TagID)
+);
+
+CREATE TABLE IF NOT EXISTS GROUPS(
+    GroupID INTEGER PRIMARY KEY,
+    GroupName varchar(100) not null,
+    UNIQUE (GroupName)
+);
+
+CREATE TABLE IF NOT EXISTS GROUP_FILES(
+    GroupID int not null,
+    FileID int not null,
+    FOREIGN KEY (GroupID) REFERENCES GROUPS(GroupID),
+    FOREIGN KEY (FileID) REFERENCES FILES(FileID)
 );
 
 CREATE VIEW IF NOT EXISTS TAG_ASSOCIATIONS AS

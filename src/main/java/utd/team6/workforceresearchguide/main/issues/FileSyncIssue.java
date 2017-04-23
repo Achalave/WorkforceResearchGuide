@@ -9,7 +9,11 @@ import utd.team6.workforceresearchguide.lucene.ReadSessionNotStartedException;
 import utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException;
 import utd.team6.workforceresearchguide.sqlite.DatabaseController;
 
-//@author Michael Haertling
+/**
+ * This is the upper level class for FileSyncIssue(s).
+ *
+ * @author Michael
+ */
 public abstract class FileSyncIssue {
 
     int userResponse = -1;
@@ -23,15 +27,23 @@ public abstract class FileSyncIssue {
      * @param lucene
      * @throws
      * utd.team6.workforceresearchguide.main.issues.InvalidResponseException
-     * @throws utd.team6.workforceresearchguide.lucene.IndexingSessionNotStartedException
-     * @throws utd.team6.workforceresearchguide.lucene.ReadSessionNotStartedException
+     * @throws
+     * utd.team6.workforceresearchguide.lucene.IndexingSessionNotStartedException
+     * @throws
+     * utd.team6.workforceresearchguide.lucene.ReadSessionNotStartedException
      * @throws java.io.IOException
      * @throws org.apache.tika.exception.TikaException
-     * @throws utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
+     * @throws
+     * utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
      * @throws java.sql.SQLException
      */
-    public abstract void resolve(DatabaseController db, LuceneController lucene) throws InvalidResponseException,IndexingSessionNotStartedException,ReadSessionNotStartedException,IOException,TikaException,ConnectionNotStartedException,SQLException;
+    public abstract void resolve(DatabaseController db, LuceneController lucene) throws InvalidResponseException, IndexingSessionNotStartedException, ReadSessionNotStartedException, IOException, TikaException, ConnectionNotStartedException, SQLException;
 
+    /**
+     * Sets the user response to the specified value.
+     *
+     * @param res
+     */
     public void setUserResponse(int res) {
         this.userResponse = res;
     }

@@ -28,13 +28,27 @@ import utd.team6.workforceresearchguide.sqlite.DatabaseController;
 import utd.team6.workforceresearchguide.sqlite.DatabaseFileDoesNotExistException;
 
 //@author Michael Haertling
+
+/**
+ *
+ * @author Michael
+ */
 public class FileSynchManagerTest {
 
     DatabaseController db;
     LuceneController lucene;
     FileSyncManager sync;
 
-    public FileSynchManagerTest(String[] files, boolean renew) throws IOException, SQLException {
+    /**
+     *
+     * @param files
+     * @param renew
+     * @throws IOException
+     * @throws SQLException
+     * @throws ConnectionNotStartedException
+     * @throws ConnectionAlreadyActiveException
+     */
+    public FileSynchManagerTest(String[] files, boolean renew) throws IOException, SQLException, ConnectionNotStartedException, ConnectionAlreadyActiveException {
         if (renew) {
             new File("test.db").delete();
             FileUtils.forceDelete("lucene_test_files");
@@ -42,16 +56,31 @@ public class FileSynchManagerTest {
         db = new DatabaseController("test.db");
         lucene = new LuceneController("lucene_files");
         sync = new FileSyncManager(lucene, db, files);
+        db.startConnection();
         db.updateDatabaseSchema();
+        db.stopConnection();
     }
 
+    /**
+     *
+     * @return
+     */
     public static String[] getPaths(){
         ArrayList<String> paths = Utils.extractAllPaths(TestUtils.PATH_TO_RESOURCES);
         String[] p = new String[paths.size()];
         return paths.toArray(p);
     }
     
-    public static void main(String[] args) throws IOException, SQLException, ParseException {
+    /**
+     *
+     * @param args
+     * @throws IOException
+     * @throws SQLException
+     * @throws ParseException
+     * @throws ConnectionNotStartedException
+     * @throws ConnectionAlreadyActiveException
+     */
+    public static void main(String[] args) throws IOException, SQLException, ParseException, ConnectionNotStartedException, ConnectionAlreadyActiveException {
 //        FileSynchManagerTest.generateFile(TestUtils.PATH_TO_RESOURCES + "/tmp.txt");
 //        System.out.println("ORIGINAL LMD: "+new File(TestUtils.PATH_TO_RESOURCES + "/tmp.txt").lastModified());
 //        
@@ -117,6 +146,9 @@ public class FileSynchManagerTest {
         }
     }
 
+    /**
+     * Part 1 of testing document moves.
+     */
     public void testDocumentMoveP1() {
         try {
             db.startConnection();
@@ -147,6 +179,9 @@ public class FileSynchManagerTest {
         }
     }
 
+    /**
+     * Part 2 of testing document moves.
+     */
     public void testDocumentMoveP2() {
         try {
             db.startConnection();
@@ -164,6 +199,9 @@ public class FileSynchManagerTest {
         }
     }
     
+    /**
+     * Tests the resolution of file added issues.
+     */
     public void testAddedFileResolution(){
         try {
             db.startConnection();
@@ -181,6 +219,9 @@ public class FileSynchManagerTest {
         }
     }
     
+    /**
+     * Tests the moved file issues.
+     */
     public void testMovedFileResolution(){
         try {
             db.startConnection();
@@ -195,14 +236,24 @@ public class FileSynchManagerTest {
         }
     }
     
+    /**
+     * Tests missing file issues.
+     */
     public void testMissingFileResolution(){
         
     }
     
+    /**
+     * Tests outdated file issues.
+     */
     public void testOutdatedFileResolution(){
         
     }
     
+    /**
+     *
+     * @param path
+     */
     public static void generateFile(String path) {
         try (PrintWriter write = new PrintWriter(path)) {
             write.print("this is just a test file");

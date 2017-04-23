@@ -45,84 +45,28 @@ public class LuceneController {
      */
     boolean createOnly = false;
 
+    /**
+     * Creates a new LuceneController.
+     */
     private LuceneController() {
         analyzer = new StandardAnalyzer();
     }
 
+    /**
+     *
+     * @param lucenePath
+     * @throws IOException
+     */
     public LuceneController(String lucenePath) throws IOException {
         this();
         //Let Lucene determine what type of FSDirectory to use for the machine
         dir = FSDirectory.open(FileSystems.getDefault().getPath(lucenePath));
     }
 
-    public static void main(String[] args) throws IOException, TikaException, IndexingSessionNotStartedException, ReadSessionNotStartedException {
-        LuceneController cont = new LuceneController("_lucene_files_");
-
-//        //index testing:joharteaga
-//        //set documents path
-//        String docDir = "C:\\testdocs";
-//        cont.startIndexingSession();
-//        //get file heirarchy in documents path
-//        ArrayList<String> tempDocPaths = Utils.extractAllPaths(docDir);
-//        //convert file heirarchy to String[]
-//        String[] docPaths = new String[tempDocPaths.size()];
-//        docPaths = tempDocPaths.toArray(docPaths);
-//        cont.indexNewDocuments(docPaths);
-        String filePaths[] = {
-            "C:\\Users\\Michael\\Google Drive\\School\\UTD Year 4\\Semester 2\\CV Readings\\Attached at the Hip.docx",
-            "C:\\Users\\Michael\\Google Drive\\School\\UTD Year 4\\Semester 2\\CV Readings\\LifeDegredationPlan.docx",
-            "C:\\Users\\Michael\\Google Drive\\School\\UTD Year 4\\Semester 2\\CV Readings\\ItsComplicated.pdf"};
-        //System.out.println(DocumentReader.readDocument(filePaths[0]));
-
-//        cont.startIndexingSession();
-//        for (String fpath : filePaths) {
-//            cont.indexNewDocument(fpath);
-//        }
-//        cont.stopIndexingSession();
-//
-//        cont.startReadSession();
-//        cont.startIndexingSession();
-//        
-//        cont.tagDocument(filePaths[0], "tag1");
-//        cont.tagDocument(filePaths[0], "tag2");
-//        cont.tagDocument(filePaths[1], "tag1");
-//        cont.tagDocument(filePaths[2], "tag2");
-//        
-//        cont.stopReadSession();
-//        cont.stopIndexingSession();
-//        cont.startIndexingSession();
-//        cont.deleteDocument(filePaths[0]);
-//        cont.stopIndexingSession();
-        cont.startReadSession();
-        LuceneSearchSession sess = cont.search("There are several potential benifits", 10);
-        sess.startSearch();
-//        cont.basicSearchTest("There are several potential benifits");
-//        cont.stopReadSession();
-
-//        long time = System.currentTimeMillis();
-//        String files = "C:\\Users\\Michael\\Downloads\\TESTDOCS\\TESTDOCS";
-//        ArrayList<String> paths = Utils.extractAllPaths(files);
-//
-//        cont.startIndexingSession();
-//        for (int i = 0; i < paths.size(); i++) {
-//            long time2 = System.currentTimeMillis();
-//            try {
-//                cont.indexNewDocument(paths.get(i));
-//            } catch (TikaException ex) {
-//                System.err.println(ex);
-//            }
-//            System.out.println("DocNum: "+i+"/"+paths.size()+"\tTime: "+(System.currentTimeMillis()-time2));
-//        }
-//        long time2 = System.currentTimeMillis();
-//        cont.stopIndexingSession();
-//        System.out.println("END SESSION: " + (System.currentTimeMillis() - time2));
-//        System.out.println(System.currentTimeMillis() - time);
-    }
-
     /**
-     * Calls Util.extractAllPaths to get the document path hierarchy.
-     * Converts the returned ArrayList hierarchy to the filePaths array. 
-     * 
+     * Calls Util.extractAllPaths to get the document path hierarchy. Converts
+     * the returned ArrayList hierarchy to the filePaths array.
+     *
      *
      * @param path
      * @return String[]
@@ -130,13 +74,13 @@ public class LuceneController {
     public String[] getFilePaths(String path) {
         //get file heirarchy in documents path
         ArrayList<String> tempDocPaths = Utils.extractAllPaths(path);
-        
+
         //convert ArrayList file heirarchy to String[]
         return tempDocPaths.toArray(new String[tempDocPaths.size()]);
-        
+
         //System.out.println(Arrays.toString(filePaths));
     }
-    
+
     /**
      * Start a new indexing session. This must be done before any Lucene
      * indexing can take place. Receives a boolean to determine if we are
@@ -335,6 +279,15 @@ public class LuceneController {
         writer.updateDocument(new Term("path", docPath), doc);
     }
 
+    /**
+     * Re-indexes the content of the specified document.
+     *
+     * @param docPath
+     * @throws IndexingSessionNotStartedException
+     * @throws IOException
+     * @throws ReadSessionNotStartedException
+     * @throws TikaException
+     */
     public void updateDocumentContent(String docPath) throws IndexingSessionNotStartedException, IOException, ReadSessionNotStartedException, TikaException {
         if (!indexingSessionActive()) {
             throw new IndexingSessionNotStartedException();
@@ -343,6 +296,15 @@ public class LuceneController {
         writer.updateDocValues(new Term("path", docPath), new TextField("content", content, Store.YES));
     }
 
+    /**
+     * Changes the document path of the specified document.
+     *
+     * @param oldPath
+     * @param newPath
+     * @throws IndexingSessionNotStartedException
+     * @throws IOException
+     * @throws ReadSessionNotStartedException
+     */
     public void updateDocumentPath(String oldPath, String newPath) throws IndexingSessionNotStartedException, IOException, ReadSessionNotStartedException {
         if (!indexingSessionActive()) {
             throw new IndexingSessionNotStartedException();

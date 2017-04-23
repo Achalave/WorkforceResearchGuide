@@ -4,18 +4,20 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Date;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.tika.Tika;
 import org.apache.tika.exception.TikaException;
 
-//@author Michael Haertling
+/**
+ * This class is only used statically to provide macro functions throughout the
+ * application.
+ *
+ * @author Michael
+ */
 public class Utils {
 
     /**
@@ -52,9 +54,15 @@ public class Utils {
         }
     }
 
+    /**
+     * Reads the text of the specified document using the Tika library.
+     *
+     * @param path
+     * @return
+     * @throws IOException
+     * @throws TikaException
+     */
     public static String readDocument(String path) throws IOException, TikaException {
-        String file = "C:\\Users\\Michael\\Google Drive\\School\\UTD Year 4\\Semester 2\\SE Project\\test1.pdf";
-
         Tika tika = new Tika();
         try (InputStream fis = new FileInputStream(path)) {
             String out = tika.parseToString(fis);
@@ -68,6 +76,14 @@ public class Utils {
         }
     }
 
+    /**
+     * Prints out the top scores from a TopDocs object. This function is only
+     * used for debugging.
+     *
+     * @param reader
+     * @param td
+     * @throws IOException
+     */
     public static void printTopScores(IndexReader reader, TopDocs td) throws IOException {
         ScoreDoc[] sds = td.scoreDocs;
         for (ScoreDoc sd : sds) {

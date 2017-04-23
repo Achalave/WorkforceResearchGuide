@@ -10,7 +10,11 @@ import utd.team6.workforceresearchguide.main.DocumentData;
 import utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException;
 import utd.team6.workforceresearchguide.sqlite.DatabaseController;
 
-//@author Michael Haertling
+/**
+ * This issue is created when a new file has been added to the repository.
+ *
+ * @author Michael
+ */
 public class AddedFileIssue extends FileSyncIssue {
 
     /**
@@ -27,21 +31,31 @@ public class AddedFileIssue extends FileSyncIssue {
 
     DocumentData addedFile;
 
+    /**
+     * Creates a new AddedFileIssue.
+     * @param add 
+     */
     public AddedFileIssue(DocumentData add) {
         addedFile = add;
     }
 
-    public void addFile(){
+    /**
+     * Sets the user response to add the file to the system.
+     */
+    public void addFile() {
         this.setUserResponse(RESPONSE_ADD_FILE);
     }
-    
-    public void ignoreFile(){
+
+    /**
+     * Sets the user response to ignore the file.
+     */
+    public void ignoreFile() {
         this.setUserResponse(RESPONSE_IGNORE_FILE);
     }
-    
+
     @Override
     public void resolve(DatabaseController db, LuceneController lucene) throws InvalidResponseException, IndexingSessionNotStartedException, ReadSessionNotStartedException, IOException, TikaException, ConnectionNotStartedException, SQLException {
-        switch(userResponse){
+        switch (userResponse) {
             case RESPONSE_ADD_FILE:
                 addedFile.fillFromFile();
                 db.addDocument(addedFile);
@@ -55,8 +69,8 @@ public class AddedFileIssue extends FileSyncIssue {
     }
 
     @Override
-    public String toString(){
-        return "Added File Issue: "+addedFile.getPath();
+    public String toString() {
+        return "Added File Issue: " + addedFile.getPath();
     }
-    
+
 }

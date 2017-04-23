@@ -16,7 +16,7 @@ import utd.team6.workforceresearchguide.main.DocumentData;
 public class DocumentDisplay extends javax.swing.JPanel {
 
     private static final String EXTENDED_PATH_PREFIX = "...";
-    
+
     DocumentData data;
 
     /**
@@ -29,30 +29,36 @@ public class DocumentDisplay extends javax.swing.JPanel {
         this.data = data;
     }
 
+    /**
+     * Creates a new form DocumentDisplay without any data to display.
+     */
     public DocumentDisplay() {
         initComponents();
     }
 
-    public void resizePathLabel(){
+    /**
+     * Adjusted the displayed text in the pathLabel such that the latter end of
+     * the path string is always shown.
+     */
+    public void resizePathLabel() {
         if (data != null) {
             FontMetrics metrics = pathLabel.getFontMetrics(pathLabel.getFont());
             int width = metrics.stringWidth(TOOL_TIP_TEXT_KEY);
-            if(pathLabel.getWidth()>0 && width>pathLabel.getWidth()){
-                System.out.println(width+"\t"+pathLabel.getWidth());
+            if (pathLabel.getWidth() > 0 && width > pathLabel.getWidth()) {
+                System.out.println(width + "\t" + pathLabel.getWidth());
                 int prefixWidth = metrics.stringWidth(EXTENDED_PATH_PREFIX);
                 String path = data.getPath();
-                while(width>pathLabel.getWidth() && path.length()>1){
+                while (width > pathLabel.getWidth() && path.length() > 1) {
                     path = path.substring(1);
-                    width = metrics.stringWidth(path)+prefixWidth;
+                    width = metrics.stringWidth(path) + prefixWidth;
                 }
-                pathLabel.setText(EXTENDED_PATH_PREFIX+path);
-            }else{
+                pathLabel.setText(EXTENDED_PATH_PREFIX + path);
+            } else {
                 pathLabel.setText(data.getPath());
             }
         }
     }
-    
-    
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always

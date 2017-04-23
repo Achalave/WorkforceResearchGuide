@@ -11,11 +11,18 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.store.RAMDirectory;
 
-//@author Michael Haertling
+/**
+ * Used to test the LuceneController class.
+ * @author Michael
+ */
 public class LuceneTest {
 
+    /**
+     * Runs some basic tests on the LuceneController.
+     * @param args
+     * @throws IOException 
+     */
     public static void main(String[] args) throws IOException {
         StandardAnalyzer analyzer = new StandardAnalyzer();
         Directory index = FSDirectory.open(FileSystems.getDefault().getPath("test"));
@@ -35,6 +42,13 @@ public class LuceneTest {
         
     }
 
+    /**
+     * Adds a new document to the lucene index.
+     * @param w
+     * @param title
+     * @param tag
+     * @throws IOException 
+     */
     public static void addDoc(IndexWriter w, String title, String tag) throws IOException{
         Document doc = new Document();
         //Use TextField for tokenized content

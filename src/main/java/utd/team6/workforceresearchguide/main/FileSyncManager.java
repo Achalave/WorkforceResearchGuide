@@ -17,7 +17,7 @@ import utd.team6.workforceresearchguide.lucene.ReadSessionNotStartedException;
 import utd.team6.workforceresearchguide.main.issues.AddedFileIssue;
 import utd.team6.workforceresearchguide.main.issues.FailedFileSyncIssue;
 import utd.team6.workforceresearchguide.main.issues.InvalidResponseException;
-import utd.team6.workforceresearchguide.main.issues.InvalidResponseFaliure;
+import utd.team6.workforceresearchguide.main.issues.InvalidResponseFailure;
 import utd.team6.workforceresearchguide.main.issues.MissingFileIssue;
 import utd.team6.workforceresearchguide.main.issues.MovedFileIssue;
 import utd.team6.workforceresearchguide.main.issues.OutdatedFileIssue;
@@ -25,7 +25,15 @@ import utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException;
 import utd.team6.workforceresearchguide.sqlite.DatabaseController;
 import utd.team6.workforceresearchguide.sqlite.DatabaseFileDoesNotExistException;
 
-//@author Michael Haertling
+/**
+ * This class is used to synchronize the file repository with the system. This
+ * is done in two phases. First the repository is compared with the system
+ * representation and any discrepancies are converted into issue object. Then,
+ * these issues are resolved after a particular option is selected by either the
+ * user or the application.
+ *
+ * @author Michael
+ */
 public class FileSyncManager {
 
     private final LuceneController lucene;
@@ -36,6 +44,12 @@ public class FileSyncManager {
 
     IssueResolutionThread[] resolutionThreads;
 
+    /**
+     * Creates a new FileSyncManager object.
+     * @param lucene
+     * @param db
+     * @param files 
+     */
     public FileSyncManager(LuceneController lucene, DatabaseController db, String[] files) {
         this.lucene = lucene;
         this.db = db;
@@ -85,15 +99,15 @@ public class FileSyncManager {
             DocumentData newDoc = addedFiles.get(i);
             newDoc.fillName();
             //Compare names
-            System.out.println("COMPARE\n"+newDoc.getName()+"\n"+oldDoc.getName());
+            System.out.println("COMPARE\n" + newDoc.getName() + "\n" + oldDoc.getName());
             if (newDoc.getName().equals(oldDoc.getName())) {
                 newDoc.fillLastModDate();
                 //Compare last modification dates
-                System.out.println("COMPARE LMD\n"+newDoc.getLastModDate().getTime()+"\n"+oldDoc.getLastModDate().getTime()+"\n"+newDoc.getLastModDate().compareTo(oldDoc.getLastModDate()));
+                System.out.println("COMPARE LMD\n" + newDoc.getLastModDate().getTime() + "\n" + oldDoc.getLastModDate().getTime() + "\n" + newDoc.getLastModDate().compareTo(oldDoc.getLastModDate()));
                 if (Utils.equalDates(newDoc.getLastModDate(), oldDoc.getLastModDate())) {
                     //Compare hash values
                     newDoc.fillHash();
-                    System.out.println("COMPARE HASH\n"+newDoc.getHash()+"\n"+oldDoc.getHash());
+                    System.out.println("COMPARE HASH\n" + newDoc.getHash() + "\n" + oldDoc.getHash());
                     if (oldDoc.getHash().equals(newDoc.getHash())) {
                         //This is probably the same file
                         return i;
@@ -116,6 +130,7 @@ public class FileSyncManager {
      * @throws java.io.IOException
      * @throws
      * utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
+     * @throws java.text.ParseException
      */
     public FileSyncIssue[] examineDifferences() throws SQLException, DatabaseFileDoesNotExistException, IOException, ConnectionNotStartedException, ParseException {
         ArrayList<FileSyncIssue> isus = new ArrayList<>();
@@ -135,9 +150,9 @@ public class FileSyncManager {
 
         Iterator<String> fileIterator = missingFiles.iterator();
 
-        System.out.println("INTERNAL SCANNED FILES: "+addedFiles);
-        System.out.println("INTERNAL DB FILES: "+missingFiles);
-        
+        System.out.println("INTERNAL SCANNED FILES: " + addedFiles);
+        System.out.println("INTERNAL DB FILES: " + missingFiles);
+
         while (fileIterator.hasNext()) {
             int index = Collections.binarySearch(addedFiles, fileIterator.next());
             if (index >= 0) {
@@ -147,8 +162,8 @@ public class FileSyncManager {
             }
         }
 
-        System.out.println("INTERNAL: "+missingFiles);
-        
+        System.out.println("INTERNAL: " + missingFiles);
+
         //For the files that exist, check if they are up to date
         for (String file : existingFiles) {
             DocumentData f = new DocumentData(file);
@@ -170,7 +185,7 @@ public class FileSyncManager {
             String file = fileIterator.next();
             DocumentData missingFile = db.getDocumentData(file);
             int relocatedFile = this.identifyRelocatedFile(missingFile, addedFileData);
-            System.out.println("RELOCATION: "+missingFile.getPath()+"\t"+relocatedFile);
+            System.out.println("RELOCATION: " + missingFile.getPath() + "\t" + relocatedFile);
             if (relocatedFile >= 0) {
                 isus.add(new MovedFileIssue(missingFile, addedFileData.remove(relocatedFile)));
             } else {
@@ -179,10 +194,10 @@ public class FileSyncManager {
         }
 
         //Create issues for the remaining added files
-        for(DocumentData add:addedFileData){
+        for (DocumentData add : addedFileData) {
             isus.add(new AddedFileIssue(add));
         }
-        
+
         this.issues = new FileSyncIssue[isus.size()];
         this.issues = isus.toArray(this.issues);
         return this.issues;
@@ -328,7 +343,7 @@ public class FileSyncManager {
                     issues[index].resolve(db, lucene);
                 } catch (InvalidResponseException ex) {
                     //Create a new file error issue
-                    faliures.add(new InvalidResponseFaliure(issues[index]));
+                    faliures.add(new InvalidResponseFailure(issues[index]));
                 } catch (IndexingSessionNotStartedException | ReadSessionNotStartedException ex) {
                     if (this.isInterrupted()) {
                         break;

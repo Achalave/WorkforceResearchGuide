@@ -11,7 +11,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringReader;
 import java.text.ParseException;
-import java.util.Arrays;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.Analyzer.TokenStreamComponents;
 import org.apache.lucene.analysis.CharArraySet;
@@ -23,7 +22,6 @@ import org.apache.lucene.analysis.synonym.SynonymGraphFilter;
 import org.apache.lucene.analysis.synonym.SynonymMap;
 import org.apache.lucene.analysis.synonym.WordnetSynonymParser;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
-import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.Term;
@@ -35,10 +33,13 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TopScoreDocCollector;
 
-import utd.team6.workforceresearchguide.main.Utils;
-
-
-//@author Michael Haertling
+/**
+ * An object of this class is returned when a Lucene search is started through a
+ * LuceneController object. It can be used to manage the results of the search
+ * as well as the search process itself.
+ *
+ * @author Michael
+ */
 public class LuceneSearchSession {
 
     DirectoryReader reader;
@@ -57,17 +58,22 @@ public class LuceneSearchSession {
 
     int queryIndex = 0;
     final int numTopScores;
-    
 
+    /**
+     * Creates a new LuceneSearchSession.
+     * @param read
+     * @param numTopScores
+     * @param query 
+     */
     public LuceneSearchSession(DirectoryReader read, int numTopScores, String query) {
         this.reader = read;
 //        pool = Executors.newFixedThreadPool(numThreads);
         search = new IndexSearcher(reader);
         this.numTopScores = numTopScores;
-        
+
         //Check current query for testing
         System.out.println("Current Query: " + query);
-        
+
         //attempt to expand current query with synonyms
         try {
             String expandedQuery = expandSearch(query);
@@ -79,43 +85,42 @@ public class LuceneSearchSession {
             System.out.println(ex);
             System.out.println("Failed to expand query. Using initial query.");
         }
-        
-        
+
         //Split query by whitespace
         this.query = query.split("\\s");
         generateTagQuery();
         generateContentQuery();
     }
 
-     /**
-     * Expand a search query using synonyms. This method uses the Lucene's 
-     * analyzers-common add-on library. NOTE: 
-     * 
+    /**
+     * Expand a search query using synonyms. This method uses the Lucene's
+     * analyzers-common add-on library. NOTE:
+     *
      * @param query
      * @throws FileNotFoundException
      * @throws IOException
      * @throws ParseException
      */
     private String expandSearch(String query) throws FileNotFoundException, IOException, ParseException {
-        
+
         //thesaurus file currently located in project directory
         //read synonym prolog file
         File synFile = new File("wn_s.pl");
         InputStream is = new FileInputStream(synFile);
         Reader reader = new InputStreamReader(is);
-        
+
         //build synonym map
         SynonymMap.Builder parser = null;
         parser = new WordnetSynonymParser(true, true, new StandardAnalyzer(CharArraySet.EMPTY_SET));
-        ((WordnetSynonymParser) parser).parse(reader);  
+        ((WordnetSynonymParser) parser).parse(reader);
         SynonymMap synMap = parser.build();
-        
+
         //convert inital query to TokenStream
         //NOTE: the query is passed through a StandardAnalyzer which drops 
         //standard unimportant terms as determined by Lucene. 
         Analyzer analyzer = new StandardAnalyzer();
-        TokenStream tstream  = analyzer.tokenStream(null, new StringReader(query));
-        
+        TokenStream tstream = analyzer.tokenStream(null, new StringReader(query));
+
         //create SynonymGraphFilter from SynonymMap and current TokenStream
         SynonymGraphFilter filter = null;
         if (synMap != null) {
@@ -123,18 +128,18 @@ public class LuceneSearchSession {
         } else {
             return query;
         }
-        
+
         //retrieve expanded query from SynonymGraphFilter to TokenStream
         Tokenizer source = new ClassicTokenizer();
         TokenStreamComponents components = new TokenStreamComponents(source, filter);
         TokenStream ts = components.getTokenStream();
-        
+
         //OffsetAttribute offsetAttribute = ts.addAttribute(OffsetAttribute.class);
         CharTermAttribute termattr = ts.addAttribute(CharTermAttribute.class);
         ts.reset();
-        
+
         String results = "";
-        
+
         //iterate through the expanded query tokenstream and convert to String
         while (ts.incrementToken()) {
             //int startOffset = offsetAttribute.startOffset();
@@ -147,7 +152,7 @@ public class LuceneSearchSession {
         //return expanded stream
         return results;
     }
-    
+
     private void generateTagQuery() {
         BooleanQuery.Builder build = new BooleanQuery.Builder();
         for (String term : query) {
@@ -165,6 +170,9 @@ public class LuceneSearchSession {
         contentQuery = build.build();
     }
 
+    /**
+     * Begins the Lucene search.
+     */
     public void startSearch() {
         tagCollector = TopScoreDocCollector.create(numTopScores);
         contentCollector = TopScoreDocCollector.create(numTopScores);
@@ -195,32 +203,53 @@ public class LuceneSearchSession {
 
     }
 
-    public void cancelSearch(){
-        if(tagThread.isAlive()){
+    /**
+     * Cancels the Lucene search.
+     */
+    public void cancelSearch() {
+        if (tagThread.isAlive()) {
             tagThread.interrupt();
         }
-        
-        if(contentThread.isAlive()){
+
+        if (contentThread.isAlive()) {
             contentThread.interrupt();
         }
     }
-    
-    public TopDocs getTagHits(){
+
+    /**
+     * 
+     * @return The current results for the tag search.
+     */
+    public TopDocs getTagHits() {
         return tagCollector.topDocs();
     }
-    
-    public TopDocs getContentHits(){
+
+    /**
+     * 
+     * @return 
+     */
+    public TopDocs getContentHits() {
         return contentCollector.topDocs();
     }
-    
-    public Document getDocument(int docID) throws IOException{
+
+    /**
+     * 
+     * @param docID
+     * @return 
+     * @throws IOException 
+     */
+    public Document getDocument(int docID) throws IOException {
         return reader.document(docID);
     }
-    
-    public boolean searchInProgress(){
-        return tagThread.isAlive()&&contentThread.isAlive();
+
+    /**
+     * 
+     * @return True if the search is still in progress.
+     */
+    public boolean searchInProgress() {
+        return tagThread.isAlive() && contentThread.isAlive();
     }
-    
+
 //    public TopDocs getCurrentDocs() throws IOException{
 //        TopDocs[] tds = new TopDocs[collectors.length];
 //        for(int i=0;i<collectors.length;i++){

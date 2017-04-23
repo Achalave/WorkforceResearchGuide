@@ -2,8 +2,10 @@ package utd.team6.workforceresearchguide.sqlite;
 
 
 
-//@author Michael Haertling
-
+/**
+ * This exception is thrown when a specified tag does not exist within the database.
+ * @author Michael
+ */
 public class DatabaseTagDoesNotExistException extends Exception{
     
     

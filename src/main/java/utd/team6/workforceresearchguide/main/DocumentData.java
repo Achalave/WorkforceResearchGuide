@@ -178,6 +178,7 @@ public class DocumentData {
      * utd.team6.workforceresearchguide.sqlite.DatabaseFileDoesNotExistException
      * @throws
      * utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
+     * @throws java.text.ParseException
      */
     public void fillFromDatabase(DatabaseController db) throws SQLException, DatabaseFileDoesNotExistException, ConnectionNotStartedException, ParseException {
         copy(db.getDocumentData(path));
@@ -233,50 +234,98 @@ public class DocumentData {
         return md5;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getPath() {
         return path;
     }
 
+    /**
+     *
+     * @param path
+     */
     public void setPath(String path) {
         this.path = path;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getName() {
         return name;
     }
 
+    /**
+     *
+     * @param name
+     */
     public void setName(String name) {
         this.name = name;
     }
 
+    /**
+     *
+     * @return
+     */
     public Date getLastModDate() {
         return lastModDate;
     }
 
+    /**
+     *
+     * @param lastModDate
+     */
     public void setLastModDate(Date lastModDate) {
         this.lastModDate = lastModDate;
     }
 
+    /**
+     *
+     * @return
+     */
     public int getHits() {
         return hits;
     }
 
+    /**
+     *
+     * @param hits
+     */
     public void setHits(int hits) {
         this.hits = hits;
     }
 
+    /**
+     *
+     * @return
+     */
     public String getHash() {
         return hash;
     }
 
+    /**
+     *
+     * @param hash
+     */
     public void setHash(String hash) {
         this.hash = hash;
     }
 
+    /**
+     *
+     * @return
+     */
     public Date getDateAdded() {
         return dateAdded;
     }
 
+    /**
+     *
+     * @param dateAdded
+     */
     public void setDateAdded(Date dateAdded) {
         this.dateAdded = dateAdded;
     }
