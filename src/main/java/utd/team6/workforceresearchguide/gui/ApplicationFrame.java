@@ -5,27 +5,132 @@
  */
 package utd.team6.workforceresearchguide.gui;
 
+import com.google.common.io.FileBackedOutputStream;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 import javax.swing.Timer;
+import javax.tools.FileObject;
 
 /**
  *
  * @author Michael
  */
-public class ApplicationFrame extends javax.swing.JFrame {
+public final class ApplicationFrame extends javax.swing.JFrame {
 
-    private static final Color SEARCH_BAR_INACTIVE_COLOR = new Color(102,102,102);
-    private static final Color SEARCH_BAR_ACTIVE_COLOR = new Color (0,0,0);
+    public static final String REPOSITORY_PATH_KEY = "repository";
+
+    private static final Color SEARCH_BAR_INACTIVE_COLOR = new Color(102, 102, 102);
+    private static final Color SEARCH_BAR_ACTIVE_COLOR = new Color(0, 0, 0);
     private static final String SEARCH_BAR_INACTIVE_TEXT = "Search";
-    
-    
+
+    private static final String PROPERTIES_PATH = "WorkforceResearchGuide.properties";
+
+    private final Properties properties;
+
+    private String repPath;
+
     /**
      * Creates new form ApplicationFrame
      */
     public ApplicationFrame() {
         initComponents();
+
+        //Load in the properties file
+        properties = new Properties();
+    }
+
+    public void load() {
+        try {
+            File f = new File(PROPERTIES_PATH);
+            if (!f.exists()) {
+                f.createNewFile();
+            }
+            InputStream stream = new FileInputStream(f);
+            properties.load(stream);
+        } catch (IOException ex) {
+            Logger.getLogger(ApplicationFrame.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        //Get the repository path
+        loadRepositoryPath();
+        if (repPath == null) {
+            beginUserRepositorySelection();
+        }
+    }
+
+    /**
+     * Updates a property of the property file.
+     *
+     * @param key
+     * @param value
+     */
+    public void updateProperty(String key, String value) {
+        properties.setProperty(key, value);
+    }
+
+    /**
+     * Saves all properties to the property file.
+     */
+    public void saveProperties() {
+        try {
+            properties.store(new FileOutputStream(PROPERTIES_PATH), null);
+        } catch (IOException ex) {
+            Logger.getLogger(ApplicationFrame.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    /**
+     * Sets the repPath variable and the properties file.
+     *
+     * @param path
+     */
+    public void setRepositoryPath(String path) {
+        repPath = path;
+        updateProperty(REPOSITORY_PATH_KEY, path);
+    }
+
+    /**
+     * Sets the repPath variable to match what is in the properties file.
+     */
+    public void loadRepositoryPath() {
+        repPath = (String) properties.getProperty("repository");
+    }
+
+    public void scanRepository(){
+        
+    }
+    
+    /**
+     * Shows the necessary dialogs to allow the user to select a repository.
+     */
+    public void beginUserRepositorySelection() {
+        //This must be a fresh application, a new path needs to be set
+        RepositoryChooser repChooser = new RepositoryChooser(repPath);
+        repChooser.setLocationRelativeTo(this);
+        String path = repChooser.showDialog();
+        if (path == null && repPath == null) {
+            JOptionPane.showMessageDialog(this, "A repository must be selected.\nThe application will now close.");
+            System.exit(0);
+        } else if (path != null && !path.equals(repPath)) {
+            setRepositoryPath(path);
+            int result = JOptionPane.showOptionDialog(this, "Would you like to scan the repository and sync it with the system?", "Scan Repository", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null);
+            this.saveProperties();
+            if (result == JOptionPane.YES_OPTION) {
+                //Scan the repository
+                scanRepository();
+            }
+        }
+
     }
 
     /**
@@ -58,8 +163,17 @@ public class ApplicationFrame extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         jMenuBar1 = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
+        jMenu1 = new javax.swing.JMenu();
+        jMenuItem7 = new javax.swing.JMenuItem();
+        jMenuItem8 = new javax.swing.JMenuItem();
+        jMenuItem1 = new javax.swing.JMenuItem();
         editMenu = new javax.swing.JMenu();
+        jMenuItem3 = new javax.swing.JMenuItem();
+        jMenuItem4 = new javax.swing.JMenuItem();
+        jMenuItem5 = new javax.swing.JMenuItem();
         propertiesMenu = new javax.swing.JMenu();
+        jMenuItem2 = new javax.swing.JMenuItem();
+        jMenuItem6 = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Workforce Research Guide");
@@ -79,7 +193,7 @@ public class ApplicationFrame extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(jScrollPane3)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 149, Short.MAX_VALUE)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 134, Short.MAX_VALUE)
                     .addComponent(jSeparator2, javax.swing.GroupLayout.Alignment.LEADING))
                 .addContainerGap())
         );
@@ -91,7 +205,7 @@ public class ApplicationFrame extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 13, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 646, Short.MAX_VALUE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 646, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -102,6 +216,11 @@ public class ApplicationFrame extends javax.swing.JFrame {
 
         searchBar.setForeground(new java.awt.Color(102, 102, 102));
         searchBar.setText("Search");
+        searchBar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                searchBarActionPerformed(evt);
+            }
+        });
         searchBar.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 searchBarFocusGained(evt);
@@ -114,6 +233,7 @@ public class ApplicationFrame extends javax.swing.JFrame {
         jScrollPane2.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
         cancelButton.setText("x");
+        cancelButton.setEnabled(false);
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
@@ -138,15 +258,15 @@ public class ApplicationFrame extends javax.swing.JFrame {
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap()
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(searchBar)
                     .addComponent(cancelButton, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 399, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(68, 68, 68))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 430, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         jSplitPane3.setTopComponent(jPanel2);
@@ -207,16 +327,57 @@ public class ApplicationFrame extends javax.swing.JFrame {
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 724, Short.MAX_VALUE)
+            .addComponent(jSplitPane1)
         );
 
         fileMenu.setText("File");
+
+        jMenu1.setText("Open");
+
+        jMenuItem7.setText("File");
+        jMenu1.add(jMenuItem7);
+
+        jMenuItem8.setText("Group");
+        jMenu1.add(jMenuItem8);
+
+        fileMenu.add(jMenu1);
+
+        jMenuItem1.setText("Scan Repository");
+        fileMenu.add(jMenuItem1);
+
         jMenuBar1.add(fileMenu);
 
         editMenu.setText("Edit");
+
+        jMenuItem3.setText("Documents");
+        editMenu.add(jMenuItem3);
+
+        jMenuItem4.setText("Tags");
+        jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem4ActionPerformed(evt);
+            }
+        });
+        editMenu.add(jMenuItem4);
+
+        jMenuItem5.setText("Groups");
+        editMenu.add(jMenuItem5);
+
         jMenuBar1.add(editMenu);
 
         propertiesMenu.setText("Properties");
+
+        jMenuItem2.setText("Repository");
+        jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem2ActionPerformed(evt);
+            }
+        });
+        propertiesMenu.add(jMenuItem2);
+
+        jMenuItem6.setText("Sync Options");
+        propertiesMenu.add(jMenuItem6);
+
         jMenuBar1.add(propertiesMenu);
 
         setJMenuBar(jMenuBar1);
@@ -236,22 +397,44 @@ public class ApplicationFrame extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void searchBarFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_searchBarFocusGained
-        if(searchBar.getForeground().equals(SEARCH_BAR_INACTIVE_COLOR)){
+        if (searchBar.getForeground().equals(SEARCH_BAR_INACTIVE_COLOR)) {
             searchBar.setForeground(SEARCH_BAR_ACTIVE_COLOR);
             searchBar.setText("");
         }
     }//GEN-LAST:event_searchBarFocusGained
 
     private void searchBarFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_searchBarFocusLost
-        if(searchBar.getForeground().equals(SEARCH_BAR_ACTIVE_COLOR) && searchBar.getText().isEmpty()){
+        if (searchBar.getForeground().equals(SEARCH_BAR_ACTIVE_COLOR) && searchBar.getText().isEmpty()) {
             searchBar.setForeground(SEARCH_BAR_INACTIVE_COLOR);
             searchBar.setText(SEARCH_BAR_INACTIVE_TEXT);
         }
     }//GEN-LAST:event_searchBarFocusLost
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+        //Cancel the search
 
+        //Disable the cancel button
+        cancelButton.setEnabled(false);
     }//GEN-LAST:event_cancelButtonActionPerformed
+
+    private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem4ActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jMenuItem4ActionPerformed
+
+    private void searchBarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchBarActionPerformed
+        //Check if there is any content
+        String query = searchBar.getText();
+        if (!query.isEmpty()) {
+            //Enable the cancelation buttion
+            cancelButton.setEnabled(true);
+            //Start the search
+
+        }
+    }//GEN-LAST:event_searchBarActionPerformed
+
+    private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
+        beginUserRepositorySelection();
+    }//GEN-LAST:event_jMenuItem2ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -282,8 +465,11 @@ public class ApplicationFrame extends javax.swing.JFrame {
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
-                new ApplicationFrame().setVisible(true);
+                ApplicationFrame f = new ApplicationFrame();
+                f.setVisible(true);
+                f.load();
             }
         });
     }
@@ -295,7 +481,16 @@ public class ApplicationFrame extends javax.swing.JFrame {
     private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JMenu jMenu1;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JMenuItem jMenuItem2;
+    private javax.swing.JMenuItem jMenuItem3;
+    private javax.swing.JMenuItem jMenuItem4;
+    private javax.swing.JMenuItem jMenuItem5;
+    private javax.swing.JMenuItem jMenuItem6;
+    private javax.swing.JMenuItem jMenuItem7;
+    private javax.swing.JMenuItem jMenuItem8;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;

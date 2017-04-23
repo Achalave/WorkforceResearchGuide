@@ -5,12 +5,16 @@
  */
 package utd.team6.workforceresearchguide.gui;
 
+import java.awt.Desktop;
 import java.awt.FontMetrics;
-import javax.swing.JFrame;
+import java.io.File;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import utd.team6.workforceresearchguide.main.DocumentData;
 
 /**
- *
+ * Displays basic information over a document. Allows documents to be opened.
  * @author Michael
  */
 public class DocumentDisplay extends javax.swing.JPanel {
@@ -70,7 +74,7 @@ public class DocumentDisplay extends javax.swing.JPanel {
 
         pathLabel = new javax.swing.JLabel();
         openButton = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
+        openFolderButton = new javax.swing.JButton();
 
         pathLabel.setText("Document Path");
         pathLabel.addComponentListener(new java.awt.event.ComponentAdapter() {
@@ -91,7 +95,12 @@ public class DocumentDisplay extends javax.swing.JPanel {
             }
         });
 
-        jButton1.setText("Open Folder");
+        openFolderButton.setText("Open Folder");
+        openFolderButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openFolderButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -101,7 +110,7 @@ public class DocumentDisplay extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(pathLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton1)
+                .addComponent(openFolderButton)
                 .addGap(10, 10, 10)
                 .addComponent(openButton)
                 .addContainerGap())
@@ -113,13 +122,17 @@ public class DocumentDisplay extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(pathLabel)
                     .addComponent(openButton)
-                    .addComponent(jButton1))
+                    .addComponent(openFolderButton))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void openButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openButtonActionPerformed
-
+        try {
+            Desktop.getDesktop().open(new File(data.getPath()));
+        } catch (IOException ex) {
+            Logger.getLogger(DocumentDisplay.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }//GEN-LAST:event_openButtonActionPerformed
 
     private void pathLabelComponentResized(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_pathLabelComponentResized
@@ -130,10 +143,18 @@ public class DocumentDisplay extends javax.swing.JPanel {
         resizePathLabel();
     }//GEN-LAST:event_pathLabelPropertyChange
 
+    private void openFolderButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openFolderButtonActionPerformed
+        try {
+            Runtime.getRuntime().exec("explorer.exe /select,"+data.getPath());
+        } catch (IOException ex) {
+            Logger.getLogger(DocumentDisplay.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }//GEN-LAST:event_openFolderButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jButton1;
     private javax.swing.JButton openButton;
+    private javax.swing.JButton openFolderButton;
     private javax.swing.JLabel pathLabel;
     // End of variables declaration//GEN-END:variables
 }
