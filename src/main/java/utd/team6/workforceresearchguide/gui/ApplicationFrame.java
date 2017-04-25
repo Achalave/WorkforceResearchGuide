@@ -15,6 +15,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -27,6 +28,8 @@ import javax.swing.JOptionPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.Timer;
 import javax.tools.FileObject;
+import utd.team6.workforceresearchguide.lucene.ReadSessionNotStartedException;
+import utd.team6.workforceresearchguide.main.ApplicationController;
 
 /**
  *
@@ -34,6 +37,8 @@ import javax.tools.FileObject;
  */
 public final class ApplicationFrame extends javax.swing.JFrame {
 
+    ApplicationController CONTROLLER = new ApplicationController();
+    
     public static final String REPOSITORY_PATH_KEY = "repository";
 
     private static final Color SEARCH_BAR_INACTIVE_COLOR = new Color(102, 102, 102);
@@ -459,10 +464,50 @@ public final class ApplicationFrame extends javax.swing.JFrame {
             //Enable the cancelation buttion
             cancelButton.setEnabled(true);
             //Start the search
+            displaySearchResults(query);
 
         }
     }//GEN-LAST:event_searchBarActionPerformed
 
+    /**Get the search results of query and display in JList
+     * @param query 
+     */
+    private void displaySearchResults(String query) {
+        
+        try {
+            CONTROLLER.beginSearch(query);
+            
+            //TO DO: get search results in array form??
+            //1. Get results as List of DocumentData Objects
+            //2a. Build string array to populate JList from DocumentData Objects
+            //2b. String array form: {RESULT#}. {DOC NAME} {DOC SCORE}
+            //3. Clicking on JList item should return the index# of the 
+            //   DocumentData object the above List.
+            //4. Selected documents should be stored in another List and 
+            //   placed on the bottom panel to keep running List of relevant
+            //   search document for later viewing.
+            
+        } catch (IOException | ReadSessionNotStartedException ex) {
+            Logger.getLogger(ApplicationFrame.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        //build search results JList
+        jList1.setModel(new javax.swing.AbstractListModel<String>() {
+
+            String[] strings = {"Results..."};
+            
+            public int getSize() { return strings.length; }
+            public String getElementAt(int i) { return strings[i]; }
+        });
+        
+        //draw list cells with line under each for readability
+        jList1.setCellRenderer(cellRenderer());
+        
+        //update list view
+        jScrollPane2.setViewportView(jList1);
+    }
+    
+    
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
         beginUserRepositorySelection();
     }//GEN-LAST:event_jMenuItem2ActionPerformed
