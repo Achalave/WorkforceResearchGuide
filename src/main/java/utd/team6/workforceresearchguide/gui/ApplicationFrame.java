@@ -28,6 +28,8 @@ import javax.swing.JOptionPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.Timer;
 import javax.tools.FileObject;
+import org.apache.tika.exception.TikaException;
+import utd.team6.workforceresearchguide.lucene.IndexingSessionNotStartedException;
 import utd.team6.workforceresearchguide.lucene.ReadSessionNotStartedException;
 import utd.team6.workforceresearchguide.main.ApplicationController;
 
@@ -118,7 +120,14 @@ public final class ApplicationFrame extends javax.swing.JFrame {
     }
 
     public void scanRepository(){
-        
+        try {
+            //create index
+            CONTROLLER.createIndex(repPath);
+            
+        } catch (IOException | TikaException 
+                | IndexingSessionNotStartedException ex) {
+            Logger.getLogger(ApplicationFrame.class.getName()).log(Level.SEVERE, null, ex);
+        } 
     }
     
     /**
@@ -169,6 +178,8 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         cancelButton = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         jComboBox1 = new javax.swing.JComboBox<>();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        jList2 = new javax.swing.JList<>();
         jPanel5 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         jSeparator3 = new javax.swing.JSeparator();
@@ -291,17 +302,30 @@ public final class ApplicationFrame extends javax.swing.JFrame {
 
         jSplitPane3.setTopComponent(jPanel2);
 
+        jList2.setModel(new javax.swing.AbstractListModel<String>() {
+            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+            public int getSize() { return strings.length; }
+            public String getElementAt(int i) { return strings[i]; }
+        });
+        jScrollPane4.setViewportView(jList2);
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jComboBox1, 0, 497, Short.MAX_VALUE)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane4)
+                .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 194, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         jSplitPane3.setRightComponent(jPanel3);
@@ -464,7 +488,6 @@ public final class ApplicationFrame extends javax.swing.JFrame {
             //Enable the cancelation buttion
             cancelButton.setEnabled(true);
             //Start the search
-            displaySearchResults(query);
 
         }
     }//GEN-LAST:event_searchBarActionPerformed
@@ -472,7 +495,7 @@ public final class ApplicationFrame extends javax.swing.JFrame {
     /**Get the search results of query and display in JList
      * @param query 
      */
-    private void displaySearchResults(String query) {
+    private void generateSearchResults(String query) {
         
         try {
             CONTROLLER.beginSearch(query);
@@ -485,16 +508,20 @@ public final class ApplicationFrame extends javax.swing.JFrame {
             //   DocumentData object the above List.
             //4. Selected documents should be stored in another List and 
             //   placed on the bottom panel to keep running List of relevant
-            //   search document for later viewing.
+            //   search documents for later viewing.
             
         } catch (IOException | ReadSessionNotStartedException ex) {
             Logger.getLogger(ApplicationFrame.class.getName()).log(Level.SEVERE, null, ex);
         }
         
+    }
+    
+    private void displaySearchResults(final String[] newResults) {
+        
         //build search results JList
         jList1.setModel(new javax.swing.AbstractListModel<String>() {
 
-            String[] strings = {"Results..."};
+            String[] strings = newResults;
             
             public int getSize() { return strings.length; }
             public String getElementAt(int i) { return strings[i]; }
@@ -558,6 +585,7 @@ public final class ApplicationFrame extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JList<String> jList1;
+    private javax.swing.JList<String> jList2;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem1;
@@ -576,6 +604,7 @@ public final class ApplicationFrame extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
