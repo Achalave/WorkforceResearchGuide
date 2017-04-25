@@ -7,6 +7,7 @@ package utd.team6.workforceresearchguide.gui;
 
 import com.google.common.io.FileBackedOutputStream;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -17,8 +18,13 @@ import java.io.InputStream;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.BorderFactory;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
+import javax.swing.ListCellRenderer;
 import javax.swing.Timer;
 import javax.tools.FileObject;
 
@@ -154,6 +160,7 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         searchBar = new javax.swing.JTextField();
         jSeparator1 = new javax.swing.JSeparator();
         jScrollPane2 = new javax.swing.JScrollPane();
+        jList1 = new javax.swing.JList<>();
         cancelButton = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         jComboBox1 = new javax.swing.JComboBox<>();
@@ -216,11 +223,6 @@ public final class ApplicationFrame extends javax.swing.JFrame {
 
         searchBar.setForeground(new java.awt.Color(102, 102, 102));
         searchBar.setText("Search");
-        searchBar.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                searchBarActionPerformed(evt);
-            }
-        });
         searchBar.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 searchBarFocusGained(evt);
@@ -229,8 +231,21 @@ public final class ApplicationFrame extends javax.swing.JFrame {
                 searchBarFocusLost(evt);
             }
         });
+        searchBar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                searchBarActionPerformed(evt);
+            }
+        });
 
         jScrollPane2.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+        jList1.setModel(new javax.swing.AbstractListModel<String>() {
+            String[] strings = {"Results..."};
+            public int getSize() { return strings.length; }
+            public String getElementAt(int i) { return strings[i]; }
+        });
+        jList1.setCellRenderer(cellRenderer());
+        jScrollPane2.setViewportView(jList1);
 
         cancelButton.setText("x");
         cancelButton.setEnabled(false);
@@ -396,6 +411,22 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    //!!
+    //NEED TO CLEANUP: Puts a line under each element in the JList
+    //!!
+    private ListCellRenderer<? super String> cellRenderer() {
+        return new DefaultListCellRenderer(){
+            @Override
+            public Component getListCellRendererComponent(JList<?> list,
+                    Object value, int index, boolean isSelected,
+                    boolean cellHasFocus) {
+                JLabel cellRenderBorder = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected,cellHasFocus);
+                cellRenderBorder.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0,Color.BLACK));
+                return cellRenderBorder;
+            }
+        };
+    }
+    
     private void searchBarFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_searchBarFocusGained
         if (searchBar.getForeground().equals(SEARCH_BAR_INACTIVE_COLOR)) {
             searchBar.setForeground(SEARCH_BAR_ACTIVE_COLOR);
@@ -481,6 +512,7 @@ public final class ApplicationFrame extends javax.swing.JFrame {
     private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JList<String> jList1;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem1;
