@@ -44,6 +44,7 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
     LuceneSearchSession search;
     TimerTask searchUpdater;
     HashMap<Integer, SearchResult> results;
+    List<DocumentData> docResults;
 
     Timer applicationTimer;
 
@@ -155,6 +156,10 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
         //Change the GUI to reflect the cancelation
 
     }
+    
+    public boolean searchRunning() {
+        return search.searchInProgress();
+    }
 
     /**
      * This function is called periodically in order to collect and update
@@ -165,10 +170,10 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
             //Get the fresh result set
             results.clear();
             aggregateResultSet(results);
-            //Update the view with the results
             
+            //Update the view with the results
             try {
-                displayResults(results);
+                setDocResults(results);
             } catch (DatabaseFileDoesNotExistException 
                     | ConnectionNotStartedException 
                     | ParseException ex) {
@@ -218,6 +223,34 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
                 result.updateContentScore(score.score);
             }
         }
+    }
+    
+    private void setDocResults(HashMap<Integer, SearchResult> results) throws DatabaseFileDoesNotExistException, ConnectionNotStartedException, ParseException {
+        docResults = new ArrayList<>();
+        
+        this.getSessionPermission();
+        this.startDBConnection();
+        
+        for (HashMap.Entry<Integer, SearchResult> entry : results.entrySet()) {
+            
+            SearchResult doc = entry.getValue();
+            double aggregateScore = doc.getAggregateScore();
+            String path = doc.getFilePath();
+            
+            DocumentData docData = db.getDocumentData(path);
+            docData.setResultScore(aggregateScore);
+            
+            docResults.add(docData);
+            
+        }
+        
+        this.stopDBConnection();
+        this.releaseSessionPermission();
+
+    }
+    
+    public List<DocumentData> getDocResults() {
+        return docResults;
     }
 
     /**
@@ -492,30 +525,6 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
         } catch (ConnectionNotStartedException | IOException | ReadSessionNotStartedException | IndexingSessionNotStartedException ex) {
             Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
         }
-    }
-
-    private void displayResults(HashMap<Integer, SearchResult> results) throws DatabaseFileDoesNotExistException, ConnectionNotStartedException, ParseException {
-        List<DocumentData> searchResults = new ArrayList<>();
-        
-        this.getSessionPermission();
-        this.startDBConnection();
-        
-        for (HashMap.Entry<Integer, SearchResult> entry : results.entrySet()) {
-            
-            SearchResult doc = entry.getValue();
-            double aggregateScore = doc.getAggregateScore();
-            String path = doc.getFilePath();
-            
-            DocumentData docData = db.getDocumentData(path);
-            docData.setResultScore(aggregateScore);
-            
-            searchResults.add(docData);
-            
-
-        }
-        
-        this.stopDBConnection();
-        this.releaseSessionPermission();
     }
 
     class TagNode {

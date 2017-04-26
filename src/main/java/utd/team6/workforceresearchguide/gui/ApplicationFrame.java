@@ -12,7 +12,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.BorderFactory;
@@ -25,6 +27,7 @@ import utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException;
 import javax.swing.ListCellRenderer;
 import utd.team6.workforceresearchguide.lucene.ReadSessionNotStartedException;
 import utd.team6.workforceresearchguide.main.ApplicationController;
+import utd.team6.workforceresearchguide.main.DocumentData;
 
 /**
  *
@@ -46,6 +49,7 @@ public final class ApplicationFrame extends javax.swing.JFrame {
     private final Properties properties;
 
     private String repPath;
+    private List<DocumentData> results;
 
     private final ApplicationController app;
 
@@ -496,7 +500,12 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         if (!query.isEmpty()) {
             //Enable the cancelation buttion
             cancelButton.setEnabled(true);
-            //Start the search
+            try {
+                //Start the search
+                generateSearchResults(query);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(ApplicationFrame.class.getName()).log(Level.SEVERE, null, ex);
+            }
 
         }
     }//GEN-LAST:event_searchBarActionPerformed
@@ -504,20 +513,36 @@ public final class ApplicationFrame extends javax.swing.JFrame {
     /**Get the search results of query and display in JList
      * @param query 
      */
-    private void generateSearchResults(String query) {
+    private void generateSearchResults(String query) throws InterruptedException {
         
         try {
             app.beginSearch(query);
             
             //TO DO: get search results in array form??
-            //1. Get results as List of DocumentData Objects
-            //2a. Build string array to populate JList from DocumentData Objects
-            //2b. String array form: {RESULT#}. {DOC NAME} {DOC SCORE}
             //3. Clicking on JList item should return the index# of the 
-            //   DocumentData object the above List.
-            //4. Selected documents should be stored in another List and 
+            //   DocumentData.
+            //4. Selected JList documents should be stored in another List and 
             //   placed on the bottom panel to keep running List of relevant
             //   search documents for later viewing.
+            //5. Unselecting a JList item should remove that item from secondary
+            //   List.
+            
+            //temporary pause waiting for search to finish
+            while(app.searchRunning()) {
+                TimeUnit.SECONDS.sleep(1);
+            }
+            
+            results = app.getDocResults();
+            
+            String[] resultsList = new String[results.size()];
+            int i = 0;
+            for (DocumentData data : results) {
+                resultsList[i] = (i+1) + ". \t" + data.getName() + "\t" 
+                        + data.getResultScore();
+                i++;
+            }
+            
+            displaySearchResults(resultsList);
             
         } catch (IOException | ReadSessionNotStartedException ex) {
             Logger.getLogger(ApplicationFrame.class.getName()).log(Level.SEVERE, null, ex);
