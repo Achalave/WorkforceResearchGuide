@@ -167,7 +167,13 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
             aggregateResultSet(results);
             //Update the view with the results
             
-            displayResults(results);
+            try {
+                displayResults(results);
+            } catch (DatabaseFileDoesNotExistException 
+                    | ConnectionNotStartedException 
+                    | ParseException ex) {
+                Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
+            } 
             
             //Check if the search is complete
             if (!search.searchInProgress()) {
