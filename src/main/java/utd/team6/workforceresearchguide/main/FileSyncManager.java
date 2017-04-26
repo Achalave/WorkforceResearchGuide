@@ -21,6 +21,7 @@ import utd.team6.workforceresearchguide.main.issues.InvalidResponseFailure;
 import utd.team6.workforceresearchguide.main.issues.MissingFileIssue;
 import utd.team6.workforceresearchguide.main.issues.MovedFileIssue;
 import utd.team6.workforceresearchguide.main.issues.OutdatedFileIssue;
+import utd.team6.workforceresearchguide.sqlite.ConnectionAlreadyActiveException;
 import utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException;
 import utd.team6.workforceresearchguide.sqlite.DatabaseController;
 import utd.team6.workforceresearchguide.sqlite.DatabaseFileDoesNotExistException;
@@ -38,22 +39,28 @@ public class FileSyncManager {
 
     private final LuceneController lucene;
     private final DatabaseController db;
-    private final String[] files;
+    private final ArrayList<String> files;
 
     private FileSyncIssue[] issues;
 
     IssueResolutionThread[] resolutionThreads;
+    
+    SessionManager sess;
 
+    String waitMessage = "";
+    
     /**
      * Creates a new FileSyncManager object.
+     * @param sess
      * @param lucene
      * @param db
      * @param files 
      */
-    public FileSyncManager(LuceneController lucene, DatabaseController db, String[] files) {
+    public FileSyncManager(SessionManager sess, LuceneController lucene, DatabaseController db, ArrayList<String> files) {
         this.lucene = lucene;
         this.db = db;
         this.files = files;
+        this.sess = sess;
     }
 
     /**
@@ -133,13 +140,23 @@ public class FileSyncManager {
      * @throws java.text.ParseException
      */
     public FileSyncIssue[] examineDifferences() throws SQLException, DatabaseFileDoesNotExistException, IOException, ConnectionNotStartedException, ParseException {
+        waitMessage = "Waiting for Files to be Unused";
+        sess.getSessionPermission();
+        waitMessage = "Scanning Repository";
+        
+        try {
+            db.startConnection();
+        } catch (ConnectionAlreadyActiveException ex) {
+            Logger.getLogger(FileSyncManager.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
         ArrayList<FileSyncIssue> isus = new ArrayList<>();
 
         ArrayList<String> missingFiles = new ArrayList<>();
         ArrayList<String> addedFiles = new ArrayList<>();
         ArrayList<String> existingFiles = new ArrayList<>();
 
-        Collections.addAll(addedFiles, files);
+        addedFiles.addAll(files);
 
         Collections.sort(addedFiles);
 
@@ -216,11 +233,13 @@ public class FileSyncManager {
      * @throws DatabaseFileDoesNotExistException
      */
     public void startResolutionProcess(int numThreads) throws IOException, SQLException, DatabaseFileDoesNotExistException {
+        waitMessage = "Resolving Issues";
         if (numThreads <= 0) {
             throw new IllegalArgumentException("The argument numThreads must be >= 0.");
         }
-        lucene.startIndexingSession(false);
-        lucene.startReadSession();
+        
+        sess.startLuceneIndexingSession();
+        sess.startLuceneReadSession();
 
         int startIndex = 0;
         int numIssues = issues.length;
@@ -245,6 +264,10 @@ public class FileSyncManager {
 
     }
 
+    public String getWaitMessage(){
+        return waitMessage;
+    }
+    
     /**
      *
      * @return The ratio of completion for an ongoing resolution process. This

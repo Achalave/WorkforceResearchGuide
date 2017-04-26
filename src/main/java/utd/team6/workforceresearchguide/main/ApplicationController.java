@@ -1,9 +1,11 @@
 package utd.team6.workforceresearchguide.main;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.lucene.document.Document;
@@ -14,7 +16,11 @@ import utd.team6.workforceresearchguide.lucene.IndexingSessionNotStartedExceptio
 import utd.team6.workforceresearchguide.lucene.LuceneController;
 import utd.team6.workforceresearchguide.lucene.LuceneSearchSession;
 import utd.team6.workforceresearchguide.lucene.ReadSessionNotStartedException;
+import utd.team6.workforceresearchguide.sqlite.ConnectionAlreadyActiveException;
+import utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException;
 import utd.team6.workforceresearchguide.sqlite.DatabaseController;
+import utd.team6.workforceresearchguide.sqlite.DatabaseFileDoesNotExistException;
+import utd.team6.workforceresearchguide.sqlite.DatabaseTagDoesNotExistException;
 
 /**
  * This is the primary controller for the entire application. It is responsible
@@ -23,11 +29,11 @@ import utd.team6.workforceresearchguide.sqlite.DatabaseController;
  *
  * @author Michael
  */
-public class ApplicationController {
+public class ApplicationController implements SessionManager, DocumentTagSource {
 
-    private static final String LUCENE_FILE_PATH = "_lucene_files_";
-    private static final String DATABASE_PATH = "lucene.db";
     private static final long SEARCH_RESULT_UPDATE_DELAY = 500;
+
+    Semaphore sessionSem;
 
     LuceneController lucene;
     DatabaseController db;
@@ -42,14 +48,16 @@ public class ApplicationController {
     /**
      * Creates a new ApplicationController object.
      */
-    public ApplicationController() {
+    public ApplicationController(String lucenePath, String databasePath) {
         try {
-            lucene = new LuceneController(LUCENE_FILE_PATH);
-            db = new DatabaseController(DATABASE_PATH);
+            lucene = new LuceneController(lucenePath);
+            db = new DatabaseController(databasePath);
         } catch (IOException ex) {
             Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
         }
         applicationTimer = new Timer(true);
+
+        sessionSem = new Semaphore(1);
 
     }
 
@@ -69,14 +77,16 @@ public class ApplicationController {
         String[] filePaths = lucene.getFilePaths(path);
 
         //set indexing session to create NEW index
-        lucene.startIndexingSession(true);
-        lucene.startReadSession();
+        this.getSessionPermission();
+        this.startLuceneIndexingSession();
+        this.startLuceneReadSession();
 
         //indexes files
         lucene.indexNewDocuments(filePaths);
 
-        lucene.stopIndexingSession();
-        lucene.stopReadSession();
+        this.stopLuceneIndexingSession();
+        this.stopLuceneReadSession();
+        this.releaseSessionPermission();
 
     }
 
@@ -96,22 +106,25 @@ public class ApplicationController {
         String[] filePaths = paths;
 
         //set indexing session to APPEND index
-        lucene.startIndexingSession(false);
-        lucene.startReadSession();
+        this.getSessionPermission();
+        this.startLuceneIndexingSession();
+        this.startLuceneReadSession();
 
         //indexes files
         lucene.indexNewDocuments(filePaths);
 
-        lucene.stopIndexingSession();
-        lucene.stopReadSession();
+        this.stopLuceneIndexingSession();
+        this.stopLuceneReadSession();
+        this.releaseSessionPermission();
 
     }
 
     /**
      * Starts a new search with the provided query.
+     *
      * @param query
      * @throws IOException
-     * @throws ReadSessionNotStartedException 
+     * @throws ReadSessionNotStartedException
      */
     public void beginSearch(String query) throws IOException, ReadSessionNotStartedException {
         lucene.startReadSession();
@@ -193,6 +206,295 @@ public class ApplicationController {
             } else {
                 result.updateContentScore(score.score);
             }
+        }
+    }
+
+    /**
+     * This is a thread safe method of starting a database connection.
+     */
+    public void startDBConnection() {
+        try {
+            db.startConnection();
+        } catch (ConnectionAlreadyActiveException ex) {
+            Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    /**
+     * This is a thread safe method of stopping a database connection. If the
+     * corresponding thread safe version was used to start the connection, this
+     * function must be used to stop the connection.
+     */
+    @Override
+    public void stopDBConnection() {
+        db.stopConnection();
+    }
+
+    /**
+     * This is a thread safe method of starting a Lucene indexing connection.
+     */
+    @Override
+    public void startLuceneIndexingSession() {
+        try {
+            lucene.startIndexingSession();
+        } catch (IOException ex) {
+            Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    /**
+     * This is a thread safe method of stopping a Lucene indexing connection. If
+     * the corresponding thread safe version was used to start the connection,
+     * this function must be used to stop the connection.
+     */
+    @Override
+    public void stopLuceneIndexingSession() {
+        try {
+            lucene.stopIndexingSession();
+        } catch (IOException ex) {
+            Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    /**
+     * This is a thread safe method of starting a Lucene read connection.
+     */
+    @Override
+    public void startLuceneReadSession() {
+        try {
+            lucene.startReadSession();
+        } catch (IOException ex) {
+            Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    /**
+     * This is a thread safe method of stopping a Lucene read connection. If the
+     * corresponding thread safe version was used to start the connection, this
+     * function must be used to stop the connection.
+     */
+    @Override
+    public void stopLuceneReadSession() {
+        try {
+            lucene.stopReadSession();
+        } catch (IOException ex) {
+            Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    @Override
+    public void getSessionPermission() {
+        try {
+            sessionSem.acquire();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    @Override
+    public void releaseSessionPermission() {
+        sessionSem.release();
+    }
+
+    /**
+     * Updates the database schema.
+     */
+    public void updateDatabaseSchema() {
+        try {
+            this.startDBConnection();
+            db.updateDatabaseSchema();
+            this.stopDBConnection();
+        } catch (ConnectionNotStartedException ex) {
+            Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    public FileSyncManager generateFileSyncManager(String repPath) {
+        return new FileSyncManager(this, lucene, db, Utils.extractAllPaths(repPath));
+    }
+
+    @Override
+    public ArrayList<String> getDocumentTags(String docPath) {
+        try {
+            this.getSessionPermission();
+            this.startDBConnection();
+            ArrayList<String> tags = db.getDocumentTags(docPath);
+            this.stopDBConnection();
+            this.releaseSessionPermission();
+            return tags;
+        } catch (ConnectionNotStartedException ex) {
+            Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    @Override
+    public ArrayList<String> getSuggestedDocumentTags(String docPath, int numTags) {
+
+        HashMap<String, Integer> tagMap = new HashMap<>();
+
+        this.getSessionPermission();
+        this.startDBConnection();
+
+        try {
+            ArrayList<String> tags = db.getDocumentTags(docPath);
+            //Find what tags are suggested based off other tags
+            for (String tag : tags) {
+                HashMap<String, Integer> tagAssociations = db.getTagAssociation(tag, numTags);
+                for (String key : tagAssociations.keySet()) {
+                    Integer count = tagMap.get(key);
+                    if (count == null) {
+                        //The key is not in the tagMap, add it
+                        tagMap.put(key, tagAssociations.get(key));
+                    } else {
+                        //Add the count for that key
+                        tagMap.put(key, count + tagAssociations.get(key));
+                    }
+                }
+            }
+        } catch (ConnectionNotStartedException ex) {
+            Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        this.stopDBConnection();
+        this.releaseSessionPermission();
+
+        //Grab the top tags
+        TagNode head = null;
+        TagNode end = null;
+        int listSize = 0;
+
+        for (String key : tagMap.keySet()) {
+            Integer count = tagMap.get(key);
+            if (head == null) {
+                //There is no head, make it
+                head = new TagNode(key, count, null, null);
+                end = head;
+                listSize++;
+            } else {
+                //Begin iteration
+                TagNode tmp = head;
+                for (int i = 0; i < numTags; i++) {
+                    if (tmp.count < count) {
+                        //Insert the new node in place of this node
+                        TagNode oldP = tmp.previous;
+                        tmp.previous = new TagNode(key, count, tmp, oldP);
+                        listSize++;
+                        //Trim the list if needed
+                        if (listSize > numTags) {
+                            end = end.previous;
+                            end.next = null;
+                        }
+                    } else if (listSize <= numTags) {
+                        //The new tag has a smaller count than anything in the list
+                        //but the list is can still hold one more
+                        //Add the new node at the end
+                        end.next = new TagNode(key, count, null, end);
+                        end = end.next;
+                    }
+                }
+            }
+        }
+
+        //Generate the final list
+        ArrayList<String> suggestedTags = new ArrayList<>();
+
+        TagNode tmp = head;
+        while (tmp != null) {
+            suggestedTags.add(tmp.tag);
+            tmp = tmp.next;
+        }
+
+        return suggestedTags;
+    }
+
+    @Override
+    public void addTag(String tag) {
+        try {
+            this.getSessionPermission();
+            this.startDBConnection();
+            db.addTag(tag);
+            this.stopDBConnection();
+            this.releaseSessionPermission();
+        } catch (ConnectionNotStartedException ex) {
+            Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    @Override
+    public void addDocumentTag(String docPath, String tag) throws DatabaseTagDoesNotExistException, DatabaseFileDoesNotExistException{
+        try {
+            this.getSessionPermission();
+            this.startDBConnection();
+            db.tagDocument(docPath, tag);
+            this.stopDBConnection();
+            this.releaseSessionPermission();
+        } catch (ConnectionNotStartedException ex) {
+            Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    @Override
+    public ArrayList<String> getTagList() {
+        try {
+            this.getSessionPermission();
+            this.startDBConnection();
+            ArrayList<String> tags = db.getTags();
+            this.stopDBConnection();
+            this.releaseSessionPermission();
+            return tags;
+        } catch (ConnectionNotStartedException ex) {
+            Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    @Override
+    public void removeTag(String tag) {
+        try {
+            this.getSessionPermission();
+            this.startDBConnection();
+            
+            db.deleteTag(tag);
+            lucene.removeTag(tag);
+            
+            this.stopDBConnection();
+            this.releaseSessionPermission();
+        } catch (ConnectionNotStartedException | IOException | IndexingSessionNotStartedException | ReadSessionNotStartedException ex) {
+            Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    @Override
+    public void removeDocumentTag(String docPath, String tag) throws DatabaseTagDoesNotExistException, DatabaseFileDoesNotExistException {
+        try {
+            this.getSessionPermission();
+            this.startDBConnection();
+            this.startLuceneIndexingSession();
+            
+            db.removeDocumentTag(docPath, tag);
+            lucene.removeDocumentTag(docPath, tag);
+            
+            this.stopLuceneIndexingSession();
+            this.stopDBConnection();
+            this.releaseSessionPermission();
+        } catch (ConnectionNotStartedException | IOException | ReadSessionNotStartedException | IndexingSessionNotStartedException ex) {
+            Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    class TagNode {
+
+        int count;
+        String tag;
+        TagNode next;
+        TagNode previous;
+
+        public TagNode(String t, int c, TagNode n, TagNode p) {
+            count = c;
+            tag = t;
+            next = n;
+            previous = p;
         }
     }
 

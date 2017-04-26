@@ -3,14 +3,17 @@ package utd.team6.workforceresearchguide.main.issues;
 //@author Michael Haertling
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.tika.exception.TikaException;
 import utd.team6.workforceresearchguide.lucene.IndexingSessionNotStartedException;
 import utd.team6.workforceresearchguide.lucene.LuceneController;
 import utd.team6.workforceresearchguide.lucene.ReadSessionNotStartedException;
 import utd.team6.workforceresearchguide.main.DocumentData;
-import static utd.team6.workforceresearchguide.main.issues.MissingFileIssue.RESPONSE_FILE_REMOVED;
+import static utd.team6.workforceresearchguide.main.issues.MissingFileIssue.RESPONSE_FILE_RELOCATED;
 import utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException;
 import utd.team6.workforceresearchguide.sqlite.DatabaseController;
+import utd.team6.workforceresearchguide.sqlite.DatabaseFileDoesNotExistException;
 
 /**
  * This class stores data pertaining to a pair of files, one that has been added
@@ -20,16 +23,31 @@ import utd.team6.workforceresearchguide.sqlite.DatabaseController;
  *
  * @author Michael
  */
-public class MovedFileIssue extends MissingFileIssue {
+public class MovedFileIssue extends FileSyncIssue {
+
+    /**
+     * This response value indicates that the file has been removed.
+     */
+    public static final int RESPONSE_FILE_REMOVED = 0;
+
+    /**
+     * This response value indicates that the file has been relocated.
+     */
+    public static final int RESPONSE_FILE_RELOCATED = 1;
+
+    DocumentData missingFile;
+    DocumentData newFile;
+    DocumentData alternateFile;
 
     /**
      * Creates a new MovedFileIssue object.
+     *
      * @param missingFile
-     * @param newFileLocation 
+     * @param newFileLocation
      */
     public MovedFileIssue(DocumentData missingFile, DocumentData newFileLocation) {
-        super(missingFile);
         this.newFile = newFileLocation;
+        this.missingFile = missingFile;
     }
 
     /**
@@ -40,10 +58,36 @@ public class MovedFileIssue extends MissingFileIssue {
         userResponse = RESPONSE_FILE_RELOCATED;
     }
 
+    public void changeRelocation(DocumentData data) {
+        alternateFile = data;
+    }
+
     @Override
     public void resolve(DatabaseController db, LuceneController lucene) throws InvalidResponseException, IndexingSessionNotStartedException, IOException, ReadSessionNotStartedException, TikaException, ConnectionNotStartedException, SQLException {
-        super.resolve(db, lucene);
         switch (userResponse) {
+            case RESPONSE_FILE_RELOCATED:
+                DocumentData nf;
+                if(alternateFile != null){
+                    //A different path was given for the new file.
+                    nf = alternateFile;
+                    //Add the new file
+                    lucene.indexNewDocument(newFile.getPath());
+                    db.addDocument(newFile);
+                }else{
+                    nf = newFile;
+                }
+                //Change the stored path in Lucene
+                lucene.updateDocumentPath(missingFile.getPath(), nf.getPath());
+                try {
+                    db.updateDocumentPath(missingFile.getPath(), nf.getPath());
+                    nf.fillName();
+                    nf.conditionalCopy(missingFile);
+                    //Change the stored path in the databse
+                    db.updateDocument(missingFile.getPath(), nf);
+                } catch (DatabaseFileDoesNotExistException ex) {
+                    Logger.getLogger(MissingFileIssue.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                break;
             case RESPONSE_FILE_REMOVED:
                 //Import the new data
                 newFile.fillFromFile();
@@ -54,6 +98,22 @@ public class MovedFileIssue extends MissingFileIssue {
             default:
                 throw new InvalidResponseException();
         }
+    }
+
+    /**
+     * Get the missing file object.
+     * @return 
+     */
+    public DocumentData getMissingFile() {
+        return missingFile;
+    }
+
+    /**
+     * Get the added file object.
+     * @return 
+     */
+    public DocumentData getNewFile() {
+        return newFile;
     }
 
 }

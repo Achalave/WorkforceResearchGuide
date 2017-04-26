@@ -48,28 +48,19 @@ public class FileSynchManagerTest {
      * @throws ConnectionNotStartedException
      * @throws ConnectionAlreadyActiveException
      */
-    public FileSynchManagerTest(String[] files, boolean renew) throws IOException, SQLException, ConnectionNotStartedException, ConnectionAlreadyActiveException {
+    public FileSynchManagerTest(ArrayList<String> files, boolean renew) throws IOException, SQLException, ConnectionNotStartedException, ConnectionAlreadyActiveException {
         if (renew) {
             new File("test.db").delete();
             FileUtils.forceDelete("lucene_test_files");
         }
         db = new DatabaseController("test.db");
         lucene = new LuceneController("lucene_files");
-        sync = new FileSyncManager(lucene, db, files);
+//        sync = new FileSyncManager(lucene, db, files);
         db.startConnection();
         db.updateDatabaseSchema();
         db.stopConnection();
     }
 
-    /**
-     *
-     * @return
-     */
-    public static String[] getPaths(){
-        ArrayList<String> paths = Utils.extractAllPaths(TestUtils.PATH_TO_RESOURCES);
-        String[] p = new String[paths.size()];
-        return paths.toArray(p);
-    }
     
     /**
      *
@@ -123,7 +114,7 @@ public class FileSynchManagerTest {
     public void testStage1Extended() throws ParseException {
         try {
             db.startConnection();
-            lucene.startIndexingSession(false);
+            lucene.startIndexingSession();
             System.out.println("PASS 1");
             FileSyncIssue[] issues = sync.examineDifferences();
             System.out.println(Arrays.toString(issues));
@@ -152,7 +143,7 @@ public class FileSynchManagerTest {
     public void testDocumentMoveP1() {
         try {
             db.startConnection();
-            lucene.startIndexingSession(false);
+            lucene.startIndexingSession();
 
             System.out.println("PASS 1");
             FileSyncIssue[] issues = sync.examineDifferences();
@@ -205,7 +196,7 @@ public class FileSynchManagerTest {
     public void testAddedFileResolution(){
         try {
             db.startConnection();
-            lucene.startIndexingSession(false);
+            lucene.startIndexingSession();
             AddedFileIssue iss = new AddedFileIssue(new DocumentData(TestUtils.PATH_TO_RESOURCES+"/test1.txt"));
             iss.addFile();
             iss.resolve(db, lucene);
@@ -225,7 +216,7 @@ public class FileSynchManagerTest {
     public void testMovedFileResolution(){
         try {
             db.startConnection();
-            lucene.startIndexingSession(false);
+            lucene.startIndexingSession();
             AddedFileIssue iss = new AddedFileIssue(new DocumentData(TestUtils.PATH_TO_RESOURCES+"/test1.txt"));
             iss.addFile();
             iss.resolve(db, lucene);

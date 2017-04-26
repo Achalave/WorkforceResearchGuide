@@ -354,6 +354,16 @@ public class DatabaseController {
         }
     }
 
+    public void removeDocumentTag(String docPath, String tag) throws ConnectionNotStartedException {
+        try {
+            executeUpdate("DELETE FROM FILE_TAGS WHERE FileID="
+                    + "(SELECT FileID FROM FILES WHERE FilePath=\'"+docPath+"\') AND TagID="
+                    + "(SELECT TagID FROM TAGS WHERE TagName=\'"+tag+"\')");
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
     /**
      * Gets the integer ID for the specified document.
      *
@@ -548,15 +558,21 @@ public class DatabaseController {
      * been associated with one another.
      *
      * @param tagText
+     * @param numTop Sets the number of records to be returned. If less than or
+     * equal to 0, the entire list of records will be returned.
      * @return A hash map with keys corresponding to tags associated with
      * tagText and values representing the number of associations present.
      * @throws
      * utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException
      */
-    public HashMap<String, Integer> getTagAssociation(String tagText) throws ConnectionNotStartedException {
+    public HashMap<String, Integer> getTagAssociation(String tagText, int numTop) throws ConnectionNotStartedException {
         String query = "SELECT tag1.TagText, tag2.TagText, ta.count "
                 + "FROM TAG_ASSOCIATIONS ta, TAGS tag1, TAGS tag2 "
-                + "WHERE tag1.TagText=\'" + tagText + "\' AND tag1.TagID=ta.tag1 AND tag2.tagID=ta.tag2";
+                + "WHERE tag1.TagText=\'" + tagText + "\' AND tag1.TagID=ta.tag1 AND tag2.tagID=ta.tag2 "
+                + "ORDER BY ta.count DESC ";
+        if (numTop > 0) {
+            query += "TOP " + numTop;
+        }
         HashMap<String, Integer> associations = new HashMap<>();
         try (ResultSet results = executeQuery(query)) {
             while (results.next()) {
@@ -612,6 +628,41 @@ public class DatabaseController {
             Logger.getLogger(DatabaseController.class.getName()).log(Level.SEVERE, null, ex);
         }
         throw new DatabaseFileDoesNotExistException();
+    }
+
+    /**
+     * Returns a list of tags associated with the specified document.
+     *
+     * @param docPath
+     * @return
+     * @throws ConnectionNotStartedException
+     */
+    public ArrayList<String> getDocumentTags(String docPath) throws ConnectionNotStartedException {
+        ArrayList<String> tags = new ArrayList<>();
+        try {
+            ResultSet results = this.executeQuery("SELECT ft.TagID FROM FILES f, FILE_TAGS, TAGS t tf WHERE f.FilePath=\'" + docPath + "\' AND f.FileID=ft.FileID AND t.TagID=ft.TagID");
+            if (results.next()) {
+                String tag = results.getString(0);
+                tags.add(tag);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return tags;
+    }
+
+    public ArrayList<String> getTags() throws ConnectionNotStartedException {
+        ArrayList<String> tags = new ArrayList<>();
+        try {
+            ResultSet results = this.executeQuery("SELECT TagName FROM TAGS");
+            if (results.next()) {
+                String tag = results.getString(0);
+                tags.add(tag);
+            }
+        } catch (SQLException ex) {
+            Logger.getLogger(DatabaseController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return tags;
     }
 
     /**

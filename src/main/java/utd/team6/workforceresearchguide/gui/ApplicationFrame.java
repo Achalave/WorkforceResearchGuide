@@ -5,10 +5,7 @@
  */
 package utd.team6.workforceresearchguide.gui;
 
-import com.google.common.io.FileBackedOutputStream;
 import java.awt.Color;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -17,16 +14,22 @@ import java.io.InputStream;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
-import javax.swing.Timer;
-import javax.tools.FileObject;
+import utd.team6.workforceresearchguide.gui.repscan.RepositoryScanDialog;
+import utd.team6.workforceresearchguide.main.ApplicationController;
+import utd.team6.workforceresearchguide.main.FileSyncManager;
+import utd.team6.workforceresearchguide.main.Utils;
+import utd.team6.workforceresearchguide.sqlite.ConnectionAlreadyActiveException;
+import utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException;
 
 /**
  *
  * @author Michael
  */
 public final class ApplicationFrame extends javax.swing.JFrame {
+
+    private static final String LUCENE_FILE_PATH = "_lucene_files_";
+    private static final String DATABASE_PATH = "lucene.db";
 
     public static final String REPOSITORY_PATH_KEY = "repository";
 
@@ -40,6 +43,8 @@ public final class ApplicationFrame extends javax.swing.JFrame {
 
     private String repPath;
 
+    private final ApplicationController app;
+
     /**
      * Creates new form ApplicationFrame
      */
@@ -48,9 +53,12 @@ public final class ApplicationFrame extends javax.swing.JFrame {
 
         //Load in the properties file
         properties = new Properties();
+
+        app = new ApplicationController(LUCENE_FILE_PATH, DATABASE_PATH);
     }
 
     public void load() {
+        //Load the properties file, if it exists
         try {
             File f = new File(PROPERTIES_PATH);
             if (!f.exists()) {
@@ -66,6 +74,8 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         if (repPath == null) {
             beginUserRepositorySelection();
         }
+        //Make sure the database tables are created
+        app.updateDatabaseSchema();
     }
 
     /**
@@ -106,10 +116,16 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         repPath = (String) properties.getProperty("repository");
     }
 
-    public void scanRepository(){
-        
+    public void scanRepository() {
+        RepositoryScanDialog rsd = new RepositoryScanDialog(app.generateFileSyncManager(repPath));
+        rsd.setLocationRelativeTo(this);
+        try {
+            rsd.showDialog();
+        } catch (ConnectionNotStartedException ex) {
+            Logger.getLogger(ApplicationFrame.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
-    
+
     /**
      * Shows the necessary dialogs to allow the user to select a repository.
      */
@@ -163,10 +179,11 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         jMenuBar1 = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
-        jMenu1 = new javax.swing.JMenu();
-        jMenuItem7 = new javax.swing.JMenuItem();
-        jMenuItem8 = new javax.swing.JMenuItem();
-        jMenuItem1 = new javax.swing.JMenuItem();
+        openMenu = new javax.swing.JMenu();
+        openFileMenuItem = new javax.swing.JMenuItem();
+        openGroupMenuItem = new javax.swing.JMenuItem();
+        openTagMenuItem = new javax.swing.JMenuItem();
+        scanRepositoryMenuItem = new javax.swing.JMenuItem();
         editMenu = new javax.swing.JMenu();
         jMenuItem3 = new javax.swing.JMenuItem();
         jMenuItem4 = new javax.swing.JMenuItem();
@@ -332,18 +349,26 @@ public final class ApplicationFrame extends javax.swing.JFrame {
 
         fileMenu.setText("File");
 
-        jMenu1.setText("Open");
+        openMenu.setText("Open");
 
-        jMenuItem7.setText("File");
-        jMenu1.add(jMenuItem7);
+        openFileMenuItem.setText("File");
+        openMenu.add(openFileMenuItem);
 
-        jMenuItem8.setText("Group");
-        jMenu1.add(jMenuItem8);
+        openGroupMenuItem.setText("Group");
+        openMenu.add(openGroupMenuItem);
 
-        fileMenu.add(jMenu1);
+        openTagMenuItem.setText("Tag");
+        openMenu.add(openTagMenuItem);
 
-        jMenuItem1.setText("Scan Repository");
-        fileMenu.add(jMenuItem1);
+        fileMenu.add(openMenu);
+
+        scanRepositoryMenuItem.setText("Scan Repository");
+        scanRepositoryMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                scanRepositoryMenuItemActionPerformed(evt);
+            }
+        });
+        fileMenu.add(scanRepositoryMenuItem);
 
         jMenuBar1.add(fileMenu);
 
@@ -436,6 +461,10 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         beginUserRepositorySelection();
     }//GEN-LAST:event_jMenuItem2ActionPerformed
 
+    private void scanRepositoryMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scanRepositoryMenuItemActionPerformed
+        scanRepository();
+    }//GEN-LAST:event_scanRepositoryMenuItemActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -481,16 +510,12 @@ public final class ApplicationFrame extends javax.swing.JFrame {
     private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JMenu jMenu1;
     private javax.swing.JMenuBar jMenuBar1;
-    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JMenuItem jMenuItem5;
     private javax.swing.JMenuItem jMenuItem6;
-    private javax.swing.JMenuItem jMenuItem7;
-    private javax.swing.JMenuItem jMenuItem8;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -505,7 +530,12 @@ public final class ApplicationFrame extends javax.swing.JFrame {
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JSplitPane jSplitPane3;
+    private javax.swing.JMenuItem openFileMenuItem;
+    private javax.swing.JMenuItem openGroupMenuItem;
+    private javax.swing.JMenu openMenu;
+    private javax.swing.JMenuItem openTagMenuItem;
     private javax.swing.JMenu propertiesMenu;
+    private javax.swing.JMenuItem scanRepositoryMenuItem;
     private javax.swing.JTextField searchBar;
     // End of variables declaration//GEN-END:variables
 }

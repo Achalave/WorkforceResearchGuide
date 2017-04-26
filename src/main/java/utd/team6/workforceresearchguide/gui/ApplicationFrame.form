@@ -9,27 +9,35 @@
             <Property name="text" type="java.lang.String" value="File"/>
           </Properties>
           <SubComponents>
-            <Menu class="javax.swing.JMenu" name="jMenu1">
+            <Menu class="javax.swing.JMenu" name="openMenu">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Open"/>
               </Properties>
               <SubComponents>
-                <MenuItem class="javax.swing.JMenuItem" name="jMenuItem7">
+                <MenuItem class="javax.swing.JMenuItem" name="openFileMenuItem">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="File"/>
                   </Properties>
                 </MenuItem>
-                <MenuItem class="javax.swing.JMenuItem" name="jMenuItem8">
+                <MenuItem class="javax.swing.JMenuItem" name="openGroupMenuItem">
                   <Properties>
                     <Property name="text" type="java.lang.String" value="Group"/>
                   </Properties>
                 </MenuItem>
+                <MenuItem class="javax.swing.JMenuItem" name="openTagMenuItem">
+                  <Properties>
+                    <Property name="text" type="java.lang.String" value="Tag"/>
+                  </Properties>
+                </MenuItem>
               </SubComponents>
             </Menu>
-            <MenuItem class="javax.swing.JMenuItem" name="jMenuItem1">
+            <MenuItem class="javax.swing.JMenuItem" name="scanRepositoryMenuItem">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Scan Repository"/>
               </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="scanRepositoryMenuItemActionPerformed"/>
+              </Events>
             </MenuItem>
           </SubComponents>
         </Menu>

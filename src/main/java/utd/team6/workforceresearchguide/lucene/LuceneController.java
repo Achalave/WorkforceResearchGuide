@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.util.ArrayList;
+import java.util.Iterator;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
@@ -12,6 +13,7 @@ import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
+import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
@@ -86,10 +88,9 @@ public class LuceneController {
      * indexing can take place. Receives a boolean to determine if we are
      * creating a new index or updating an existing and sets config mode.
      *
-     * @param create
      * @throws IOException
      */
-    public void startIndexingSession(boolean create) throws IOException {
+    public void startIndexingSession() throws IOException {
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
 
 //        //testing index updating
@@ -277,6 +278,67 @@ public class LuceneController {
         Document doc = getDocument(docPath);
         doc.add(new TextField("tag", tag, Store.YES));
         writer.updateDocument(new Term("path", docPath), doc);
+    }
+
+    /**
+     * Removed the specified tag from the document.
+     *
+     * @param docPath
+     * @param tag
+     * @throws IOException
+     * @throws ReadSessionNotStartedException
+     */
+    public void removeDocumentTag(String docPath, String tag) throws IOException, ReadSessionNotStartedException, IndexingSessionNotStartedException {
+        if (writer == null) {
+            throw new IndexingSessionNotStartedException();
+        }
+        Document doc = getDocument(docPath);
+        //Find and remove the specified tag
+        Iterator<IndexableField> it = doc.iterator();
+        while (it.hasNext()) {
+            IndexableField field = it.next();
+            if (field.name().equals("tag") && field.stringValue().equals(tag)) {
+                it.remove();
+                break;
+            }
+        }
+        //Update the document
+        writer.updateDocument(new Term("path", docPath), doc);
+    }
+
+    /**
+     * Removed all instances of the specified tag.
+     * @param tag
+     * @throws IOException 
+     * @throws utd.team6.workforceresearchguide.lucene.IndexingSessionNotStartedException 
+     * @throws utd.team6.workforceresearchguide.lucene.ReadSessionNotStartedException 
+     */
+    public void removeTag(String tag) throws IOException, IndexingSessionNotStartedException, ReadSessionNotStartedException {
+        if(reader == null){
+            throw new ReadSessionNotStartedException();
+        }
+        if(writer == null){
+            throw new IndexingSessionNotStartedException();
+        }
+        
+        for (int i = 0; i < writer.maxDoc(); i++) {
+            Document doc = reader.document(i);
+            //Find and remove the specified tag
+            Iterator<IndexableField> it = doc.iterator();
+            String docPath = "";
+            while (it.hasNext()) {
+                IndexableField field = it.next();
+                if (field.name().equals("tag") && field.stringValue().equals(tag)) {
+                    it.remove();
+                }else if(field.name().equals("path")){
+                    //Get the document path
+                    docPath = field.stringValue();
+                }
+            }
+            
+            //Update the document
+            writer.updateDocument(new Term("path", docPath), doc);
+        }
     }
 
     /**
