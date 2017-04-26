@@ -164,7 +164,7 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
             results.clear();
             aggregateResultSet(results);
             //Update the view with the results
-
+            
             //Check if the search is complete
             if (!search.searchInProgress()) {
                 //Remove the "in progress" indicator

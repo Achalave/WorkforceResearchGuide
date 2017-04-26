@@ -6,6 +6,7 @@
 package utd.team6.workforceresearchguide.gui;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -14,13 +15,16 @@ import java.io.InputStream;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.BorderFactory;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import utd.team6.workforceresearchguide.gui.repscan.RepositoryScanDialog;
-import utd.team6.workforceresearchguide.main.ApplicationController;
-import utd.team6.workforceresearchguide.main.FileSyncManager;
-import utd.team6.workforceresearchguide.main.Utils;
-import utd.team6.workforceresearchguide.sqlite.ConnectionAlreadyActiveException;
 import utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException;
+import javax.swing.ListCellRenderer;
+import utd.team6.workforceresearchguide.lucene.ReadSessionNotStartedException;
+import utd.team6.workforceresearchguide.main.ApplicationController;
 
 /**
  *
@@ -38,7 +42,7 @@ public final class ApplicationFrame extends javax.swing.JFrame {
     private static final String SEARCH_BAR_INACTIVE_TEXT = "Search";
 
     private static final String PROPERTIES_PATH = "WorkforceResearchGuide.properties";
-
+    
     private final Properties properties;
 
     private String repPath;
@@ -170,9 +174,12 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         searchBar = new javax.swing.JTextField();
         jSeparator1 = new javax.swing.JSeparator();
         jScrollPane2 = new javax.swing.JScrollPane();
+        jList1 = new javax.swing.JList<>();
         cancelButton = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         jComboBox1 = new javax.swing.JComboBox<>();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        jList2 = new javax.swing.JList<>();
         jPanel5 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         jSeparator3 = new javax.swing.JSeparator();
@@ -233,11 +240,6 @@ public final class ApplicationFrame extends javax.swing.JFrame {
 
         searchBar.setForeground(new java.awt.Color(102, 102, 102));
         searchBar.setText("Search");
-        searchBar.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                searchBarActionPerformed(evt);
-            }
-        });
         searchBar.addFocusListener(new java.awt.event.FocusAdapter() {
             public void focusGained(java.awt.event.FocusEvent evt) {
                 searchBarFocusGained(evt);
@@ -246,8 +248,21 @@ public final class ApplicationFrame extends javax.swing.JFrame {
                 searchBarFocusLost(evt);
             }
         });
+        searchBar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                searchBarActionPerformed(evt);
+            }
+        });
 
         jScrollPane2.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+        jList1.setModel(new javax.swing.AbstractListModel<String>() {
+            String[] strings = {"Results..."};
+            public int getSize() { return strings.length; }
+            public String getElementAt(int i) { return strings[i]; }
+        });
+        jList1.setCellRenderer(cellRenderer());
+        jScrollPane2.setViewportView(jList1);
 
         cancelButton.setText("x");
         cancelButton.setEnabled(false);
@@ -288,17 +303,30 @@ public final class ApplicationFrame extends javax.swing.JFrame {
 
         jSplitPane3.setTopComponent(jPanel2);
 
+        jList2.setModel(new javax.swing.AbstractListModel<String>() {
+            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+            public int getSize() { return strings.length; }
+            public String getElementAt(int i) { return strings[i]; }
+        });
+        jScrollPane4.setViewportView(jList2);
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jComboBox1, 0, 497, Short.MAX_VALUE)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jScrollPane4)
+                .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 194, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         jSplitPane3.setRightComponent(jPanel3);
@@ -421,6 +449,22 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    //!!
+    //NEED TO CLEANUP: Puts a line under each element in the JList
+    //!!
+    private ListCellRenderer<? super String> cellRenderer() {
+        return new DefaultListCellRenderer(){
+            @Override
+            public Component getListCellRendererComponent(JList<?> list,
+                    Object value, int index, boolean isSelected,
+                    boolean cellHasFocus) {
+                JLabel cellRenderBorder = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected,cellHasFocus);
+                cellRenderBorder.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0,Color.BLACK));
+                return cellRenderBorder;
+            }
+        };
+    }
+    
     private void searchBarFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_searchBarFocusGained
         if (searchBar.getForeground().equals(SEARCH_BAR_INACTIVE_COLOR)) {
             searchBar.setForeground(SEARCH_BAR_ACTIVE_COLOR);
@@ -457,6 +501,49 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_searchBarActionPerformed
 
+    /**Get the search results of query and display in JList
+     * @param query 
+     */
+    private void generateSearchResults(String query) {
+        
+        try {
+            app.beginSearch(query);
+            
+            //TO DO: get search results in array form??
+            //1. Get results as List of DocumentData Objects
+            //2a. Build string array to populate JList from DocumentData Objects
+            //2b. String array form: {RESULT#}. {DOC NAME} {DOC SCORE}
+            //3. Clicking on JList item should return the index# of the 
+            //   DocumentData object the above List.
+            //4. Selected documents should be stored in another List and 
+            //   placed on the bottom panel to keep running List of relevant
+            //   search documents for later viewing.
+            
+        } catch (IOException | ReadSessionNotStartedException ex) {
+            Logger.getLogger(ApplicationFrame.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+    }
+    
+    private void displaySearchResults(final String[] newResults) {
+        
+        //build search results JList
+        jList1.setModel(new javax.swing.AbstractListModel<String>() {
+
+            String[] strings = newResults;
+            
+            public int getSize() { return strings.length; }
+            public String getElementAt(int i) { return strings[i]; }
+        });
+        
+        //draw list cells with line under each for readability
+        jList1.setCellRenderer(cellRenderer());
+        
+        //update list view
+        jScrollPane2.setViewportView(jList1);
+    }
+    
+    
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
         beginUserRepositorySelection();
     }//GEN-LAST:event_jMenuItem2ActionPerformed
@@ -510,6 +597,9 @@ public final class ApplicationFrame extends javax.swing.JFrame {
     private javax.swing.JComboBox<String> jComboBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JList<String> jList1;
+    private javax.swing.JList<String> jList2;
+    private javax.swing.JMenu jMenu1;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;
@@ -524,6 +614,7 @@ public final class ApplicationFrame extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
