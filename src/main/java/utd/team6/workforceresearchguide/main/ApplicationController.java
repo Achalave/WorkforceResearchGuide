@@ -172,7 +172,8 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
             } catch (DatabaseFileDoesNotExistException 
                     | ConnectionNotStartedException 
                     | ParseException ex) {
-                Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(ApplicationController.class.getName())
+                        .log(Level.SEVERE, null, ex);
             } 
             
             //Check if the search is complete
