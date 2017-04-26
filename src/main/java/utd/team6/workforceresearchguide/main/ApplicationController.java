@@ -1,8 +1,10 @@
 package utd.team6.workforceresearchguide.main;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
@@ -164,6 +166,8 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
             results.clear();
             aggregateResultSet(results);
             //Update the view with the results
+            
+            displayResults(results);
             
             //Check if the search is complete
             if (!search.searchInProgress()) {
@@ -481,6 +485,30 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
         } catch (ConnectionNotStartedException | IOException | ReadSessionNotStartedException | IndexingSessionNotStartedException ex) {
             Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+
+    private void displayResults(HashMap<Integer, SearchResult> results) throws DatabaseFileDoesNotExistException, ConnectionNotStartedException, ParseException {
+        List<DocumentData> searchResults = new ArrayList<>();
+        
+        this.getSessionPermission();
+        this.startDBConnection();
+        
+        for (HashMap.Entry<Integer, SearchResult> entry : results.entrySet()) {
+            
+            SearchResult doc = entry.getValue();
+            double aggregateScore = doc.getAggregateScore();
+            String path = doc.getFilePath();
+            
+            DocumentData docData = db.getDocumentData(path);
+            docData.setResultScore(aggregateScore);
+            
+            searchResults.add(docData);
+            
+
+        }
+        
+        this.stopDBConnection();
+        this.releaseSessionPermission();
     }
 
     class TagNode {

@@ -38,6 +38,7 @@ public class DocumentData {
      */
     private Integer hits;
     private String hash;
+    private double docScore;
 
     /**
      * Instantiate the object with none of the meta fields filled out. A path
@@ -330,4 +331,19 @@ public class DocumentData {
         this.dateAdded = dateAdded;
     }
 
+    /**
+     *
+     * @param score
+     */
+    public void setResultScore(double score) {
+        this.docScore = score;
+    }
+
+    /**
+     *
+     * @return double
+     */
+    public double getResultScore() {
+        return docScore;
+    }
 }
