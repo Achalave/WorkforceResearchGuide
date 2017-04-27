@@ -160,6 +160,10 @@ public class RepositoryScanIssuesPanel extends javax.swing.JPanel {
 
     }
 
+    /**
+     * Enable/disable the appropriate tags. Tags with nothing in them are
+     * disabled. This should be called after all issues are added to the panel.
+     */
     public void finalizeView() {
         tabPane.setEnabledAt(0, addedFiles);
         tabPane.setEnabledAt(1, removedFiles);
@@ -261,13 +265,13 @@ public class RepositoryScanIssuesPanel extends javax.swing.JPanel {
                 if (issue instanceof MissingFileIssue) {
                     switch (pan.getSelection()) {
                         case MovedMissingFileIssuePanel.RELOCATE_OPTION:
-                            ((MissingFileIssue)issue).documentRelocated(pan.getNewFile(), false);
+                            ((MissingFileIssue) issue).documentRelocated(pan.getNewFile(), false);
                             break;
                         case MovedMissingFileIssuePanel.REMOVE_OPTION:
-                            ((MissingFileIssue)issue).documentRemoved();
+                            ((MissingFileIssue) issue).documentRemoved();
                             break;
                         case MovedMissingFileIssuePanel.KEEP_OPTION:
-                            ((MissingFileIssue)issue).keepFile();
+                            ((MissingFileIssue) issue).keepFile();
                             break;
                         default:
                             break;
@@ -286,13 +290,13 @@ public class RepositoryScanIssuesPanel extends javax.swing.JPanel {
                 if (issue instanceof MovedFileIssue) {
                     switch (pan.getSelection()) {
                         case MovedMissingFileIssuePanel.RELOCATE_OPTION:
-                            ((MovedFileIssue)issue).relocateFile();
+                            ((MovedFileIssue) issue).relocateFile();
                             break;
                         case MovedMissingFileIssuePanel.REMOVE_OPTION:
-                            ((MovedFileIssue)issue).removeFile();
+                            ((MovedFileIssue) issue).removeFile();
                             break;
                         case MovedMissingFileIssuePanel.KEEP_OPTION:
-                            ((MovedFileIssue)issue).keepFile();
+                            ((MovedFileIssue) issue).keepFile();
                             break;
                         default:
                             break;

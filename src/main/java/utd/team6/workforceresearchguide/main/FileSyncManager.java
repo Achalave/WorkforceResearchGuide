@@ -150,6 +150,12 @@ public class FileSyncManager {
             Logger.getLogger(FileSyncManager.class.getName()).log(Level.SEVERE, null, ex);
         }
         
+        //Get a list of the files in the SQL database
+        String[] dbFiles = db.getAllKnownFiles();
+        
+        db.stopConnection();
+        sess.releaseSessionPermission();
+        
         ArrayList<FileSyncIssue> isus = new ArrayList<>();
 
         ArrayList<String> missingFiles = new ArrayList<>();
@@ -159,10 +165,7 @@ public class FileSyncManager {
         addedFiles.addAll(files);
 
         Collections.sort(addedFiles);
-
-        //Get a list of the files in the SQL database
-        String[] dbFiles = db.getAllKnownFiles();
-
+        
         Collections.addAll(missingFiles, dbFiles);
 
         Iterator<String> fileIterator = missingFiles.iterator();
@@ -238,8 +241,10 @@ public class FileSyncManager {
             throw new IllegalArgumentException("The argument numThreads must be >= 0.");
         }
         
+        sess.getSessionPermission();
         sess.startLuceneIndexingSession();
         sess.startLuceneReadSession();
+        sess.startDBConnection();
 
         int startIndex = 0;
         int numIssues = issues.length;
