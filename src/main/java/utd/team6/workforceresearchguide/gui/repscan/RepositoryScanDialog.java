@@ -93,10 +93,14 @@ public class RepositoryScanDialog extends javax.swing.JFrame {
         });
         
         checkResolutionTimer = new Timer(RESOLUTION_UPDATE_DELAY, new ActionListener(){
+            boolean finished = false;
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(!sync.isResolutionActive()){
+                if(!sync.isResolutionActive() && !finished){
+                    finished = true;
+                    sync.finalizeResolution();
                     close();
+                    checkResolutionTimer.stop();
                 }
             }
         });
@@ -145,11 +149,14 @@ public class RepositoryScanDialog extends javax.swing.JFrame {
                 try {
                     startAnimation();
                     FileSyncIssue[] issues = sync.examineDifferences();
-                    System.out.println(Arrays.toString(issues));
+                    if(issues == null || issues.length == 0){
+                        JOptionPane.showMessageDialog(rootPane, "The repository is synced.");
+                        close();
+                        return;
+                    }
                     scanningComplete = true;
                     processIssues(issues);
                     stopAnimation();
-                    processIssues(issues);
                     showIssuePanel();
 
                 } catch (SQLException | DatabaseFileDoesNotExistException | IOException | ParseException | IssueTypeNotSupportedException | ConnectionNotStartedException ex) {
@@ -242,10 +249,12 @@ public class RepositoryScanDialog extends javax.swing.JFrame {
      */
     public void beginResolution() {
         System.out.println("Resolution Begun!");
+        issueScreen.finalizeIssues();
         try {
             sync.startResolutionProcess(1);
             this.showAnimationPanel();
             this.startAnimation();
+            checkResolutionTimer.start();
         } catch (IOException | SQLException | DatabaseFileDoesNotExistException ex) {
             Logger.getLogger(RepositoryScanDialog.class.getName()).log(Level.SEVERE, null, ex);
         }

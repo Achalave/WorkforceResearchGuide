@@ -40,7 +40,7 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
 
     LuceneController lucene;
     DatabaseController db;
-    
+
     DocumentInfoDialogFactory infoFactory;
 
     boolean searchInProgress = false;
@@ -53,6 +53,7 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
 
     /**
      * Creates a new ApplicationController object.
+     *
      * @param lucenePath
      * @param databasePath
      */
@@ -98,7 +99,6 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
 //        this.releaseSessionPermission();
 //
 //    }
-
     /**
      * Adds files to the existing Lucene index from provided String[].
      *
@@ -128,10 +128,10 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
 
     }
 
-    public DocumentInfoDialogFactory getInfoFactory(){
+    public DocumentInfoDialogFactory getInfoFactory() {
         return infoFactory;
     }
-    
+
     /**
      * Starts a new search with the provided query.
      *
@@ -140,7 +140,9 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
      * @throws ReadSessionNotStartedException
      */
     public void beginSearch(String query) throws IOException, ReadSessionNotStartedException {
-        lucene.startReadSession();
+        this.getSessionPermission();
+        this.startLuceneReadSession();
+        
         search = lucene.search(query, 100);
         search.startSearch();
         //Instantiate the result set
@@ -163,10 +165,12 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
         searchUpdater.cancel();
         search.cancelSearch();
         search = null;
+        this.stopLuceneReadSession();
+        this.releaseSessionPermission();
         //Change the GUI to reflect the cancelation
 
     }
-    
+
     public boolean searchRunning() {
         return search.searchInProgress();
     }
@@ -180,17 +184,15 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
             //Get the fresh result set
             results.clear();
             aggregateResultSet(results);
-            
+
             //Update the view with the results
             try {
                 setDocResults(results);
-            } catch (DatabaseFileDoesNotExistException 
-                    | ConnectionNotStartedException 
-                    | ParseException ex) {
+            } catch (DatabaseFileDoesNotExistException | ConnectionNotStartedException | ParseException ex) {
                 Logger.getLogger(ApplicationController.class.getName())
                         .log(Level.SEVERE, null, ex);
-            } 
-            
+            }
+
             //Check if the search is complete
             if (!search.searchInProgress()) {
                 //Remove the "in progress" indicator
@@ -234,31 +236,31 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
             }
         }
     }
-    
+
     private void setDocResults(HashMap<Integer, SearchResult> results) throws DatabaseFileDoesNotExistException, ConnectionNotStartedException, ParseException {
         docResults = new ArrayList<>();
-        
+
         this.getSessionPermission();
         this.startDBConnection();
-        
+
         for (HashMap.Entry<Integer, SearchResult> entry : results.entrySet()) {
-            
+
             SearchResult doc = entry.getValue();
             double aggregateScore = doc.getAggregateScore();
             String path = doc.getFilePath();
-            
+
             DocumentData docData = db.getDocumentData(path);
             docData.setResultScore(aggregateScore);
-            
+
             docResults.add(docData);
-            
+
         }
-        
+
         this.stopDBConnection();
         this.releaseSessionPermission();
 
     }
-    
+
     public List<DocumentData> getDocResults() {
         return docResults;
     }
@@ -266,6 +268,7 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
     /**
      * This is a thread safe method of starting a database connection.
      */
+    @Override
     public void startDBConnection() {
         try {
             db.startConnection();
@@ -464,77 +467,73 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
 
     @Override
     public void addTag(String tag) {
+        this.getSessionPermission();
+        this.startDBConnection();
         try {
-            this.getSessionPermission();
-            this.startDBConnection();
             db.addTag(tag);
-            this.stopDBConnection();
-            this.releaseSessionPermission();
         } catch (ConnectionNotStartedException ex) {
             Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
         }
+        this.stopDBConnection();
+        this.releaseSessionPermission();
     }
 
     @Override
-    public void addDocumentTag(String docPath, String tag) throws DatabaseTagDoesNotExistException, DatabaseFileDoesNotExistException{
+    public void addDocumentTag(String docPath, String tag) throws DatabaseTagDoesNotExistException, DatabaseFileDoesNotExistException {
+        this.getSessionPermission();
+        this.startDBConnection();
         try {
-            this.getSessionPermission();
-            this.startDBConnection();
             db.tagDocument(docPath, tag);
-            this.stopDBConnection();
-            this.releaseSessionPermission();
         } catch (ConnectionNotStartedException ex) {
             Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
         }
+        this.stopDBConnection();
+        this.releaseSessionPermission();
     }
 
     @Override
     public ArrayList<String> getTagList() {
+        this.getSessionPermission();
+        this.startDBConnection();
         try {
-            this.getSessionPermission();
-            this.startDBConnection();
             ArrayList<String> tags = db.getTags();
-            this.stopDBConnection();
-            this.releaseSessionPermission();
             return tags;
         } catch (ConnectionNotStartedException ex) {
             Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
         }
+        this.stopDBConnection();
+        this.releaseSessionPermission();
         return null;
     }
 
     @Override
     public void removeTag(String tag) {
+        this.getSessionPermission();
+        this.startDBConnection();
         try {
-            this.getSessionPermission();
-            this.startDBConnection();
-            
             db.deleteTag(tag);
             lucene.removeTag(tag);
-            
-            this.stopDBConnection();
-            this.releaseSessionPermission();
         } catch (ConnectionNotStartedException | IOException | IndexingSessionNotStartedException | ReadSessionNotStartedException ex) {
             Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
         }
+        this.stopDBConnection();
+        this.releaseSessionPermission();
     }
 
     @Override
     public void removeDocumentTag(String docPath, String tag) throws DatabaseTagDoesNotExistException, DatabaseFileDoesNotExistException {
+        this.getSessionPermission();
+        this.startDBConnection();
+        this.startLuceneIndexingSession();
         try {
-            this.getSessionPermission();
-            this.startDBConnection();
-            this.startLuceneIndexingSession();
-            
             db.removeDocumentTag(docPath, tag);
             lucene.removeDocumentTag(docPath, tag);
-            
-            this.stopLuceneIndexingSession();
-            this.stopDBConnection();
-            this.releaseSessionPermission();
         } catch (ConnectionNotStartedException | IOException | ReadSessionNotStartedException | IndexingSessionNotStartedException ex) {
             Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
         }
+        this.stopLuceneIndexingSession();
+        this.stopDBConnection();
+        this.releaseSessionPermission();
     }
 
     class TagNode {

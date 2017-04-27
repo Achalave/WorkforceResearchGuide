@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.lucene.index.IndexNotFoundException;
 import org.apache.tika.exception.TikaException;
 import utd.team6.workforceresearchguide.lucene.IndexingSessionNotStartedException;
 import utd.team6.workforceresearchguide.lucene.LuceneController;
@@ -44,17 +45,18 @@ public class FileSyncManager {
     private FileSyncIssue[] issues;
 
     IssueResolutionThread[] resolutionThreads;
-    
+
     SessionManager sess;
 
     String waitMessage = "";
-    
+
     /**
      * Creates a new FileSyncManager object.
+     *
      * @param sess
      * @param lucene
      * @param db
-     * @param files 
+     * @param files
      */
     public FileSyncManager(SessionManager sess, LuceneController lucene, DatabaseController db, ArrayList<String> files) {
         this.lucene = lucene;
@@ -143,13 +145,15 @@ public class FileSyncManager {
         waitMessage = "Waiting for Files to be Unused";
         sess.getSessionPermission();
         waitMessage = "Scanning Repository";
-        
-        try {
-            db.startConnection();
-        } catch (ConnectionAlreadyActiveException ex) {
-            Logger.getLogger(FileSyncManager.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
+
+        sess.startDBConnection();
+
+        //Get a list of the files in the SQL database
+        String[] dbFiles = db.getAllKnownFiles();
+
+        sess.stopDBConnection();
+        sess.releaseSessionPermission();
+
         ArrayList<FileSyncIssue> isus = new ArrayList<>();
 
         ArrayList<String> missingFiles = new ArrayList<>();
@@ -160,16 +164,12 @@ public class FileSyncManager {
 
         Collections.sort(addedFiles);
 
-        //Get a list of the files in the SQL database
-        String[] dbFiles = db.getAllKnownFiles();
-
         Collections.addAll(missingFiles, dbFiles);
 
         Iterator<String> fileIterator = missingFiles.iterator();
 
-        System.out.println("INTERNAL SCANNED FILES: " + addedFiles);
-        System.out.println("INTERNAL DB FILES: " + missingFiles);
-
+//        System.out.println("INTERNAL SCANNED FILES: " + addedFiles);
+//        System.out.println("INTERNAL DB FILES: " + missingFiles);
         while (fileIterator.hasNext()) {
             int index = Collections.binarySearch(addedFiles, fileIterator.next());
             if (index >= 0) {
@@ -179,8 +179,7 @@ public class FileSyncManager {
             }
         }
 
-        System.out.println("INTERNAL: " + missingFiles);
-
+//        System.out.println("INTERNAL: " + missingFiles);
         //For the files that exist, check if they are up to date
         for (String file : existingFiles) {
             DocumentData f = new DocumentData(file);
@@ -202,7 +201,7 @@ public class FileSyncManager {
             String file = fileIterator.next();
             DocumentData missingFile = db.getDocumentData(file);
             int relocatedFile = this.identifyRelocatedFile(missingFile, addedFileData);
-            System.out.println("RELOCATION: " + missingFile.getPath() + "\t" + relocatedFile);
+//            System.out.println("RELOCATION: " + missingFile.getPath() + "\t" + relocatedFile);
             if (relocatedFile >= 0) {
                 isus.add(new MovedFileIssue(missingFile, addedFileData.remove(relocatedFile)));
             } else {
@@ -237,9 +236,11 @@ public class FileSyncManager {
         if (numThreads <= 0) {
             throw new IllegalArgumentException("The argument numThreads must be >= 0.");
         }
-        
-        sess.startLuceneIndexingSession();
+
+        sess.getSessionPermission();
         sess.startLuceneReadSession();
+        sess.startLuceneIndexingSession();
+        sess.startDBConnection();
 
         int startIndex = 0;
         int numIssues = issues.length;
@@ -264,14 +265,21 @@ public class FileSyncManager {
 
     }
 
-    public void cancelScan(){
-        
+    public void finalizeResolution() {
+        sess.stopDBConnection();
+        sess.stopLuceneIndexingSession();
+        sess.stopLuceneReadSession();
+        sess.releaseSessionPermission();
     }
-    
-    public String getWaitMessage(){
+
+    public void cancelScan() {
+
+    }
+
+    public String getWaitMessage() {
         return waitMessage;
     }
-    
+
     /**
      *
      * @return The ratio of completion for an ongoing resolution process. This

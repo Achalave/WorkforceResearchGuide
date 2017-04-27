@@ -48,8 +48,8 @@ public class DatabaseControllerTest {
 //        dbt.testAddDocument();
 //        dbt.testRollback();
 //        dbt.testUpdateDocumentPath();
-//        dbt.testTagDocument();
-        dbt.testGroups();
+        dbt.testTagDocument();
+//        dbt.testGroups();
     }
 
     /**
