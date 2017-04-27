@@ -12,6 +12,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -35,9 +36,14 @@ import utd.team6.workforceresearchguide.main.DocumentData;
  */
 public final class ApplicationFrame extends javax.swing.JFrame {
 
+    private static final String NEW_GROUP_TEXT = "New Group";
+
     private static final String LUCENE_FILE_PATH = "_lucene_files_";
     private static final String DATABASE_PATH = "lucene.db";
 
+    /**
+     * This is the key used to store the repository path in the properties file.
+     */
     public static final String REPOSITORY_PATH_KEY = "repository";
 
     private static final Color SEARCH_BAR_INACTIVE_COLOR = new Color(102, 102, 102);
@@ -45,7 +51,7 @@ public final class ApplicationFrame extends javax.swing.JFrame {
     private static final String SEARCH_BAR_INACTIVE_TEXT = "Search";
 
     private static final String PROPERTIES_PATH = "WorkforceResearchGuide.properties";
-    
+
     private final Properties properties;
 
     private String repPath;
@@ -65,6 +71,10 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         app = new ApplicationController(LUCENE_FILE_PATH, DATABASE_PATH);
     }
 
+    /**
+     * Loads the necessary parts of the application. This is called after the
+     * frame is instantiated.
+     */
     public void load() {
         //Load the properties file, if it exists
         try {
@@ -84,6 +94,10 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         }
         //Make sure the database tables are created
         app.updateDatabaseSchema();
+
+        //Load the groups
+        ArrayList<String> groups = app.getGroups();
+        groupComboBox.addItem(NEW_GROUP_TEXT);
     }
 
     /**
@@ -124,8 +138,11 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         repPath = (String) properties.getProperty("repository");
     }
 
+    /**
+     * Opens a dialog for handling repository scanning.
+     */
     public void scanRepository() {
-        RepositoryScanDialog rsd = new RepositoryScanDialog(app.getInfoFactory(),app.generateFileSyncManager(repPath));
+        RepositoryScanDialog rsd = new RepositoryScanDialog(app.getInfoFactory(), app.generateFileSyncManager(repPath));
         rsd.setLocationRelativeTo(this);
         try {
             rsd.showDialog();
@@ -181,9 +198,9 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         jList1 = new javax.swing.JList<>();
         cancelButton = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
-        jComboBox1 = new javax.swing.JComboBox<>();
+        groupComboBox = new javax.swing.JComboBox<>();
         jScrollPane4 = new javax.swing.JScrollPane();
-        jList2 = new javax.swing.JList<>();
+        groupList = new javax.swing.JList<>();
         jPanel5 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         jSeparator3 = new javax.swing.JSeparator();
@@ -307,18 +324,24 @@ public final class ApplicationFrame extends javax.swing.JFrame {
 
         jSplitPane3.setTopComponent(jPanel2);
 
-        jList2.setModel(new javax.swing.AbstractListModel<String>() {
+        groupComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                groupComboBoxActionPerformed(evt);
+            }
+        });
+
+        groupList.setModel(new javax.swing.AbstractListModel<String>() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
             public int getSize() { return strings.length; }
             public String getElementAt(int i) { return strings[i]; }
         });
-        jScrollPane4.setViewportView(jList2);
+        jScrollPane4.setViewportView(groupList);
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jComboBox1, 0, 497, Short.MAX_VALUE)
+            .addComponent(groupComboBox, 0, 497, Short.MAX_VALUE)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jScrollPane4)
@@ -327,7 +350,7 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
-                .addComponent(jComboBox1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(groupComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 191, Short.MAX_VALUE)
                 .addContainerGap())
@@ -376,7 +399,7 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 738, Short.MAX_VALUE)
+            .addComponent(jSplitPane1)
         );
 
         fileMenu.setText("File");
@@ -457,18 +480,18 @@ public final class ApplicationFrame extends javax.swing.JFrame {
     //NEED TO CLEANUP: Puts a line under each element in the JList
     //!!
     private ListCellRenderer<? super String> cellRenderer() {
-        return new DefaultListCellRenderer(){
+        return new DefaultListCellRenderer() {
             @Override
             public Component getListCellRendererComponent(JList<?> list,
                     Object value, int index, boolean isSelected,
                     boolean cellHasFocus) {
-                JLabel cellRenderBorder = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected,cellHasFocus);
-                cellRenderBorder.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0,Color.BLACK));
+                JLabel cellRenderBorder = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                cellRenderBorder.setBorder(BorderFactory.createMatteBorder(0, 0, 1, 0, Color.BLACK));
                 return cellRenderBorder;
             }
         };
     }
-    
+
     private void searchBarFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_searchBarFocusGained
         if (searchBar.getForeground().equals(SEARCH_BAR_INACTIVE_COLOR)) {
             searchBar.setForeground(SEARCH_BAR_ACTIVE_COLOR);
@@ -510,14 +533,16 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_searchBarActionPerformed
 
-    /**Get the search results of query and display in JList
-     * @param query 
+    /**
+     * Get the search results of query and display in JList
+     *
+     * @param query
      */
     private void generateSearchResults(String query) throws InterruptedException {
-        
+
         try {
             app.beginSearch(query);
-            
+
             //TO DO: get search results in array form??
             //3. Clicking on JList item should return the index# of the 
             //   DocumentData.
@@ -526,48 +551,76 @@ public final class ApplicationFrame extends javax.swing.JFrame {
             //   search documents for later viewing.
             //5. Unselecting a JList item should remove that item from secondary
             //   List.
-            
             //temporary pause waiting for search to finish
-            while(app.searchRunning()) {
+            while (app.searchRunning()) {
                 TimeUnit.SECONDS.sleep(1);
             }
-            
+
             results = app.getDocResults();
-            
+
             String[] resultsList = new String[results.size()];
             int i = 0;
             for (DocumentData data : results) {
-                resultsList[i] = (i+1) + ". \t" + data.getName() + "\t" 
+                resultsList[i] = (i + 1) + ". \t" + data.getName() + "\t"
                         + data.getResultScore();
                 i++;
             }
-            
+
             displaySearchResults(resultsList);
-            
+
         } catch (IOException | ReadSessionNotStartedException ex) {
             Logger.getLogger(ApplicationFrame.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
     }
-    
+
     private void displaySearchResults(final String[] newResults) {
-        
+
         //build search results JList
         jList1.setModel(new javax.swing.AbstractListModel<String>() {
 
             String[] strings = newResults;
-            
-            public int getSize() { return strings.length; }
-            public String getElementAt(int i) { return strings[i]; }
+
+            @Override
+            public int getSize() {
+                return strings.length;
+            }
+
+            @Override
+            public String getElementAt(int i) {
+                return strings[i];
+            }
         });
-        
+
         //draw list cells with line under each for readability
         jList1.setCellRenderer(cellRenderer());
-        
+
         //update list view
         jScrollPane2.setViewportView(jList1);
     }
-    
+
+    /**
+     * Handles a change in the group selection.
+     */
+    public void groupChanged() {
+        
+    }
+
+    /**
+     * Handles adding a document to the specified group.
+     * @param group
+     */
+    public void addDocumentToGroup(String group){
+        String selection = (String) groupComboBox.getSelectedItem();
+        if (selection.equals(NEW_GROUP_TEXT)) {
+            //Create a new group
+            String groupName = JOptionPane.showInputDialog("Name the new group.");
+
+        } else {
+            //Add to the selected group
+
+        }
+    }
     
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
         beginUserRepositorySelection();
@@ -576,6 +629,10 @@ public final class ApplicationFrame extends javax.swing.JFrame {
     private void scanRepositoryMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scanRepositoryMenuItemActionPerformed
         scanRepository();
     }//GEN-LAST:event_scanRepositoryMenuItemActionPerformed
+
+    private void groupComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_groupComboBoxActionPerformed
+        groupChanged();
+    }//GEN-LAST:event_groupComboBoxActionPerformed
 
     /**
      * @param args the command line arguments
@@ -619,11 +676,11 @@ public final class ApplicationFrame extends javax.swing.JFrame {
     private javax.swing.JButton cancelButton;
     private javax.swing.JMenu editMenu;
     private javax.swing.JMenu fileMenu;
-    private javax.swing.JComboBox<String> jComboBox1;
+    private javax.swing.JComboBox<String> groupComboBox;
+    private javax.swing.JList<String> groupList;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JList<String> jList1;
-    private javax.swing.JList<String> jList2;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;

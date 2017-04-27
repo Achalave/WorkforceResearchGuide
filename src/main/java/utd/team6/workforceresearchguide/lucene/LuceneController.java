@@ -287,6 +287,7 @@ public class LuceneController {
      * @param tag
      * @throws IOException
      * @throws ReadSessionNotStartedException
+     * @throws utd.team6.workforceresearchguide.lucene.IndexingSessionNotStartedException
      */
     public void removeDocumentTag(String docPath, String tag) throws IOException, ReadSessionNotStartedException, IndexingSessionNotStartedException {
         if (writer == null) {

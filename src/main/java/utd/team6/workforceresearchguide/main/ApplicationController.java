@@ -102,6 +102,10 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
 
     }
 
+    /**
+     * 
+     * @return The DocumentInfoDialogFactory for this ApplicationController.
+     */
     public DocumentInfoDialogFactory getInfoFactory() {
         return infoFactory;
     }
@@ -145,6 +149,10 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
 
     }
 
+    /**
+     * 
+     * @return True if a search is in progress, false otherwise.
+     */
     public boolean searchRunning() {
         return search.searchInProgress();
     }
@@ -235,6 +243,10 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
 
     }
 
+    /**
+     * 
+     * @return A list of the document results for a search.
+     */
     public List<DocumentData> getDocResults() {
         return docResults;
     }
@@ -340,6 +352,12 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
         }
     }
 
+    /**
+     * 
+     * @param filePath
+     * @return The corresponding DocumentData object as represented by the database.
+     * @throws DatabaseFileDoesNotExistException 
+     */
     public DocumentData getDocumentData(String filePath) throws DatabaseFileDoesNotExistException{
         try {
             this.getSessionPermission();
@@ -354,6 +372,11 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
         return null;
     }
     
+    /**
+     * 
+     * @param repPath
+     * @return A new FileSyncManager.
+     */
     public FileSyncManager generateFileSyncManager(String repPath) {
         return new FileSyncManager(this, lucene, db, Utils.extractAllPaths(repPath));
     }
@@ -524,6 +547,28 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
         this.releaseSessionPermission();
     }
 
+    /**
+     * 
+     * @return A list of all groups in the database.
+     */
+    public ArrayList<String> getGroups(){
+        ArrayList<String> groups = null;
+        
+        this.getSessionPermission();
+        this.startDBConnection();
+        
+        try {
+            groups = db.getGroups();
+        } catch (ConnectionNotStartedException ex) {
+            Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        this.stopDBConnection();
+        this.releaseSessionPermission();
+        
+        return groups;
+    }
+    
     class TagNode {
 
         int count;

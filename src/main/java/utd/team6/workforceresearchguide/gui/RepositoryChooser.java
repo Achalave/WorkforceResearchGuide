@@ -20,7 +20,6 @@ public class RepositoryChooser extends javax.swing.JDialog {
     /**
      * Creates new form RepositoryChooser
      *
-     * @param frame
      */
     public RepositoryChooser() {
         initComponents();
@@ -29,6 +28,10 @@ public class RepositoryChooser extends javax.swing.JDialog {
         fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
     }
 
+    /**
+     * Creates new form RepositoryChooser
+     * @param repPath 
+     */
     public RepositoryChooser(String repPath) {
         this();
         if (repPath != null) {
@@ -123,6 +126,10 @@ public class RepositoryChooser extends javax.swing.JDialog {
         this.setVisible(false);
     }//GEN-LAST:event_setButtonActionPerformed
 
+    /**
+     * Displays the dialog.
+     * @return The selected repository path.
+     */
     public String showDialog() {
         this.setTitle("Select Repository Location");
         this.setModalityType(ModalityType.APPLICATION_MODAL);

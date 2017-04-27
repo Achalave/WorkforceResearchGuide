@@ -266,6 +266,9 @@ public class FileSyncManager {
 
     }
 
+    /**
+     * Finalizes the resolution process. This includes closing all sessions used. This should be called after the resolution threads have completed.
+     */
     public void finalizeResolution() {
         sess.stopDBConnection();
         sess.stopLuceneIndexingSession();
@@ -273,10 +276,17 @@ public class FileSyncManager {
         sess.releaseSessionPermission();
     }
 
+    /**
+     * Cancels the scan process.
+     */
     public void cancelScan() {
-
+        
     }
 
+    /**
+     * 
+     * @return The current wait message that should be displayed.
+     */
     public String getWaitMessage() {
         return waitMessage;
     }

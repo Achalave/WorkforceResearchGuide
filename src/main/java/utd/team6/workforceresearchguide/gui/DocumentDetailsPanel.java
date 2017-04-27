@@ -33,6 +33,7 @@ public class DocumentDetailsPanel extends javax.swing.JPanel {
      *
      * @param d
      * @param a
+     * @param fillFromDB
      */
     public DocumentDetailsPanel(DocumentData d, ApplicationController a, boolean fillFromDB) {
         initComponents();
@@ -88,6 +89,9 @@ public class DocumentDetailsPanel extends javax.swing.JPanel {
         suggestedTagList.setModel(suggestedTagListModel);
     }
 
+    /**
+     * Adds the selected tags to the document represented by this panel.
+     */
     public void addSelectedSuggestedTags() {
         //Get the selected suggestion tags
         int numAdded = 0;

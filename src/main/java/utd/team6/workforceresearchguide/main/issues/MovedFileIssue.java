@@ -63,14 +63,24 @@ public class MovedFileIssue extends FileSyncIssue {
         userResponse = RESPONSE_FILE_RELOCATED;
     }
 
+    /**
+     * Changes the file that the missing file will be relocated as.
+     * @param data 
+     */
     public void changeRelocation(DocumentData data) {
         alternateFile = data;
     }
 
+    /**
+     * Sets the user response to keep the missing file.
+     */
     public void keepFile(){
         userResponse = RESPONSE_KEEP_FILE;
     }
     
+    /**
+     * Sets the user response to remove the missing file.
+     */
     public void removeFile(){
         userResponse = RESPONSE_FILE_REMOVED;
     }

@@ -67,6 +67,9 @@ public class MissingFileIssue extends FileSyncIssue implements SingleFileIssue{
         userResponse = RESPONSE_FILE_RELOCATED;
     }
 
+    /**
+     * Sets the user response to keep the represented file.
+     */
     public void keepFile(){
         userResponse = RESPONSE_KEEP_FILE;
     }

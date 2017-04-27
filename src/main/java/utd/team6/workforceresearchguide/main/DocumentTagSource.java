@@ -16,13 +16,57 @@ import utd.team6.workforceresearchguide.sqlite.DatabaseTagDoesNotExistException;
  */
 public interface DocumentTagSource {
     
+    /**
+     * 
+     * @param docPath
+     * @return A list of the tags associated with a document.
+     * @throws ConnectionNotStartedException 
+     */
     public ArrayList<String> getDocumentTags(String docPath) throws ConnectionNotStartedException;
+    
+    /**
+     * 
+     * @param docPath
+     * @param numTags
+     * @return A list of the suggested document tags associated with a document.
+     * @throws ConnectionNotStartedException 
+     */
     public ArrayList<String> getSuggestedDocumentTags(String docPath,int numTags) throws ConnectionNotStartedException;
+    
+    /**
+     * Adds the specified tag to the database.
+     * @param tag 
+     */
     public void addTag(String tag);
+    
+    /**
+     * Removes the specified tag from the database.
+     * @param tag 
+     */
     public void removeTag(String tag);
+    
+    /**
+     * Adds the specified tag to the specified document.
+     * @param docPath
+     * @param tag
+     * @throws DatabaseTagDoesNotExistException
+     * @throws DatabaseFileDoesNotExistException 
+     */
     public void addDocumentTag(String docPath,String tag) throws DatabaseTagDoesNotExistException, DatabaseFileDoesNotExistException;
+    
+    /**
+     * Removes the specified tag from the specified document.
+     * @param docPath
+     * @param tag
+     * @throws DatabaseTagDoesNotExistException
+     * @throws DatabaseFileDoesNotExistException 
+     */
     public void removeDocumentTag(String docPath, String tag) throws DatabaseTagDoesNotExistException, DatabaseFileDoesNotExistException;
     
+    /**
+     * 
+     * @return A complete list of the tags in the system.
+     */
     public ArrayList<String> getTagList();
     
 }

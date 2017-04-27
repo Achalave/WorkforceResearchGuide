@@ -215,6 +215,9 @@ public class RepositoryScanIssuesPanel extends javax.swing.JPanel {
         outdatedFilesPanel.add(pan);
     }
 
+    /**
+     * Finalizes all issues presented by this panel. This involves setting the correct resolution state in accordance with user selections.
+     */
     public void finalizeIssues() {
         finalizeAddedFileIssues();
         finalizeOutdatedFileIssues();
@@ -222,6 +225,9 @@ public class RepositoryScanIssuesPanel extends javax.swing.JPanel {
         finalizeMovedFileIssues();
     }
 
+    /**
+     * Finalizes all added file issues presented by this panel. This involves setting the correct resolution state in accordance with user selections.
+     */
     protected void finalizeAddedFileIssues() {
         for (Component c : addedFilesPanel.getComponents()) {
             if (c instanceof SingleFileIssuePanel) {
@@ -239,6 +245,9 @@ public class RepositoryScanIssuesPanel extends javax.swing.JPanel {
         }
     }
 
+    /**
+     * Finalizes all outdated file issues presented by this panel. This involves setting the correct resolution state in accordance with user selections.
+     */
     protected void finalizeOutdatedFileIssues() {
         for (Component c : outdatedFilesPanel.getComponents()) {
             if (c instanceof SingleFileIssuePanel) {
@@ -256,6 +265,9 @@ public class RepositoryScanIssuesPanel extends javax.swing.JPanel {
         }
     }
 
+    /**
+     * Finalizes all missing file issues presented by this panel. This involves setting the correct resolution state in accordance with user selections.
+     */
     protected void finalizeMissingFileIssues() {
         for (Component c : removedFilesPanel.getComponents()) {
             if (c instanceof MovedMissingFileIssuePanel) {
@@ -281,6 +293,9 @@ public class RepositoryScanIssuesPanel extends javax.swing.JPanel {
         }
     }
 
+    /**
+     * Finalizes all moved file issues presented by this panel. This involves setting the correct resolution state in accordance with user selections.
+     */
     protected void finalizeMovedFileIssues() {
         for (Component c : movedFilesPanel.getComponents()) {
             if (c instanceof MovedMissingFileIssuePanel) {

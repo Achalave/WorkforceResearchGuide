@@ -13,7 +13,13 @@ import java.awt.event.ActionListener;
  */
 public class RepositoryScanWaitPanel extends javax.swing.JPanel {
 
+    /**
+     * The delay between advancements of the text animation.
+     */
     public static final int SCAN_ANIMATION_DELAY = 900;
+    /**
+     * The number of dots to add before the text animation resets.
+     */
     private static final int SCAN_COUNT_MAX = 3;
 
     int scanCount = 0;

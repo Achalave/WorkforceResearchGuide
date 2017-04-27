@@ -165,6 +165,13 @@ public class DatabaseController {
         stat.closeOnCompletion();
     }
 
+    /**
+     * 
+     * @param query
+     * @return A new PreparedStatement based off the provided query.
+     * @throws ConnectionNotStartedException
+     * @throws SQLException 
+     */
     public PreparedStatement getPreparedStatement(String query) throws ConnectionNotStartedException, SQLException {
         if (dbConnect == null) {
             throw new ConnectionNotStartedException();
@@ -172,6 +179,13 @@ public class DatabaseController {
         return dbConnect.prepareStatement(query);
     }
 
+    /**
+     * Executes an update using a PreparedStatement.
+     * @param query
+     * @param params
+     * @throws ConnectionNotStartedException
+     * @throws SQLException 
+     */
     public void executePreparedUpdate(String query, String... params) throws ConnectionNotStartedException, SQLException {
         PreparedStatement stmt = this.getPreparedStatement(query);
         for (int i = 0; i < params.length; i++) {
@@ -180,6 +194,14 @@ public class DatabaseController {
         stmt.executeUpdate();
     }
 
+    /**
+     * Executes a query using a PreparedStatement.
+     * @param query
+     * @param params
+     * @return
+     * @throws ConnectionNotStartedException
+     * @throws SQLException 
+     */
     public ResultSet executePreparedQuery(String query, String... params) throws ConnectionNotStartedException, SQLException {
         PreparedStatement stmt = this.getPreparedStatement(query);
         for (int i = 0; i < params.length; i++) {
@@ -376,6 +398,12 @@ public class DatabaseController {
         }
     }
 
+    /**
+     * Un-tags a document.
+     * @param docPath
+     * @param tag
+     * @throws ConnectionNotStartedException 
+     */
     public void removeDocumentTag(String docPath, String tag) throws ConnectionNotStartedException {
         try {
             this.executePreparedUpdate("DELETE FROM FILE_TAGS WHERE FileID="
@@ -673,6 +701,11 @@ public class DatabaseController {
         return tags;
     }
 
+    /**
+     * 
+     * @return A complete list of all tags in the database.
+     * @throws ConnectionNotStartedException 
+     */
     public ArrayList<String> getTags() throws ConnectionNotStartedException {
         ArrayList<String> tags = new ArrayList<>();
         try {

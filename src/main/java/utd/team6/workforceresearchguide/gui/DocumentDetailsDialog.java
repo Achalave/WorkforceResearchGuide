@@ -31,6 +31,10 @@ public class DocumentDetailsDialog extends javax.swing.JDialog {
         mainPanel.add(details);
     }
 
+    /**
+     * Creates new form DocumentDetailsDialog
+     * @param pan 
+     */
     public DocumentDetailsDialog(DocumentDetailsPanel pan){
         initComponents();
         details = pan;

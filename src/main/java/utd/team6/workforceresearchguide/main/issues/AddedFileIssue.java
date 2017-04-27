@@ -73,6 +73,10 @@ public class AddedFileIssue extends FileSyncIssue implements SingleFileIssue{
         return "Added File Issue: " + addedFile.getPath();
     }
 
+    /**
+     * 
+     * @return The file to be added.
+     */
     public DocumentData getAddedFile() {
         return addedFile;
     }

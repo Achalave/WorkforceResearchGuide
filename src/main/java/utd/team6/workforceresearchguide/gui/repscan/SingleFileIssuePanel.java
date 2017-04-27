@@ -36,14 +36,26 @@ public class SingleFileIssuePanel extends javax.swing.JPanel {
         this.fillFromDB = fillFromDB;
     }
 
+    /**
+     * Sets the internal checkbox selection state.
+     * @param selected 
+     */
     public void setSelected(boolean selected){
         documentCheckbox.setSelected(selected);
     }
     
+    /**
+     * 
+     * @return The internal checkbox selection state.
+     */
     public boolean isSelected(){
         return documentCheckbox.isSelected();
     }
     
+    /**
+     * 
+     * @return The issue this panel represents.
+     */
     public SingleFileIssue getIssue(){
         return issue;
     }

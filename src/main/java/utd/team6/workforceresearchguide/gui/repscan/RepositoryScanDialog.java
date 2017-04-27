@@ -127,11 +127,17 @@ public class RepositoryScanDialog extends javax.swing.JFrame {
         startSync();
     }
 
+    /**
+     * Starts the text animation.
+     */
     public void startAnimation() {
         waitScreen.resetAnimation(sync.getWaitMessage());
         animationTimer.start();
     }
 
+    /**
+     * Stops the text animation.
+     */
     public void stopAnimation() {
         animationTimer.stop();
     }

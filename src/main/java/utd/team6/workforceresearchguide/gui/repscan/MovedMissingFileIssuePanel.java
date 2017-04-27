@@ -20,8 +20,17 @@ import utd.team6.workforceresearchguide.main.issues.MovedFileIssue;
  */
 public class MovedMissingFileIssuePanel extends javax.swing.JPanel {
 
+    /**
+     * Represents the user's choice to relocate the file.
+     */
     public static final int RELOCATE_OPTION = 0;
+    /**
+     * Represents the user's choice to remove the file.
+     */
     public static final int REMOVE_OPTION = 1;
+    /**
+     * Represents the user's choice to keep the file.
+     */
     public static final int KEEP_OPTION = 2;
 
     FileSyncIssue issue;
@@ -84,10 +93,18 @@ public class MovedMissingFileIssuePanel extends javax.swing.JPanel {
         selection = REMOVE_OPTION;
     }
 
+    /**
+     * 
+     * @return The file that was removed.
+     */
     public DocumentData getOldFile(){
         return new DocumentData(oldFilePathLabel.getText());
     }
     
+    /**
+     * 
+     * @return The file that should take the place of the replaced file, if any.
+     */
     public DocumentData getNewFile(){
         return new DocumentData(newFilePathLabel.getText());
     }

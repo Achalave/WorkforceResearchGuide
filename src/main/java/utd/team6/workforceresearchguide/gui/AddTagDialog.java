@@ -20,7 +20,14 @@ import utd.team6.workforceresearchguide.sqlite.DatabaseTagDoesNotExistException;
  */
 public class AddTagDialog extends javax.swing.JDialog {
 
+    /**
+     * Indicated that the dialog was canceled.
+     */
     public static final int CANCELED = 0;
+    
+    /**
+     * Indicates that the user selected to add tags.
+     */
     public static final int TAGS_ADDED = 1;
     
     DocumentTagSource tagSource;
@@ -51,15 +58,26 @@ public class AddTagDialog extends javax.swing.JDialog {
         
     }
 
+    /**
+     * 
+     * @return The user action taken that caused this dialog to close.
+     */
     public int getCloseState(){
         return closeState;
     }
     
+    /**
+     * Displays this dialog.
+     */
     public void showDialog(){
         setModal(true);
         this.setVisible(true);
     }
     
+    /**
+     * 
+     * @return A list of all tags selected to be added.
+     */
     public ArrayList<String> getAddedTags(){
         return addedTags;
     }
