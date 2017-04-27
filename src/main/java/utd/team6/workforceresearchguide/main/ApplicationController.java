@@ -1,8 +1,10 @@
 package utd.team6.workforceresearchguide.main;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
@@ -45,6 +47,7 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
     LuceneSearchSession search;
     TimerTask searchUpdater;
     HashMap<Integer, SearchResult> results;
+    List<DocumentData> docResults;
 
     Timer applicationTimer;
 
@@ -163,6 +166,10 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
         //Change the GUI to reflect the cancelation
 
     }
+    
+    public boolean searchRunning() {
+        return search.searchInProgress();
+    }
 
     /**
      * This function is called periodically in order to collect and update
@@ -173,7 +180,16 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
             //Get the fresh result set
             results.clear();
             aggregateResultSet(results);
+            
             //Update the view with the results
+            try {
+                setDocResults(results);
+            } catch (DatabaseFileDoesNotExistException 
+                    | ConnectionNotStartedException 
+                    | ParseException ex) {
+                Logger.getLogger(ApplicationController.class.getName())
+                        .log(Level.SEVERE, null, ex);
+            } 
             
             //Check if the search is complete
             if (!search.searchInProgress()) {
@@ -217,6 +233,34 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
                 result.updateContentScore(score.score);
             }
         }
+    }
+    
+    private void setDocResults(HashMap<Integer, SearchResult> results) throws DatabaseFileDoesNotExistException, ConnectionNotStartedException, ParseException {
+        docResults = new ArrayList<>();
+        
+        this.getSessionPermission();
+        this.startDBConnection();
+        
+        for (HashMap.Entry<Integer, SearchResult> entry : results.entrySet()) {
+            
+            SearchResult doc = entry.getValue();
+            double aggregateScore = doc.getAggregateScore();
+            String path = doc.getFilePath();
+            
+            DocumentData docData = db.getDocumentData(path);
+            docData.setResultScore(aggregateScore);
+            
+            docResults.add(docData);
+            
+        }
+        
+        this.stopDBConnection();
+        this.releaseSessionPermission();
+
+    }
+    
+    public List<DocumentData> getDocResults() {
+        return docResults;
     }
 
     /**

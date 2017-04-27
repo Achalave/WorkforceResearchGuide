@@ -30,6 +30,7 @@ public class DocumentData {
     private String name;
     private Date lastModDate;
     private Date dateAdded;
+    private double docScore;
     /**
      * This is the number of times this document has been successfully returned
      * in search results. The object version of int is used in order to track if
@@ -38,6 +39,7 @@ public class DocumentData {
      */
     private Integer hits;
     private String hash;
+    
 
     /**
      * Instantiate the object with none of the meta fields filled out. A path
@@ -330,4 +332,19 @@ public class DocumentData {
         this.dateAdded = dateAdded;
     }
 
+    /**
+     *
+     * @param score
+     */
+    public void setResultScore(double score) {
+        this.docScore = score;
+    }
+
+    /**
+     *
+     * @return double
+     */
+    public double getResultScore() {
+        return docScore;
+    }
 }
