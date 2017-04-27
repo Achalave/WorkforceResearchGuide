@@ -14,7 +14,8 @@ public abstract class FailedFileSyncIssue {
 
     /**
      * Creates a new FailedFileSyncIssue.
-     * @param is 
+     *
+     * @param is
      */
     public FailedFileSyncIssue(FileSyncIssue is) {
         this.issue = is;

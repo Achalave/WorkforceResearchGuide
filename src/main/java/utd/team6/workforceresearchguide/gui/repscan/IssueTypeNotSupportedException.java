@@ -7,6 +7,6 @@ package utd.team6.workforceresearchguide.gui.repscan;
  *
  * @author Michael
  */
-public class IssueTypeNotSupportedException extends Exception{
+public class IssueTypeNotSupportedException extends Exception {
 
 }

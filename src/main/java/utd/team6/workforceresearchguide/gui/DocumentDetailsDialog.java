@@ -33,14 +33,16 @@ public class DocumentDetailsDialog extends javax.swing.JDialog {
 
     /**
      * Creates new form DocumentDetailsDialog
-     * @param pan 
+     *
+     * @param pan
      */
-    public DocumentDetailsDialog(DocumentDetailsPanel pan){
+    public DocumentDetailsDialog(DocumentDetailsPanel pan) {
         initComponents();
         details = pan;
         mainPanel.setLayout(new BorderLayout());
         mainPanel.add(details);
     }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -129,7 +131,7 @@ public class DocumentDetailsDialog extends javax.swing.JDialog {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new DocumentDetailsDialog(null, null,false).setVisible(true);
+                new DocumentDetailsDialog(null, null, false).setVisible(true);
             }
         });
     }

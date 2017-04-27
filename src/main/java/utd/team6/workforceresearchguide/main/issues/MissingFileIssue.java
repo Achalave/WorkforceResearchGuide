@@ -20,7 +20,7 @@ import utd.team6.workforceresearchguide.sqlite.DatabaseFileDoesNotExistException
  *
  * @author Michael
  */
-public class MissingFileIssue extends FileSyncIssue implements SingleFileIssue{
+public class MissingFileIssue extends FileSyncIssue implements SingleFileIssue {
 
     /**
      * This response value indicates that the file has been removed.
@@ -31,7 +31,7 @@ public class MissingFileIssue extends FileSyncIssue implements SingleFileIssue{
      * This response value indicates that the file has been relocated.
      */
     public static final int RESPONSE_FILE_RELOCATED = 1;
-    
+
     /**
      * This response value indicates that the file should be kept in the system.
      */
@@ -48,7 +48,8 @@ public class MissingFileIssue extends FileSyncIssue implements SingleFileIssue{
 
     /**
      * Creates a new MissingFileIssue object.
-     * @param missingFile 
+     *
+     * @param missingFile
      */
     public MissingFileIssue(DocumentData missingFile) {
         this.missingFile = missingFile;
@@ -70,10 +71,10 @@ public class MissingFileIssue extends FileSyncIssue implements SingleFileIssue{
     /**
      * Sets the user response to keep the represented file.
      */
-    public void keepFile(){
+    public void keepFile() {
         userResponse = RESPONSE_KEEP_FILE;
     }
-    
+
     /**
      * This function should be called if the missing file was determined to be
      * removed.
@@ -82,7 +83,6 @@ public class MissingFileIssue extends FileSyncIssue implements SingleFileIssue{
         userResponse = RESPONSE_FILE_REMOVED;
     }
 
-    
     @Override
     public void resolve(DatabaseController db, LuceneController lucene) throws InvalidResponseException, IndexingSessionNotStartedException, IOException, ReadSessionNotStartedException, TikaException, ConnectionNotStartedException, SQLException {
         switch (userResponse) {

@@ -34,7 +34,7 @@ import utd.team6.workforceresearchguide.sqlite.DatabaseFileDoesNotExistException
 public class RepositoryScanDialog extends javax.swing.JFrame {
 
     private static final int RESOLUTION_UPDATE_DELAY = 100;
-    
+
     private static final String ANIMATION_PANEL = "scan";
     private static final String ISSUES_PANEL = "issues";
 
@@ -48,7 +48,6 @@ public class RepositoryScanDialog extends javax.swing.JFrame {
 
     Timer animationTimer;
     Timer checkResolutionTimer;
-    
 
     /**
      * Creates new form RepositoryScanDialog
@@ -91,12 +90,13 @@ public class RepositoryScanDialog extends javax.swing.JFrame {
                 waitScreen.updateAnimation(sync.getWaitMessage());
             }
         });
-        
-        checkResolutionTimer = new Timer(RESOLUTION_UPDATE_DELAY, new ActionListener(){
+
+        checkResolutionTimer = new Timer(RESOLUTION_UPDATE_DELAY, new ActionListener() {
             boolean finished = false;
+
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(!sync.isResolutionActive() && !finished){
+                if (!sync.isResolutionActive() && !finished) {
                     finished = true;
                     sync.finalizeResolution();
                     close();
@@ -142,7 +142,6 @@ public class RepositoryScanDialog extends javax.swing.JFrame {
         animationTimer.stop();
     }
 
-    
     /**
      * Begins the syncing process starting with the initial examination of the
      * repository.
@@ -155,7 +154,7 @@ public class RepositoryScanDialog extends javax.swing.JFrame {
                 try {
                     startAnimation();
                     FileSyncIssue[] issues = sync.examineDifferences();
-                    if(issues == null || issues.length == 0){
+                    if (issues == null || issues.length == 0) {
                         JOptionPane.showMessageDialog(rootPane, "The repository is synced.");
                         close();
                         return;

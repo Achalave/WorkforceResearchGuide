@@ -603,14 +603,15 @@ public final class ApplicationFrame extends javax.swing.JFrame {
      * Handles a change in the group selection.
      */
     public void groupChanged() {
-        
+
     }
 
     /**
      * Handles adding a document to the specified group.
+     *
      * @param group
      */
-    public void addDocumentToGroup(String group){
+    public void addDocumentToGroup(String group) {
         String selection = (String) groupComboBox.getSelectedItem();
         if (selection.equals(NEW_GROUP_TEXT)) {
             //Create a new group
@@ -621,7 +622,7 @@ public final class ApplicationFrame extends javax.swing.JFrame {
 
         }
     }
-    
+
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
         beginUserRepositorySelection();
     }//GEN-LAST:event_jMenuItem2ActionPerformed

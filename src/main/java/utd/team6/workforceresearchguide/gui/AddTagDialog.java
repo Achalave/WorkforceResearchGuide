@@ -24,64 +24,65 @@ public class AddTagDialog extends javax.swing.JDialog {
      * Indicated that the dialog was canceled.
      */
     public static final int CANCELED = 0;
-    
+
     /**
      * Indicates that the user selected to add tags.
      */
     public static final int TAGS_ADDED = 1;
-    
+
     DocumentTagSource tagSource;
     ArrayList<String> newTags;
     ArrayList<String> addedTags;
     String docPath;
-    
+
     private int closeState;
-    
+
     /**
      * Creates new form AddTagDialog
+     *
      * @param docPath
      * @param tagSource
      */
-    public AddTagDialog(String docPath,DocumentTagSource tagSource) {
+    public AddTagDialog(String docPath, DocumentTagSource tagSource) {
         initComponents();
-        
+
         this.docPath = docPath;
-        
+
         newTags = new ArrayList<>();
-        
+
         this.tagSource = tagSource;
-        
+
         ArrayList<String> tags = tagSource.getTagList();
-        for(String tag:tags){
-            tagListPanel.add(new JCheckBox(tag,false));
+        for (String tag : tags) {
+            tagListPanel.add(new JCheckBox(tag, false));
         }
-        
+
     }
 
     /**
-     * 
+     *
      * @return The user action taken that caused this dialog to close.
      */
-    public int getCloseState(){
+    public int getCloseState() {
         return closeState;
     }
-    
+
     /**
      * Displays this dialog.
      */
-    public void showDialog(){
+    public void showDialog() {
         setModal(true);
         this.setVisible(true);
     }
-    
+
     /**
-     * 
+     *
      * @return A list of all tags selected to be added.
      */
-    public ArrayList<String> getAddedTags(){
+    public ArrayList<String> getAddedTags() {
         return addedTags;
     }
-    
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -153,7 +154,7 @@ public class AddTagDialog extends javax.swing.JDialog {
 
     private void createTagButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createTagButtonActionPerformed
         String tag = newTagTextBox.getText();
-        tagListPanel.add(new JCheckBox(tag,true), 0);
+        tagListPanel.add(new JCheckBox(tag, true), 0);
         newTags.add(tag);
         closeState = CANCELED;
         setVisible(false);
@@ -161,13 +162,13 @@ public class AddTagDialog extends javax.swing.JDialog {
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         //Add the new tags
-        for(String tag:newTags){
+        for (String tag : newTags) {
             tagSource.addTag(tag);
         }
-        for(Component c:tagListPanel.getComponents()){
-            if(c instanceof JCheckBox && ((JCheckBox)c).isSelected()){
+        for (Component c : tagListPanel.getComponents()) {
+            if (c instanceof JCheckBox && ((JCheckBox) c).isSelected()) {
                 try {
-                    String tag = ((JCheckBox)c).getText();
+                    String tag = ((JCheckBox) c).getText();
                     tagSource.addDocumentTag(docPath, tag);
                     addedTags.add(tag);
                 } catch (DatabaseTagDoesNotExistException | DatabaseFileDoesNotExistException ex) {
@@ -209,7 +210,7 @@ public class AddTagDialog extends javax.swing.JDialog {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new AddTagDialog(null,null).setVisible(true);
+                new AddTagDialog(null, null).setVisible(true);
             }
         });
     }

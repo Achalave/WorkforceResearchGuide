@@ -287,7 +287,8 @@ public class LuceneController {
      * @param tag
      * @throws IOException
      * @throws ReadSessionNotStartedException
-     * @throws utd.team6.workforceresearchguide.lucene.IndexingSessionNotStartedException
+     * @throws
+     * utd.team6.workforceresearchguide.lucene.IndexingSessionNotStartedException
      */
     public void removeDocumentTag(String docPath, String tag) throws IOException, ReadSessionNotStartedException, IndexingSessionNotStartedException {
         if (writer == null) {
@@ -309,19 +310,22 @@ public class LuceneController {
 
     /**
      * Removed all instances of the specified tag.
+     *
      * @param tag
-     * @throws IOException 
-     * @throws utd.team6.workforceresearchguide.lucene.IndexingSessionNotStartedException 
-     * @throws utd.team6.workforceresearchguide.lucene.ReadSessionNotStartedException 
+     * @throws IOException
+     * @throws
+     * utd.team6.workforceresearchguide.lucene.IndexingSessionNotStartedException
+     * @throws
+     * utd.team6.workforceresearchguide.lucene.ReadSessionNotStartedException
      */
     public void removeTag(String tag) throws IOException, IndexingSessionNotStartedException, ReadSessionNotStartedException {
-        if(reader == null){
+        if (reader == null) {
             throw new ReadSessionNotStartedException();
         }
-        if(writer == null){
+        if (writer == null) {
             throw new IndexingSessionNotStartedException();
         }
-        
+
         for (int i = 0; i < writer.maxDoc(); i++) {
             Document doc = reader.document(i);
             //Find and remove the specified tag
@@ -331,12 +335,12 @@ public class LuceneController {
                 IndexableField field = it.next();
                 if (field.name().equals("tag") && field.stringValue().equals(tag)) {
                     it.remove();
-                }else if(field.name().equals("path")){
+                } else if (field.name().equals("path")) {
                     //Get the document path
                     docPath = field.stringValue();
                 }
             }
-            
+
             //Update the document
             writer.updateDocument(new Term("path", docPath), doc);
         }

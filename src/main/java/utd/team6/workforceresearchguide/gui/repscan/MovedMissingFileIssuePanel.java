@@ -40,7 +40,7 @@ public class MovedMissingFileIssuePanel extends javax.swing.JPanel {
 
     private final String startPath;
     private final DocumentInfoDialogFactory info;
-    
+
     DocumentDetailsDialog info1;
     DocumentDetailsDialog info2;
 
@@ -70,9 +70,9 @@ public class MovedMissingFileIssuePanel extends javax.swing.JPanel {
 
     /**
      * Creates new form DoubleFileIssuePanel
-     * 
+     *
      * @param issue
-     * @param info 
+     * @param info
      */
     public MovedMissingFileIssuePanel(MissingFileIssue issue, DocumentInfoDialogFactory info) {
         initComponents();
@@ -94,21 +94,21 @@ public class MovedMissingFileIssuePanel extends javax.swing.JPanel {
     }
 
     /**
-     * 
+     *
      * @return The file that was removed.
      */
-    public DocumentData getOldFile(){
+    public DocumentData getOldFile() {
         return new DocumentData(oldFilePathLabel.getText());
     }
-    
+
     /**
-     * 
+     *
      * @return The file that should take the place of the replaced file, if any.
      */
-    public DocumentData getNewFile(){
+    public DocumentData getNewFile() {
         return new DocumentData(newFilePathLabel.getText());
     }
-    
+
     /**
      *
      * @return The integer corresponding to the radio selection made by the
@@ -273,19 +273,18 @@ public class MovedMissingFileIssuePanel extends javax.swing.JPanel {
     }//GEN-LAST:event_keepRadioButtonActionPerformed
 
     private void infoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_infoButtonActionPerformed
-        if(info1 == null){
-            info1 = info.getDetailsDialog(this.oldFilePathLabel.getText(),false);
+        if (info1 == null) {
+            info1 = info.getDetailsDialog(this.oldFilePathLabel.getText(), false);
         }
         info1.setVisible(true);
     }//GEN-LAST:event_infoButtonActionPerformed
 
     private void infoButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_infoButton2ActionPerformed
-        if(info1 == null){
-            info1 = info.getDetailsDialog(this.newFilePathLabel.getText(),true);
+        if (info1 == null) {
+            info1 = info.getDetailsDialog(this.newFilePathLabel.getText(), true);
         }
         info1.setVisible(true);
     }//GEN-LAST:event_infoButton2ActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup;

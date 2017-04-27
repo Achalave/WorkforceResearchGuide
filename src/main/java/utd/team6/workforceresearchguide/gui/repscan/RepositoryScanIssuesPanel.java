@@ -216,7 +216,8 @@ public class RepositoryScanIssuesPanel extends javax.swing.JPanel {
     }
 
     /**
-     * Finalizes all issues presented by this panel. This involves setting the correct resolution state in accordance with user selections.
+     * Finalizes all issues presented by this panel. This involves setting the
+     * correct resolution state in accordance with user selections.
      */
     public void finalizeIssues() {
         finalizeAddedFileIssues();
@@ -226,7 +227,8 @@ public class RepositoryScanIssuesPanel extends javax.swing.JPanel {
     }
 
     /**
-     * Finalizes all added file issues presented by this panel. This involves setting the correct resolution state in accordance with user selections.
+     * Finalizes all added file issues presented by this panel. This involves
+     * setting the correct resolution state in accordance with user selections.
      */
     protected void finalizeAddedFileIssues() {
         for (Component c : addedFilesPanel.getComponents()) {
@@ -246,7 +248,8 @@ public class RepositoryScanIssuesPanel extends javax.swing.JPanel {
     }
 
     /**
-     * Finalizes all outdated file issues presented by this panel. This involves setting the correct resolution state in accordance with user selections.
+     * Finalizes all outdated file issues presented by this panel. This involves
+     * setting the correct resolution state in accordance with user selections.
      */
     protected void finalizeOutdatedFileIssues() {
         for (Component c : outdatedFilesPanel.getComponents()) {
@@ -266,7 +269,8 @@ public class RepositoryScanIssuesPanel extends javax.swing.JPanel {
     }
 
     /**
-     * Finalizes all missing file issues presented by this panel. This involves setting the correct resolution state in accordance with user selections.
+     * Finalizes all missing file issues presented by this panel. This involves
+     * setting the correct resolution state in accordance with user selections.
      */
     protected void finalizeMissingFileIssues() {
         for (Component c : removedFilesPanel.getComponents()) {
@@ -294,7 +298,8 @@ public class RepositoryScanIssuesPanel extends javax.swing.JPanel {
     }
 
     /**
-     * Finalizes all moved file issues presented by this panel. This involves setting the correct resolution state in accordance with user selections.
+     * Finalizes all moved file issues presented by this panel. This involves
+     * setting the correct resolution state in accordance with user selections.
      */
     protected void finalizeMovedFileIssues() {
         for (Component c : movedFilesPanel.getComponents()) {
@@ -414,7 +419,6 @@ public class RepositoryScanIssuesPanel extends javax.swing.JPanel {
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         cancel.actionPerformed(evt);
     }//GEN-LAST:event_cancelButtonActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel addedFilesPanel;

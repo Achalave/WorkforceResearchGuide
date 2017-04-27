@@ -12,8 +12,9 @@ import utd.team6.workforceresearchguide.main.DocumentData;
  * @author Michael
  */
 public interface SingleFileIssue {
+
     /**
-     * 
+     *
      * @return The DocumentData object for this SingleFileIssue.
      */
     public DocumentData getDocumentData();

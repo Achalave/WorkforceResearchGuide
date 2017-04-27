@@ -30,7 +30,8 @@ public class RepositoryChooser extends javax.swing.JDialog {
 
     /**
      * Creates new form RepositoryChooser
-     * @param repPath 
+     *
+     * @param repPath
      */
     public RepositoryChooser(String repPath) {
         this();
@@ -128,6 +129,7 @@ public class RepositoryChooser extends javax.swing.JDialog {
 
     /**
      * Displays the dialog.
+     *
      * @return The selected repository path.
      */
     public String showDialog() {

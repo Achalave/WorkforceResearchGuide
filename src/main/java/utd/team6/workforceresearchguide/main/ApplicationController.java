@@ -64,14 +64,13 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
         } catch (IOException ex) {
             Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         applicationTimer = new Timer(true);
 
         sessionSem = new Semaphore(1);
 
         infoFactory = new DocumentInfoDialogFactory(this);
     }
-
 
     /**
      * Adds files to the existing Lucene index from provided String[].
@@ -103,7 +102,7 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
     }
 
     /**
-     * 
+     *
      * @return The DocumentInfoDialogFactory for this ApplicationController.
      */
     public DocumentInfoDialogFactory getInfoFactory() {
@@ -120,7 +119,7 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
     public void beginSearch(String query) throws IOException, ReadSessionNotStartedException {
         this.getSessionPermission();
         this.startLuceneReadSession();
-        
+
         search = lucene.search(query, 100);
         search.startSearch();
         //Instantiate the result set
@@ -150,7 +149,7 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
     }
 
     /**
-     * 
+     *
      * @return True if a search is in progress, false otherwise.
      */
     public boolean searchRunning() {
@@ -244,7 +243,7 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
     }
 
     /**
-     * 
+     *
      * @return A list of the document results for a search.
      */
     public List<DocumentData> getDocResults() {
@@ -353,12 +352,13 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
     }
 
     /**
-     * 
+     *
      * @param filePath
-     * @return The corresponding DocumentData object as represented by the database.
-     * @throws DatabaseFileDoesNotExistException 
+     * @return The corresponding DocumentData object as represented by the
+     * database.
+     * @throws DatabaseFileDoesNotExistException
      */
-    public DocumentData getDocumentData(String filePath) throws DatabaseFileDoesNotExistException{
+    public DocumentData getDocumentData(String filePath) throws DatabaseFileDoesNotExistException {
         try {
             this.getSessionPermission();
             this.startDBConnection();
@@ -371,9 +371,9 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
         }
         return null;
     }
-    
+
     /**
-     * 
+     *
      * @param repPath
      * @return A new FileSyncManager.
      */
@@ -548,27 +548,27 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
     }
 
     /**
-     * 
+     *
      * @return A list of all groups in the database.
      */
-    public ArrayList<String> getGroups(){
+    public ArrayList<String> getGroups() {
         ArrayList<String> groups = null;
-        
+
         this.getSessionPermission();
         this.startDBConnection();
-        
+
         try {
             groups = db.getGroups();
         } catch (ConnectionNotStartedException ex) {
             Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         this.stopDBConnection();
         this.releaseSessionPermission();
-        
+
         return groups;
     }
-    
+
     class TagNode {
 
         int count;

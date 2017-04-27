@@ -166,11 +166,11 @@ public class DatabaseController {
     }
 
     /**
-     * 
+     *
      * @param query
      * @return A new PreparedStatement based off the provided query.
      * @throws ConnectionNotStartedException
-     * @throws SQLException 
+     * @throws SQLException
      */
     public PreparedStatement getPreparedStatement(String query) throws ConnectionNotStartedException, SQLException {
         if (dbConnect == null) {
@@ -181,31 +181,33 @@ public class DatabaseController {
 
     /**
      * Executes an update using a PreparedStatement.
+     *
      * @param query
      * @param params
      * @throws ConnectionNotStartedException
-     * @throws SQLException 
+     * @throws SQLException
      */
     public void executePreparedUpdate(String query, String... params) throws ConnectionNotStartedException, SQLException {
         PreparedStatement stmt = this.getPreparedStatement(query);
         for (int i = 0; i < params.length; i++) {
-            stmt.setString(i+1, params[i]);
+            stmt.setString(i + 1, params[i]);
         }
         stmt.executeUpdate();
     }
 
     /**
      * Executes a query using a PreparedStatement.
+     *
      * @param query
      * @param params
      * @return
      * @throws ConnectionNotStartedException
-     * @throws SQLException 
+     * @throws SQLException
      */
     public ResultSet executePreparedQuery(String query, String... params) throws ConnectionNotStartedException, SQLException {
         PreparedStatement stmt = this.getPreparedStatement(query);
         for (int i = 0; i < params.length; i++) {
-            stmt.setString(i+1, params[i]);
+            stmt.setString(i + 1, params[i]);
         }
         return stmt.executeQuery();
     }
@@ -400,9 +402,10 @@ public class DatabaseController {
 
     /**
      * Un-tags a document.
+     *
      * @param docPath
      * @param tag
-     * @throws ConnectionNotStartedException 
+     * @throws ConnectionNotStartedException
      */
     public void removeDocumentTag(String docPath, String tag) throws ConnectionNotStartedException {
         try {
@@ -702,9 +705,9 @@ public class DatabaseController {
     }
 
     /**
-     * 
+     *
      * @return A complete list of all tags in the database.
-     * @throws ConnectionNotStartedException 
+     * @throws ConnectionNotStartedException
      */
     public ArrayList<String> getTags() throws ConnectionNotStartedException {
         ArrayList<String> tags = new ArrayList<>();

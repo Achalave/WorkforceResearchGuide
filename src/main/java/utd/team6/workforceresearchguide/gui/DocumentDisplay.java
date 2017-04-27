@@ -15,6 +15,7 @@ import utd.team6.workforceresearchguide.main.DocumentData;
 
 /**
  * Displays basic information over a document. Allows documents to be opened.
+ *
  * @author Michael
  */
 public class DocumentDisplay extends javax.swing.JPanel {
@@ -145,12 +146,11 @@ public class DocumentDisplay extends javax.swing.JPanel {
 
     private void openFolderButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openFolderButtonActionPerformed
         try {
-            Runtime.getRuntime().exec("explorer.exe /select,"+data.getPath());
+            Runtime.getRuntime().exec("explorer.exe /select," + data.getPath());
         } catch (IOException ex) {
             Logger.getLogger(DocumentDisplay.class.getName()).log(Level.SEVERE, null, ex);
         }
     }//GEN-LAST:event_openFolderButtonActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton openButton;

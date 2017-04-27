@@ -14,7 +14,6 @@ import utd.team6.workforceresearchguide.sqlite.DatabaseFileDoesNotExistException
 import utd.team6.workforceresearchguide.sqlite.DatabaseTagDoesNotExistException;
 
 //@author Michael Haertling
-
 /**
  *
  * @author Michael
@@ -55,36 +54,36 @@ public class DatabaseControllerTest {
     /**
      * Tests the groups function of the DatabaseController.
      */
-    public void testGroups(){
+    public void testGroups() {
         try {
             db.startConnection();
             db.addGroup("testGroup");
-            DocumentData data = new DocumentData(TestUtils.PATH_TO_RESOURCES+"\\test1.txt");
+            DocumentData data = new DocumentData(TestUtils.PATH_TO_RESOURCES + "\\test1.txt");
             data.fillFromFile();
             db.addDocument(data);
             db.addFileToGroup("testGroup", data.getPath());
             db.printQuery("SELECT * FROM GROUPS");
             db.printQuery("SELECT * FROM FILES");
             db.printQuery("SELECT * FROM GROUP_FILES");
-            
+
             System.out.println("\nPHASE 2");
             db.deleteFileFromGroup("testGroup", data.getPath());
             db.printQuery("SELECT * FROM GROUPS");
             db.printQuery("SELECT * FROM FILES");
             db.printQuery("SELECT * FROM GROUP_FILES");
-            
+
             System.out.println("\nPHASE 3");
             db.addFileToGroup("testGroup", data.getPath());
             db.deleteGroup("testGroup");
             db.printQuery("SELECT * FROM GROUPS");
             db.printQuery("SELECT * FROM FILES");
             db.printQuery("SELECT * FROM GROUP_FILES");
-            
+
         } catch (ConnectionNotStartedException | IOException | ConnectionAlreadyActiveException ex) {
             Logger.getLogger(DatabaseControllerTest.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     /**
      * Tests the adding of documents in the DatabaseController.
      */

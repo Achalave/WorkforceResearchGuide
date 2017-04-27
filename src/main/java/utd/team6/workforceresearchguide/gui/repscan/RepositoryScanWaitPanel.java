@@ -55,8 +55,8 @@ public class RepositoryScanWaitPanel extends javax.swing.JPanel {
         if (scanCount < SCAN_COUNT_MAX) {
             scanCount++;
             String dot = "";
-            for(int i=0;i<scanCount;i++){
-                dot+=".";
+            for (int i = 0; i < scanCount; i++) {
+                dot += ".";
             }
             scanAnimationLabel.setText(dot + text + dot);
         } else {
@@ -113,7 +113,6 @@ public class RepositoryScanWaitPanel extends javax.swing.JPanel {
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         cancel.actionPerformed(evt);
     }//GEN-LAST:event_cancelButtonActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;

@@ -28,7 +28,6 @@ import utd.team6.workforceresearchguide.sqlite.DatabaseController;
 import utd.team6.workforceresearchguide.sqlite.DatabaseFileDoesNotExistException;
 
 //@author Michael Haertling
-
 /**
  *
  * @author Michael
@@ -61,7 +60,6 @@ public class FileSynchManagerTest {
         db.stopConnection();
     }
 
-    
     /**
      *
      * @param args
@@ -83,7 +81,7 @@ public class FileSynchManagerTest {
 //        p = getPaths();
 //        fsmt = new FileSynchManagerTest(p,false);
 //        fsmt.testDocumentMoveP2();
-        FileSynchManagerTest test = new FileSynchManagerTest(null,true);
+        FileSynchManagerTest test = new FileSynchManagerTest(null, true);
         test.testAddedFileResolution();
     }
 
@@ -176,48 +174,48 @@ public class FileSynchManagerTest {
     public void testDocumentMoveP2() {
         try {
             db.startConnection();
-            
+
             System.out.println("PASS 2");
             FileSyncIssue[] issues = sync.examineDifferences();
             System.out.println(Arrays.toString(issues));
-            
+
             //Delete the temp file
-            FileUtils.forceDelete(TestUtils.PATH_TO_RESOURCES+"/tmpFolder");
+            FileUtils.forceDelete(TestUtils.PATH_TO_RESOURCES + "/tmpFolder");
 
             db.stopConnection();
         } catch (IOException | ConnectionNotStartedException | SQLException | DatabaseFileDoesNotExistException | ParseException | ConnectionAlreadyActiveException ex) {
             Logger.getLogger(FileSynchManagerTest.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     /**
      * Tests the resolution of file added issues.
      */
-    public void testAddedFileResolution(){
+    public void testAddedFileResolution() {
         try {
             db.startConnection();
             lucene.startIndexingSession();
-            AddedFileIssue iss = new AddedFileIssue(new DocumentData(TestUtils.PATH_TO_RESOURCES+"/test1.txt"));
+            AddedFileIssue iss = new AddedFileIssue(new DocumentData(TestUtils.PATH_TO_RESOURCES + "/test1.txt"));
             iss.addFile();
             iss.resolve(db, lucene);
-            
+
             System.out.println(Arrays.toString(db.getAllKnownFiles()));
-            
+
             db.stopConnection();
             lucene.stopIndexingSession();
         } catch (InvalidResponseException | IndexingSessionNotStartedException | ReadSessionNotStartedException | IOException | TikaException | ConnectionNotStartedException | SQLException | ConnectionAlreadyActiveException ex) {
             Logger.getLogger(FileSynchManagerTest.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     /**
      * Tests the moved file issues.
      */
-    public void testMovedFileResolution(){
+    public void testMovedFileResolution() {
         try {
             db.startConnection();
             lucene.startIndexingSession();
-            AddedFileIssue iss = new AddedFileIssue(new DocumentData(TestUtils.PATH_TO_RESOURCES+"/test1.txt"));
+            AddedFileIssue iss = new AddedFileIssue(new DocumentData(TestUtils.PATH_TO_RESOURCES + "/test1.txt"));
             iss.addFile();
             iss.resolve(db, lucene);
             db.stopConnection();
@@ -226,21 +224,21 @@ public class FileSynchManagerTest {
             Logger.getLogger(FileSynchManagerTest.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
-    
+
     /**
      * Tests missing file issues.
      */
-    public void testMissingFileResolution(){
-        
+    public void testMissingFileResolution() {
+
     }
-    
+
     /**
      * Tests outdated file issues.
      */
-    public void testOutdatedFileResolution(){
-        
+    public void testOutdatedFileResolution() {
+
     }
-    
+
     /**
      *
      * @param path

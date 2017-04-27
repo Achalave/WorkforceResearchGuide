@@ -19,11 +19,12 @@ public class SingleFileIssuePanel extends javax.swing.JPanel {
     private final SingleFileIssue issue;
     private final DocumentInfoDialogFactory infoFactory;
     boolean fillFromDB;
-    
+
     DocumentDetailsDialog docDetails;
-    
+
     /**
      * Creates new form SingleFileIssue
+     *
      * @param infoFactory
      * @param iss
      * @param fillFromDB
@@ -38,28 +39,29 @@ public class SingleFileIssuePanel extends javax.swing.JPanel {
 
     /**
      * Sets the internal checkbox selection state.
-     * @param selected 
+     *
+     * @param selected
      */
-    public void setSelected(boolean selected){
+    public void setSelected(boolean selected) {
         documentCheckbox.setSelected(selected);
     }
-    
+
     /**
-     * 
+     *
      * @return The internal checkbox selection state.
      */
-    public boolean isSelected(){
+    public boolean isSelected() {
         return documentCheckbox.isSelected();
     }
-    
+
     /**
-     * 
+     *
      * @return The issue this panel represents.
      */
-    public SingleFileIssue getIssue(){
+    public SingleFileIssue getIssue() {
         return issue;
     }
-    
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -100,12 +102,11 @@ public class SingleFileIssuePanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void infoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_infoButtonActionPerformed
-        if(docDetails == null){
-            docDetails = infoFactory.getDetailsDialog(issue.getDocumentData(),fillFromDB);
+        if (docDetails == null) {
+            docDetails = infoFactory.getDetailsDialog(issue.getDocumentData(), fillFromDB);
         }
         docDetails.setVisible(true);
     }//GEN-LAST:event_infoButtonActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox documentCheckbox;

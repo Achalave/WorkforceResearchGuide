@@ -61,9 +61,10 @@ public class LuceneSearchSession {
 
     /**
      * Creates a new LuceneSearchSession.
+     *
      * @param read
      * @param numTopScores
-     * @param query 
+     * @param query
      */
     public LuceneSearchSession(DirectoryReader read, int numTopScores, String query) {
         this.reader = read;
@@ -217,7 +218,7 @@ public class LuceneSearchSession {
     }
 
     /**
-     * 
+     *
      * @return The current results for the tag search.
      */
     public TopDocs getTagHits() {
@@ -225,25 +226,25 @@ public class LuceneSearchSession {
     }
 
     /**
-     * 
-     * @return 
+     *
+     * @return
      */
     public TopDocs getContentHits() {
         return contentCollector.topDocs();
     }
 
     /**
-     * 
+     *
      * @param docID
-     * @return 
-     * @throws IOException 
+     * @return
+     * @throws IOException
      */
     public Document getDocument(int docID) throws IOException {
         return reader.document(docID);
     }
 
     /**
-     * 
+     *
      * @return True if the search is still in progress.
      */
     public boolean searchInProgress() {

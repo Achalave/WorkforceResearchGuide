@@ -16,9 +16,10 @@ public class SearchResult implements Comparable<SearchResult> {
 
     /**
      * Creates a new SearchResult object.
+     *
      * @param filePath
      * @param tagScore
-     * @param contentScore 
+     * @param contentScore
      */
     public SearchResult(String filePath, double tagScore, double contentScore) {
         this.filePath = filePath;
@@ -36,7 +37,8 @@ public class SearchResult implements Comparable<SearchResult> {
 
     /**
      * Updates the tag score to the specified value.
-     * @param score 
+     *
+     * @param score
      */
     public void updateTagScore(double score) {
         this.tagScore = score;
@@ -45,7 +47,8 @@ public class SearchResult implements Comparable<SearchResult> {
 
     /**
      * Updates the content score to the specified value.
-     * @param score 
+     *
+     * @param score
      */
     public void updateContentScore(double score) {
         this.contentScore = score;

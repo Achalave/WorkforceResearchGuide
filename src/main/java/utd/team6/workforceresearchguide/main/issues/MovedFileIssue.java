@@ -34,7 +34,7 @@ public class MovedFileIssue extends FileSyncIssue {
      * This response value indicates that the file has been relocated.
      */
     public static final int RESPONSE_FILE_RELOCATED = 1;
-    
+
     /**
      * This response value indicates that the file should be kept in the system.
      */
@@ -65,7 +65,8 @@ public class MovedFileIssue extends FileSyncIssue {
 
     /**
      * Changes the file that the missing file will be relocated as.
-     * @param data 
+     *
+     * @param data
      */
     public void changeRelocation(DocumentData data) {
         alternateFile = data;
@@ -74,29 +75,29 @@ public class MovedFileIssue extends FileSyncIssue {
     /**
      * Sets the user response to keep the missing file.
      */
-    public void keepFile(){
+    public void keepFile() {
         userResponse = RESPONSE_KEEP_FILE;
     }
-    
+
     /**
      * Sets the user response to remove the missing file.
      */
-    public void removeFile(){
+    public void removeFile() {
         userResponse = RESPONSE_FILE_REMOVED;
     }
-    
+
     @Override
     public void resolve(DatabaseController db, LuceneController lucene) throws InvalidResponseException, IndexingSessionNotStartedException, IOException, ReadSessionNotStartedException, TikaException, ConnectionNotStartedException, SQLException {
         switch (userResponse) {
             case RESPONSE_FILE_RELOCATED:
                 DocumentData nf;
-                if(alternateFile != null){
+                if (alternateFile != null) {
                     //A different path was given for the new file.
                     nf = alternateFile;
                     //Add the new file
                     lucene.indexNewDocument(newFile.getPath());
                     db.addDocument(newFile);
-                }else{
+                } else {
                     nf = newFile;
                 }
                 //Change the stored path in Lucene
@@ -125,7 +126,8 @@ public class MovedFileIssue extends FileSyncIssue {
 
     /**
      * Get the missing file object.
-     * @return 
+     *
+     * @return
      */
     public DocumentData getMissingFile() {
         return missingFile;
@@ -133,7 +135,8 @@ public class MovedFileIssue extends FileSyncIssue {
 
     /**
      * Get the added file object.
-     * @return 
+     *
+     * @return
      */
     public DocumentData getNewFile() {
         return newFile;

@@ -213,10 +213,10 @@ public class FileSyncManager {
 
         this.issues = new FileSyncIssue[isus.size()];
         this.issues = isus.toArray(this.issues);
-        
+
         sess.stopDBConnection();
         sess.releaseSessionPermission();
-        
+
         return this.issues;
     }
 
@@ -267,7 +267,8 @@ public class FileSyncManager {
     }
 
     /**
-     * Finalizes the resolution process. This includes closing all sessions used. This should be called after the resolution threads have completed.
+     * Finalizes the resolution process. This includes closing all sessions
+     * used. This should be called after the resolution threads have completed.
      */
     public void finalizeResolution() {
         sess.stopDBConnection();
@@ -280,11 +281,11 @@ public class FileSyncManager {
      * Cancels the scan process.
      */
     public void cancelScan() {
-        
+
     }
 
     /**
-     * 
+     *
      * @return The current wait message that should be displayed.
      */
     public String getWaitMessage() {

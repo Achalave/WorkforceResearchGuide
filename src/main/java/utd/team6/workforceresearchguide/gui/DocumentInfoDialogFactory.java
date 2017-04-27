@@ -15,14 +15,15 @@ public class DocumentInfoDialogFactory {
 
     /**
      * Creates a new DocumentInfoDialogFactory.
-     * @param app 
+     *
+     * @param app
      */
     public DocumentInfoDialogFactory(ApplicationController app) {
         this.app = app;
     }
 
     /**
-     * 
+     *
      * @param docPath
      * @param fillFromDB
      * @return
@@ -32,30 +33,30 @@ public class DocumentInfoDialogFactory {
     }
 
     /**
-     * 
+     *
      * @param data
      * @param fillFromDB
-     * @return 
+     * @return
      */
     public DocumentDetailsPanel getDetailsPanel(DocumentData data, boolean fillFromDB) {
         return new DocumentDetailsPanel(data, app, fillFromDB);
     }
 
     /**
-     * 
+     *
      * @param docPath
      * @param fillFromDB
-     * @return 
+     * @return
      */
     public DocumentDetailsDialog getDetailsDialog(String docPath, boolean fillFromDB) {
         return new DocumentDetailsDialog(getDetailsPanel(docPath, fillFromDB));
     }
 
     /**
-     * 
+     *
      * @param data
      * @param fillFromDB
-     * @return 
+     * @return
      */
     public DocumentDetailsDialog getDetailsDialog(DocumentData data, boolean fillFromDB) {
         return new DocumentDetailsDialog(getDetailsPanel(data, fillFromDB));

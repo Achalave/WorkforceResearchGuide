@@ -338,7 +338,6 @@ public class DocumentDetailsPanel extends javax.swing.JPanel {
         addSelectedSuggestedTags();
     }//GEN-LAST:event_sAddTagsActionPerformed
 
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addTag;
     private javax.swing.JLabel dateAddedLabel;
