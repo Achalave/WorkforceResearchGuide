@@ -34,6 +34,11 @@ public class MovedFileIssue extends FileSyncIssue {
      * This response value indicates that the file has been relocated.
      */
     public static final int RESPONSE_FILE_RELOCATED = 1;
+    
+    /**
+     * This response value indicates that the file should be kept in the system.
+     */
+    public static final int RESPONSE_KEEP_FILE = 2;
 
     DocumentData missingFile;
     DocumentData newFile;
@@ -54,7 +59,7 @@ public class MovedFileIssue extends FileSyncIssue {
      * This function should be called if the suggested added file is the
      * relocated missing file.
      */
-    public void relocationSuggestionAccepted() {
+    public void relocateFile() {
         userResponse = RESPONSE_FILE_RELOCATED;
     }
 
@@ -62,6 +67,14 @@ public class MovedFileIssue extends FileSyncIssue {
         alternateFile = data;
     }
 
+    public void keepFile(){
+        userResponse = RESPONSE_KEEP_FILE;
+    }
+    
+    public void removeFile(){
+        userResponse = RESPONSE_FILE_REMOVED;
+    }
+    
     @Override
     public void resolve(DatabaseController db, LuceneController lucene) throws InvalidResponseException, IndexingSessionNotStartedException, IOException, ReadSessionNotStartedException, TikaException, ConnectionNotStartedException, SQLException {
         switch (userResponse) {

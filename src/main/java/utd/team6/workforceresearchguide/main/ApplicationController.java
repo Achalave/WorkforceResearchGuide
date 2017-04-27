@@ -12,6 +12,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.tika.exception.TikaException;
+import utd.team6.workforceresearchguide.gui.DocumentInfoDialogFactory;
 import utd.team6.workforceresearchguide.lucene.IndexingSessionNotStartedException;
 import utd.team6.workforceresearchguide.lucene.LuceneController;
 import utd.team6.workforceresearchguide.lucene.LuceneSearchSession;
@@ -37,6 +38,8 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
 
     LuceneController lucene;
     DatabaseController db;
+    
+    DocumentInfoDialogFactory infoFactory;
 
     boolean searchInProgress = false;
     LuceneSearchSession search;
@@ -47,6 +50,8 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
 
     /**
      * Creates a new ApplicationController object.
+     * @param lucenePath
+     * @param databasePath
      */
     public ApplicationController(String lucenePath, String databasePath) {
         try {
@@ -59,6 +64,7 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
 
         sessionSem = new Semaphore(1);
 
+        infoFactory = new DocumentInfoDialogFactory(this);
     }
 
     /**
@@ -70,28 +76,28 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
      * @throws TikaException
      * @throws IndexingSessionNotStartedException
      */
-    public void createIndex(String path) throws IOException, TikaException,
-            IndexingSessionNotStartedException {
-
-        //Get file hierarchy
-        String[] filePaths = lucene.getFilePaths(path);
-
-        //set indexing session to create NEW index
-        this.getSessionPermission();
-        this.startLuceneIndexingSession();
-        this.startLuceneReadSession();
-
-        //indexes files
-        lucene.indexNewDocuments(filePaths);
-
-        this.stopLuceneIndexingSession();
-        this.stopLuceneReadSession();
-        this.releaseSessionPermission();
-
-    }
+//    public void createIndex(String path) throws IOException, TikaException,
+//            IndexingSessionNotStartedException {
+//
+//        //Get file hierarchy
+//        String[] filePaths = lucene.getFilePaths(path);
+//
+//        //set indexing session to create NEW index
+//        this.getSessionPermission();
+//        this.startLuceneIndexingSession();
+//        this.startLuceneReadSession();
+//
+//        //indexes files
+//        lucene.indexNewDocuments(filePaths);
+//
+//        this.stopLuceneIndexingSession();
+//        this.stopLuceneReadSession();
+//        this.releaseSessionPermission();
+//
+//    }
 
     /**
-     * Adds files to the existing lucene index from provided String[].
+     * Adds files to the existing Lucene index from provided String[].
      *
      *
      * @param paths
@@ -119,6 +125,10 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
 
     }
 
+    public DocumentInfoDialogFactory getInfoFactory(){
+        return infoFactory;
+    }
+    
     /**
      * Starts a new search with the provided query.
      *

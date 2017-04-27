@@ -264,6 +264,10 @@ public class FileSyncManager {
 
     }
 
+    public void cancelScan(){
+        
+    }
+    
     public String getWaitMessage(){
         return waitMessage;
     }

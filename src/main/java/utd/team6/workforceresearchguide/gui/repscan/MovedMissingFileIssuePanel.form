@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.3" maxVersion="1.9" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+  <NonVisualComponents>
+    <Component class="javax.swing.ButtonGroup" name="buttonGroup">
+    </Component>
+  </NonVisualComponents>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
@@ -28,11 +32,15 @@
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="infoButton" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="jButton1" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="infoButton2" alignment="1" min="-2" max="-2" attributes="0"/>
                       </Group>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <Component id="relocateCheckBox" min="-2" max="-2" attributes="0"/>
+                      <Component id="relocateRadioButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="removeRadioButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="keepRadioButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="32767" attributes="0"/>
                       <Component id="relocateButton" min="-2" max="-2" attributes="0"/>
                   </Group>
@@ -51,7 +59,7 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="jButton1" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="infoButton2" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="newFilePathLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
@@ -59,7 +67,9 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="relocateButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="relocateCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="relocateRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="removeRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="keepRadioButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="32767" attributes="0"/>
           </Group>
@@ -71,16 +81,22 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="Info"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="infoButtonActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="oldFilePathLabel">
       <Properties>
         <Property name="text" type="java.lang.String" value="old/file/path"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JButton" name="jButton1">
+    <Component class="javax.swing.JButton" name="infoButton2">
       <Properties>
         <Property name="text" type="java.lang.String" value="Info"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="infoButton2ActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="newFilePathLabel">
       <Properties>
@@ -89,16 +105,11 @@
     </Component>
     <Component class="javax.swing.JButton" name="relocateButton">
       <Properties>
-        <Property name="text" type="java.lang.String" value="Change Relocation Path"/>
+        <Property name="text" type="java.lang.String" value="Set Relocation Path"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="relocateButtonActionPerformed"/>
       </Events>
-    </Component>
-    <Component class="javax.swing.JCheckBox" name="relocateCheckBox">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Relocate"/>
-      </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="notifyLabel">
       <Properties>
@@ -107,6 +118,30 @@
         </Property>
         <Property name="text" type="java.lang.String" value="The suggested file will be added to the system."/>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JRadioButton" name="relocateRadioButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Relocate"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="relocateRadioButtonActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JRadioButton" name="removeRadioButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Remove"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removeRadioButtonActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JRadioButton" name="keepRadioButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Keep"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="keepRadioButtonActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

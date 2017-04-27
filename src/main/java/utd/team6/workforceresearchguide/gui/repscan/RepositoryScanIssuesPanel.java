@@ -12,10 +12,13 @@ import java.awt.event.ActionListener;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import utd.team6.workforceresearchguide.gui.DocumentInfoDialogFactory;
 import utd.team6.workforceresearchguide.main.issues.AddedFileIssue;
+import utd.team6.workforceresearchguide.main.issues.FileSyncIssue;
 import utd.team6.workforceresearchguide.main.issues.MissingFileIssue;
 import utd.team6.workforceresearchguide.main.issues.MovedFileIssue;
 import utd.team6.workforceresearchguide.main.issues.OutdatedFileIssue;
+import utd.team6.workforceresearchguide.main.issues.SingleFileIssue;
 
 /**
  *
@@ -28,16 +31,21 @@ public class RepositoryScanIssuesPanel extends javax.swing.JPanel {
 
     boolean addedFiles, movedFiles, outdatedFiles, removedFiles = false;
 
+    DocumentInfoDialogFactory infoFactory;
+
     /**
      * Creates new form RepositoryScanIssuesPanel
      *
+     * @param infoFactory
      * @param resolve
      * @param cancel
      */
-    public RepositoryScanIssuesPanel(ActionListener resolve, ActionListener cancel) {
+    public RepositoryScanIssuesPanel(DocumentInfoDialogFactory infoFactory, ActionListener resolve, ActionListener cancel) {
         initComponents();
         this.resolve = resolve;
         this.cancel = cancel;
+
+        this.infoFactory = infoFactory;
 
         setupAddedFilesPanel();
         setupMissingFilesPanel();
@@ -69,8 +77,8 @@ public class RepositoryScanIssuesPanel extends javax.swing.JPanel {
             public void actionPerformed(ActionEvent e) {
                 boolean selected = jcb.isSelected();
                 for (Component c : addedFilesPanel.getComponents()) {
-                    if (c instanceof AddedFileIssuePanel) {
-                        ((AddedFileIssuePanel) c).setSelected(selected);
+                    if (c instanceof SingleFileIssuePanel) {
+                        ((SingleFileIssuePanel) c).setSelected(selected);
                     }
                 }
             }
@@ -102,8 +110,8 @@ public class RepositoryScanIssuesPanel extends javax.swing.JPanel {
             public void actionPerformed(ActionEvent e) {
                 boolean selected = jcb.isSelected();
                 for (Component c : removedFilesPanel.getComponents()) {
-                    if (c instanceof AddedFileIssuePanel) {
-                        ((AddedFileIssuePanel) c).setSelected(selected);
+                    if (c instanceof SingleFileIssuePanel) {
+                        ((SingleFileIssuePanel) c).setSelected(selected);
                     }
                 }
             }
@@ -135,8 +143,8 @@ public class RepositoryScanIssuesPanel extends javax.swing.JPanel {
             public void actionPerformed(ActionEvent e) {
                 boolean selected = jcb.isSelected();
                 for (Component c : outdatedFilesPanel.getComponents()) {
-                    if (c instanceof AddedFileIssuePanel) {
-                        ((AddedFileIssuePanel) c).setSelected(selected);
+                    if (c instanceof SingleFileIssuePanel) {
+                        ((SingleFileIssuePanel) c).setSelected(selected);
                     }
                 }
             }
@@ -166,7 +174,7 @@ public class RepositoryScanIssuesPanel extends javax.swing.JPanel {
      */
     public void importAddedFileIssue(AddedFileIssue issue) {
         addedFiles = true;
-        AddedFileIssuePanel pan = new AddedFileIssuePanel(issue);
+        SingleFileIssuePanel pan = new SingleFileIssuePanel(issue);
         addedFilesPanel.add(pan);
     }
 
@@ -177,6 +185,8 @@ public class RepositoryScanIssuesPanel extends javax.swing.JPanel {
      */
     public void importMovedFileIssue(MovedFileIssue issue) {
         movedFiles = true;
+        MovedMissingFileIssuePanel pan = new MovedMissingFileIssuePanel(issue, infoFactory);
+        movedFilesPanel.add(pan);
     }
 
     /**
@@ -186,6 +196,8 @@ public class RepositoryScanIssuesPanel extends javax.swing.JPanel {
      */
     public void importMissingFileIssue(MissingFileIssue issue) {
         removedFiles = true;
+        MovedMissingFileIssuePanel pan = new MovedMissingFileIssuePanel(issue, infoFactory);
+        removedFilesPanel.add(pan);
     }
 
     /**
@@ -195,6 +207,99 @@ public class RepositoryScanIssuesPanel extends javax.swing.JPanel {
      */
     public void importOutdatedFileIssue(OutdatedFileIssue issue) {
         outdatedFiles = true;
+        SingleFileIssuePanel pan = new SingleFileIssuePanel(issue);
+        outdatedFilesPanel.add(pan);
+    }
+
+    public void finalizeIssues() {
+        finalizeAddedFileIssues();
+        finalizeOutdatedFileIssues();
+        finalizeMissingFileIssues();
+        finalizeMovedFileIssues();
+    }
+
+    protected void finalizeAddedFileIssues() {
+        for (Component c : addedFilesPanel.getComponents()) {
+            if (c instanceof SingleFileIssuePanel) {
+                SingleFileIssuePanel pan = (SingleFileIssuePanel) c;
+                SingleFileIssue iss = pan.getIssue();
+                if (iss instanceof AddedFileIssue) {
+                    boolean selected = pan.isSelected();
+                    if (selected) {
+                        ((AddedFileIssue) iss).addFile();
+                    } else {
+                        ((AddedFileIssue) iss).ignoreFile();
+                    }
+                }
+            }
+        }
+    }
+
+    protected void finalizeOutdatedFileIssues() {
+        for (Component c : outdatedFilesPanel.getComponents()) {
+            if (c instanceof SingleFileIssuePanel) {
+                SingleFileIssuePanel pan = (SingleFileIssuePanel) c;
+                SingleFileIssue iss = pan.getIssue();
+                if (iss instanceof OutdatedFileIssue) {
+                    boolean selected = pan.isSelected();
+                    if (selected) {
+                        ((OutdatedFileIssue) iss).updateOutdatedFile();
+                    } else {
+                        ((OutdatedFileIssue) iss).ignoreOutdatedFile();
+                    }
+                }
+            }
+        }
+    }
+
+    protected void finalizeMissingFileIssues() {
+        for (Component c : removedFilesPanel.getComponents()) {
+            if (c instanceof MovedMissingFileIssuePanel) {
+                MovedMissingFileIssuePanel pan = (MovedMissingFileIssuePanel) c;
+                FileSyncIssue issue = pan.getIssue();
+
+                if (issue instanceof MissingFileIssue) {
+                    switch (pan.getSelection()) {
+                        case MovedMissingFileIssuePanel.RELOCATE_OPTION:
+                            ((MissingFileIssue)issue).documentRelocated(pan.getNewFile(), false);
+                            break;
+                        case MovedMissingFileIssuePanel.REMOVE_OPTION:
+                            ((MissingFileIssue)issue).documentRemoved();
+                            break;
+                        case MovedMissingFileIssuePanel.KEEP_OPTION:
+                            ((MissingFileIssue)issue).keepFile();
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        }
+    }
+
+    protected void finalizeMovedFileIssues() {
+        for (Component c : movedFilesPanel.getComponents()) {
+            if (c instanceof MovedMissingFileIssuePanel) {
+                MovedMissingFileIssuePanel pan = (MovedMissingFileIssuePanel) c;
+                FileSyncIssue issue = pan.getIssue();
+
+                if (issue instanceof MovedFileIssue) {
+                    switch (pan.getSelection()) {
+                        case MovedMissingFileIssuePanel.RELOCATE_OPTION:
+                            ((MovedFileIssue)issue).relocateFile();
+                            break;
+                        case MovedMissingFileIssuePanel.REMOVE_OPTION:
+                            ((MovedFileIssue)issue).removeFile();
+                            break;
+                        case MovedMissingFileIssuePanel.KEEP_OPTION:
+                            ((MovedFileIssue)issue).keepFile();
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        }
     }
 
     /**

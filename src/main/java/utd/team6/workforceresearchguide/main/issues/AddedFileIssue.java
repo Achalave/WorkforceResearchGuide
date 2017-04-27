@@ -15,7 +15,7 @@ import utd.team6.workforceresearchguide.sqlite.DatabaseController;
  *
  * @author Michael
  */
-public class AddedFileIssue extends FileSyncIssue {
+public class AddedFileIssue extends FileSyncIssue implements SingleFileIssue{
 
     /**
      * This response value indicates that the file should be added to the
@@ -74,6 +74,11 @@ public class AddedFileIssue extends FileSyncIssue {
     }
 
     public DocumentData getAddedFile() {
+        return addedFile;
+    }
+
+    @Override
+    public DocumentData getDocumentData() {
         return addedFile;
     }
 

@@ -6,27 +6,36 @@
 package utd.team6.workforceresearchguide.gui.repscan;
 
 import utd.team6.workforceresearchguide.main.issues.AddedFileIssue;
+import utd.team6.workforceresearchguide.main.issues.SingleFileIssue;
 
 /**
  *
  * @author Michael
  */
-public class AddedFileIssuePanel extends javax.swing.JPanel {
+public class SingleFileIssuePanel extends javax.swing.JPanel {
 
-    private final AddedFileIssue issue;
+    private final SingleFileIssue issue;
     
     /**
      * Creates new form SingleFileIssue
      * @param iss
      */
-    public AddedFileIssuePanel(AddedFileIssue iss) {
+    public SingleFileIssuePanel(SingleFileIssue iss) {
         initComponents();
         issue = iss;
-        documentCheckbox.setText(issue.getAddedFile().getPath());
+        documentCheckbox.setText(issue.getDocumentData().getPath());
     }
 
     public void setSelected(boolean selected){
         documentCheckbox.setSelected(selected);
+    }
+    
+    public boolean isSelected(){
+        return documentCheckbox.isSelected();
+    }
+    
+    public SingleFileIssue getIssue(){
+        return issue;
     }
     
     /**

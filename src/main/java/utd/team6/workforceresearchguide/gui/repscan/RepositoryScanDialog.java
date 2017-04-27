@@ -17,6 +17,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.Timer;
+import utd.team6.workforceresearchguide.gui.DocumentInfoDialogFactory;
 import utd.team6.workforceresearchguide.main.FileSyncManager;
 import utd.team6.workforceresearchguide.main.issues.AddedFileIssue;
 import utd.team6.workforceresearchguide.main.issues.FileSyncIssue;
@@ -32,6 +33,8 @@ import utd.team6.workforceresearchguide.sqlite.DatabaseFileDoesNotExistException
  */
 public class RepositoryScanDialog extends javax.swing.JFrame {
 
+    private static final int RESOLUTION_UPDATE_DELAY = 100;
+    
     private static final String ANIMATION_PANEL = "scan";
     private static final String ISSUES_PANEL = "issues";
 
@@ -44,11 +47,15 @@ public class RepositoryScanDialog extends javax.swing.JFrame {
     boolean scanningComplete = false;
 
     Timer animationTimer;
+    Timer checkResolutionTimer;
+    
 
     /**
      * Creates new form RepositoryScanDialog
+     *
+     * @param infoFactory
      */
-    public RepositoryScanDialog() {
+    public RepositoryScanDialog(DocumentInfoDialogFactory infoFactory) {
         initComponents();
         cards = new CardLayout();
         mainPanel.setLayout(cards);
@@ -60,15 +67,17 @@ public class RepositoryScanDialog extends javax.swing.JFrame {
                 cancelFromWait();
             }
         });
-        issueScreen = new RepositoryScanIssuesPanel(new ActionListener() {
+        issueScreen = new RepositoryScanIssuesPanel(infoFactory, new ActionListener() {
             //Begin the issue resolution
             @Override
             public void actionPerformed(ActionEvent e) {
+                beginResolution();
             }
         }, new ActionListener() {
             //Cancel the set of issues
             @Override
             public void actionPerformed(ActionEvent e) {
+                cancelFromResolution();
             }
         }) {
         };
@@ -82,15 +91,25 @@ public class RepositoryScanDialog extends javax.swing.JFrame {
                 waitScreen.updateAnimation(sync.getWaitMessage());
             }
         });
+        
+        checkResolutionTimer = new Timer(RESOLUTION_UPDATE_DELAY, new ActionListener(){
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(!sync.isResolutionActive()){
+                    close();
+                }
+            }
+        });
     }
 
     /**
      * Creates a new RepositoryScanDialog object.
      *
+     * @param infoFactory
      * @param fsm
      */
-    public RepositoryScanDialog(FileSyncManager fsm) {
-        this();
+    public RepositoryScanDialog(DocumentInfoDialogFactory infoFactory, FileSyncManager fsm) {
+        this(infoFactory);
         sync = fsm;
     }
 
@@ -113,6 +132,7 @@ public class RepositoryScanDialog extends javax.swing.JFrame {
         animationTimer.stop();
     }
 
+    
     /**
      * Begins the syncing process starting with the initial examination of the
      * repository.
@@ -154,11 +174,11 @@ public class RepositoryScanDialog extends javax.swing.JFrame {
             if (iss instanceof AddedFileIssue) {
                 issueScreen.importAddedFileIssue((AddedFileIssue) iss);
             } else if (iss instanceof MovedFileIssue) {
-
+                issueScreen.importMovedFileIssue((MovedFileIssue) iss);
             } else if (iss instanceof MissingFileIssue) {
-
+                issueScreen.importMissingFileIssue((MissingFileIssue) iss);
             } else if (iss instanceof OutdatedFileIssue) {
-
+                issueScreen.importOutdatedFileIssue((OutdatedFileIssue) iss);
             } else {
                 throw new IssueTypeNotSupportedException();
             }
@@ -188,17 +208,24 @@ public class RepositoryScanDialog extends javax.swing.JFrame {
     public void cancelFromWait() {
         if (!scanningComplete) {
             //The scanning of the repository is in progress
-
+            //Cancel the scanning and close the GUI
+            sync.cancelScan();
+            close();
         } else {
-            //The resolving of issues is in progress
-
+            try {
+                //The resolving of issues is in progress
+                sync.cancelResolutionProcess();
+                close();
+            } catch (IOException ex) {
+                Logger.getLogger(RepositoryScanDialog.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
     }
 
     /**
      * Cancels the resolution process from the issue screen.
      */
-    public void cancelResolution() {
+    public void cancelFromResolution() {
         //There is no onging process, just close this GUI
         close();
     }
@@ -214,8 +241,11 @@ public class RepositoryScanDialog extends javax.swing.JFrame {
      * Begins the process of resolving the set of issues.
      */
     public void beginResolution() {
+        System.out.println("Resolution Begun!");
         try {
             sync.startResolutionProcess(1);
+            this.showAnimationPanel();
+            this.startAnimation();
         } catch (IOException | SQLException | DatabaseFileDoesNotExistException ex) {
             Logger.getLogger(RepositoryScanDialog.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -289,7 +319,7 @@ public class RepositoryScanDialog extends javax.swing.JFrame {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new RepositoryScanDialog().setVisible(true);
+                new RepositoryScanDialog(null).setVisible(true);
             }
         });
     }

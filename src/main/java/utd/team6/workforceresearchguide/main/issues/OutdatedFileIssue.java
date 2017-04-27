@@ -20,7 +20,7 @@ import utd.team6.workforceresearchguide.sqlite.DatabaseFileDoesNotExistException
  *
  * @author Michael
  */
-public class OutdatedFileIssue extends FileSyncIssue {
+public class OutdatedFileIssue extends FileSyncIssue implements SingleFileIssue{
 
     /**
      * Indicates that the outdated file should be updated.
@@ -81,6 +81,11 @@ public class OutdatedFileIssue extends FileSyncIssue {
             default:
                 throw new InvalidResponseException();
         }
+    }
+
+    @Override
+    public DocumentData getDocumentData() {
+        return outdatedFile;
     }
 
 }

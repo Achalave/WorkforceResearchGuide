@@ -25,13 +25,17 @@ public class DocumentDetailsDialog extends javax.swing.JDialog {
      */
     public DocumentDetailsDialog(DocumentData d, ApplicationController a) {
         initComponents();
-//        setModal(true);
         details = new DocumentDetailsPanel(d, a);
         mainPanel.setLayout(new BorderLayout());
         mainPanel.add(details);
-//        pack();
     }
 
+    public DocumentDetailsDialog(DocumentDetailsPanel pan){
+        initComponents();
+        details = pan;
+        mainPanel.setLayout(new BorderLayout());
+        mainPanel.add(details);
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always

@@ -121,7 +121,7 @@ public final class ApplicationFrame extends javax.swing.JFrame {
     }
 
     public void scanRepository() {
-        RepositoryScanDialog rsd = new RepositoryScanDialog(app.generateFileSyncManager(repPath));
+        RepositoryScanDialog rsd = new RepositoryScanDialog(app.getInfoFactory(),app.generateFileSyncManager(repPath));
         rsd.setLocationRelativeTo(this);
         try {
             rsd.showDialog();
