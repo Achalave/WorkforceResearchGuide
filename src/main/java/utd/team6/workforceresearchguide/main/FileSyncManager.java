@@ -151,9 +151,6 @@ public class FileSyncManager {
         //Get a list of the files in the SQL database
         String[] dbFiles = db.getAllKnownFiles();
 
-        sess.stopDBConnection();
-        sess.releaseSessionPermission();
-
         ArrayList<FileSyncIssue> isus = new ArrayList<>();
 
         ArrayList<String> missingFiles = new ArrayList<>();
@@ -216,6 +213,10 @@ public class FileSyncManager {
 
         this.issues = new FileSyncIssue[isus.size()];
         this.issues = isus.toArray(this.issues);
+        
+        sess.stopDBConnection();
+        sess.releaseSessionPermission();
+        
         return this.issues;
     }
 

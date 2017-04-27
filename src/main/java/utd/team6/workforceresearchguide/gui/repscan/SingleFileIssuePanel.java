@@ -5,6 +5,8 @@
  */
 package utd.team6.workforceresearchguide.gui.repscan;
 
+import utd.team6.workforceresearchguide.gui.DocumentDetailsDialog;
+import utd.team6.workforceresearchguide.gui.DocumentInfoDialogFactory;
 import utd.team6.workforceresearchguide.main.issues.AddedFileIssue;
 import utd.team6.workforceresearchguide.main.issues.SingleFileIssue;
 
@@ -15,15 +17,23 @@ import utd.team6.workforceresearchguide.main.issues.SingleFileIssue;
 public class SingleFileIssuePanel extends javax.swing.JPanel {
 
     private final SingleFileIssue issue;
+    private final DocumentInfoDialogFactory infoFactory;
+    boolean fillFromDB;
+    
+    DocumentDetailsDialog docDetails;
     
     /**
      * Creates new form SingleFileIssue
+     * @param infoFactory
      * @param iss
+     * @param fillFromDB
      */
-    public SingleFileIssuePanel(SingleFileIssue iss) {
+    public SingleFileIssuePanel(DocumentInfoDialogFactory infoFactory, SingleFileIssue iss, boolean fillFromDB) {
         initComponents();
         issue = iss;
         documentCheckbox.setText(issue.getDocumentData().getPath());
+        this.infoFactory = infoFactory;
+        this.fillFromDB = fillFromDB;
     }
 
     public void setSelected(boolean selected){
@@ -47,10 +57,15 @@ public class SingleFileIssuePanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jButton1 = new javax.swing.JButton();
+        infoButton = new javax.swing.JButton();
         documentCheckbox = new javax.swing.JCheckBox();
 
-        jButton1.setText("Info");
+        infoButton.setText("Info");
+        infoButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                infoButtonActionPerformed(evt);
+            }
+        });
 
         documentCheckbox.setSelected(true);
         documentCheckbox.setText("Document Path");
@@ -60,7 +75,7 @@ public class SingleFileIssuePanel extends javax.swing.JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jButton1)
+                .addComponent(infoButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(documentCheckbox, javax.swing.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE))
         );
@@ -68,13 +83,20 @@ public class SingleFileIssuePanel extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                 .addComponent(documentCheckbox)
-                .addComponent(jButton1))
+                .addComponent(infoButton))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void infoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_infoButtonActionPerformed
+        if(docDetails == null){
+            docDetails = infoFactory.getDetailsDialog(issue.getDocumentData(),fillFromDB);
+        }
+        docDetails.setVisible(true);
+    }//GEN-LAST:event_infoButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox documentCheckbox;
-    private javax.swing.JButton jButton1;
+    private javax.swing.JButton infoButton;
     // End of variables declaration//GEN-END:variables
 }

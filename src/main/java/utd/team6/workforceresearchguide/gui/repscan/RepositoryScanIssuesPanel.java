@@ -178,7 +178,7 @@ public class RepositoryScanIssuesPanel extends javax.swing.JPanel {
      */
     public void importAddedFileIssue(AddedFileIssue issue) {
         addedFiles = true;
-        SingleFileIssuePanel pan = new SingleFileIssuePanel(issue);
+        SingleFileIssuePanel pan = new SingleFileIssuePanel(infoFactory, issue, false);
         addedFilesPanel.add(pan);
     }
 
@@ -211,7 +211,7 @@ public class RepositoryScanIssuesPanel extends javax.swing.JPanel {
      */
     public void importOutdatedFileIssue(OutdatedFileIssue issue) {
         outdatedFiles = true;
-        SingleFileIssuePanel pan = new SingleFileIssuePanel(issue);
+        SingleFileIssuePanel pan = new SingleFileIssuePanel(infoFactory, issue, true);
         outdatedFilesPanel.add(pan);
     }
 

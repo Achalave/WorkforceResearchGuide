@@ -183,7 +183,7 @@ public class DatabaseController {
     public ResultSet executePreparedQuery(String query, String... params) throws ConnectionNotStartedException, SQLException {
         PreparedStatement stmt = this.getPreparedStatement(query);
         for (int i = 0; i < params.length; i++) {
-            stmt.setString(i, params[i]);
+            stmt.setString(i+1, params[i]);
         }
         return stmt.executeQuery();
     }

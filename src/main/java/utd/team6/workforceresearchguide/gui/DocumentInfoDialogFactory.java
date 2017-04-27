@@ -12,22 +12,22 @@ public class DocumentInfoDialogFactory {
     ApplicationController app;
     
     public DocumentInfoDialogFactory(ApplicationController app){
-        
+        this.app  = app;
     }
     
-    public DocumentDetailsPanel getDetailsPanel(String docPath){
-        return this.getDetailsPanel(new DocumentData(docPath));
+    public DocumentDetailsPanel getDetailsPanel(String docPath, boolean fillFromDB){
+        return this.getDetailsPanel(new DocumentData(docPath),fillFromDB);
     }
     
-    public DocumentDetailsPanel getDetailsPanel(DocumentData data){
-        return new DocumentDetailsPanel(data, app);
+    public DocumentDetailsPanel getDetailsPanel(DocumentData data, boolean fillFromDB){
+        return new DocumentDetailsPanel(data, app,fillFromDB);
     }
     
-    public DocumentDetailsDialog getDetailsDialog(String docPath){
-        return new DocumentDetailsDialog(getDetailsPanel(docPath));
+    public DocumentDetailsDialog getDetailsDialog(String docPath, boolean fillFromDB){
+        return new DocumentDetailsDialog(getDetailsPanel(docPath,fillFromDB));
     }
     
-    public DocumentDetailsDialog getDetailsDialog(DocumentData data){
-        return new DocumentDetailsDialog(getDetailsPanel(data));
+    public DocumentDetailsDialog getDetailsDialog(DocumentData data, boolean fillFromDB){
+        return new DocumentDetailsDialog(getDetailsPanel(data,fillFromDB));
     }
 }

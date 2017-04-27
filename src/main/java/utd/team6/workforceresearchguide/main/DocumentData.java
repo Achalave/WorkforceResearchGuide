@@ -39,7 +39,6 @@ public class DocumentData {
      */
     private Integer hits;
     private String hash;
-    
 
     /**
      * Instantiate the object with none of the meta fields filled out. A path
@@ -184,6 +183,18 @@ public class DocumentData {
      */
     public void fillFromDatabase(DatabaseController db) throws SQLException, DatabaseFileDoesNotExistException, ConnectionNotStartedException, ParseException {
         copy(db.getDocumentData(path));
+    }
+
+    /**
+     * This function attempts to fill out any fields that are empty upon being
+     * called. The data is pulled from the database.
+     *
+     * @param app
+     * @throws
+     * utd.team6.workforceresearchguide.sqlite.DatabaseFileDoesNotExistException
+     */
+    public void fillFromDatabase(ApplicationController app) throws DatabaseFileDoesNotExistException {
+        copy(app.getDocumentData(path));
     }
 
     /**

@@ -5,6 +5,7 @@
  */
 package utd.team6.workforceresearchguide.gui;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -33,10 +34,25 @@ public class DocumentDetailsPanel extends javax.swing.JPanel {
      * @param d
      * @param a
      */
-    public DocumentDetailsPanel(DocumentData d, ApplicationController a) {
+    public DocumentDetailsPanel(DocumentData d, ApplicationController a, boolean fillFromDB) {
         initComponents();
         this.data = d;
         this.app = a;
+        if (fillFromDB) {
+            try {
+                d.fillFromDatabase(app);
+            } catch (DatabaseFileDoesNotExistException ex) {
+                Logger.getLogger(DocumentDetailsPanel.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        } else {
+            try {
+                data.fillFromFile();
+            } catch (IOException ex) {
+                Logger.getLogger(DocumentDetailsPanel.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            tabPane.setEnabledAt(1, false);
+            tabPane.setEnabledAt(2, false);
+        }
         if (data != null) {
             documentNameLabel.setText(data.getName());
             documentPathArea.setText(data.getPath());
@@ -67,17 +83,17 @@ public class DocumentDetailsPanel extends javax.swing.JPanel {
 
         tagListModel = new DefaultListModel();
         tagList.setModel(tagListModel);
-        
+
         suggestedTagListModel = new DefaultListModel();
         suggestedTagList.setModel(suggestedTagListModel);
     }
 
-    public void addSelectedSuggestedTags(){
+    public void addSelectedSuggestedTags() {
         //Get the selected suggestion tags
         int numAdded = 0;
-        for(int index:suggestedTagList.getSelectedIndices()){
+        for (int index : suggestedTagList.getSelectedIndices()) {
             try {
-                String tag = (String)suggestedTagListModel.get(index-numAdded);
+                String tag = (String) suggestedTagListModel.get(index - numAdded);
                 numAdded++;
                 tagListModel.add(0, tag);
                 //Add the actual tag to the document
@@ -87,7 +103,7 @@ public class DocumentDetailsPanel extends javax.swing.JPanel {
             }
         }
     }
-    
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -301,9 +317,9 @@ public class DocumentDetailsPanel extends javax.swing.JPanel {
     private void removeTagsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeTagsActionPerformed
         //Get the selected tags
         int numRemoved = 0;
-        for(int index:tagList.getSelectedIndices()){
+        for (int index : tagList.getSelectedIndices()) {
             try {
-                String tag = (String)tagListModel.get(index-numRemoved);
+                String tag = (String) tagListModel.get(index - numRemoved);
                 app.removeDocumentTag(data.getPath(), tag);
                 tagListModel.removeElementAt(index);
                 numRemoved++;

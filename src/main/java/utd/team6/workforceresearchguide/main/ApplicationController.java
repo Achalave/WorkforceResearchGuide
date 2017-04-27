@@ -64,6 +64,7 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
         } catch (IOException ex) {
             Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
         }
+        
         applicationTimer = new Timer(true);
 
         sessionSem = new Semaphore(1);
@@ -71,34 +72,7 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
         infoFactory = new DocumentInfoDialogFactory(this);
     }
 
-    /**
-     * Creates the initial lucene index based on provided root file directory.
-     *
-     *
-     * @param path
-     * @throws IOException
-     * @throws TikaException
-     * @throws IndexingSessionNotStartedException
-     */
-//    public void createIndex(String path) throws IOException, TikaException,
-//            IndexingSessionNotStartedException {
-//
-//        //Get file hierarchy
-//        String[] filePaths = lucene.getFilePaths(path);
-//
-//        //set indexing session to create NEW index
-//        this.getSessionPermission();
-//        this.startLuceneIndexingSession();
-//        this.startLuceneReadSession();
-//
-//        //indexes files
-//        lucene.indexNewDocuments(filePaths);
-//
-//        this.stopLuceneIndexingSession();
-//        this.stopLuceneReadSession();
-//        this.releaseSessionPermission();
-//
-//    }
+
     /**
      * Adds files to the existing Lucene index from provided String[].
      *
@@ -366,6 +340,20 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
         }
     }
 
+    public DocumentData getDocumentData(String filePath) throws DatabaseFileDoesNotExistException{
+        try {
+            this.getSessionPermission();
+            this.startDBConnection();
+            DocumentData data = db.getDocumentData(filePath);
+            this.stopDBConnection();
+            this.releaseSessionPermission();
+            return data;
+        } catch (ConnectionNotStartedException | ParseException ex) {
+            Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+    
     public FileSyncManager generateFileSyncManager(String repPath) {
         return new FileSyncManager(this, lucene, db, Utils.extractAllPaths(repPath));
     }

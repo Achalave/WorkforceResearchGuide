@@ -22,10 +22,11 @@ public class DocumentDetailsDialog extends javax.swing.JDialog {
      *
      * @param d
      * @param a
+     * @param fillFromDB
      */
-    public DocumentDetailsDialog(DocumentData d, ApplicationController a) {
+    public DocumentDetailsDialog(DocumentData d, ApplicationController a, boolean fillFromDB) {
         initComponents();
-        details = new DocumentDetailsPanel(d, a);
+        details = new DocumentDetailsPanel(d, a, fillFromDB);
         mainPanel.setLayout(new BorderLayout());
         mainPanel.add(details);
     }
@@ -81,7 +82,7 @@ public class DocumentDetailsDialog extends javax.swing.JDialog {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(mainPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(mainPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(closeButton)
                 .addContainerGap())
@@ -124,7 +125,7 @@ public class DocumentDetailsDialog extends javax.swing.JDialog {
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                new DocumentDetailsDialog(null, null).setVisible(true);
+                new DocumentDetailsDialog(null, null,false).setVisible(true);
             }
         });
     }
