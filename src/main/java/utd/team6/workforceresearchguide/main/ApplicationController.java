@@ -213,36 +213,12 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
         }
     }
 
-    private void setDocResults(HashMap<Integer, SearchResult> results) throws DatabaseFileDoesNotExistException, ConnectionNotStartedException, ParseException {
-        docResults = new ArrayList<>();
-
-        this.getSessionPermission();
-        this.startDBConnection();
-
-        for (HashMap.Entry<Integer, SearchResult> entry : results.entrySet()) {
-
-            SearchResult doc = entry.getValue();
-            double aggregateScore = doc.getAggregateScore();
-            String path = doc.getFilePath();
-
-            DocumentData docData = db.getDocumentData(path);
-            docData.setResultScore(aggregateScore);
-
-            docResults.add(docData);
-
-        }
-
-        this.stopDBConnection();
-        this.releaseSessionPermission();
-
-    }
-
     /**
      *
      * @return A list of the document results for a search.
      */
-    public List<DocumentData> getDocResults() {
-        return docResults;
+    public HashMap<Integer, DocumentDisplay> getDocResults() {
+        return results;
     }
 
     /**
