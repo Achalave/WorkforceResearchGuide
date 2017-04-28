@@ -106,9 +106,9 @@ public class LuceneSearchSession {
 
         //thesaurus file currently located in project directory
         //read synonym prolog file
-        File synFile = new File("wn_s.pl");
-        InputStream is = new FileInputStream(synFile);
-        Reader reader = new InputStreamReader(is);
+        ClassLoader classLoader = getClass().getClassLoader();
+        File file = new File(classLoader.getResource("wn_s.pl").getFile());
+        Reader reader = new InputStreamReader(new FileInputStream(file));
 
         //build synonym map
         SynonymMap.Builder parser = null;

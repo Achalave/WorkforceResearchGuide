@@ -6,11 +6,8 @@
 package utd.team6.workforceresearchguide.gui;
 
 import java.awt.Color;
-import java.awt.dnd.DropTarget;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -215,7 +212,7 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         disp.setInfoListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                System.out.println("Info");
+//                System.out.println("Info");
                 documentDataPanel.removeAll();
                 System.out.println(disp.getDocumentData().getPath());
                 DocumentDetailsPanel pan = app.getInfoFactory().getDetailsPanel(disp.getDocumentData(), true);
@@ -287,7 +284,7 @@ public final class ApplicationFrame extends javax.swing.JFrame {
     }
 
     public void searchComplete() {
-        System.out.println("Search Complete!");
+//        System.out.println("Search Complete!");
         cancelButton.setEnabled(false);
         app.searchComplete();
         //Fill the tags and turn on search filtering
