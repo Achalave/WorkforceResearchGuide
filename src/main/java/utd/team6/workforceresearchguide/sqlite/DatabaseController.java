@@ -237,7 +237,7 @@ public class DatabaseController {
      */
     public ArrayList<String> getGroupFiles(String group) throws ConnectionNotStartedException {
         ArrayList<String> files = new ArrayList<>();
-        String query = "SELECT f.FileName FROM GROUPS g, FILES f WHERE g.GroupName= ? AND f.FileID=g.FileID";
+        String query = "SELECT f.FilePath FROM GROUPS g, FILES f, GROUP_FILES gf WHERE g.GroupName= ? AND f.FileID=gf.FileID AND gf.GroupID=g.GroupID";
         try (ResultSet result = this.executePreparedQuery(query, group)) {
             while (result.next()) {
                 files.add(result.getString(1));
@@ -411,7 +411,7 @@ public class DatabaseController {
         try {
             this.executePreparedUpdate("DELETE FROM FILE_TAGS WHERE FileID="
                     + "(SELECT FileID FROM FILES WHERE FilePath=?) AND TagID="
-                    + "(SELECT TagID FROM TAGS WHERE TagName=?)", docPath, tag);
+                    + "(SELECT TagID FROM TAGS WHERE TagText=?)", docPath, tag);
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseController.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -583,8 +583,8 @@ public class DatabaseController {
      */
     public void addTag(String tag) throws ConnectionNotStartedException {
         try {
-            String query = "INSERT INTO TAGS(TagText) VALUES(\'" + tag + "\')";
-            this.executeUpdate(query);
+            String query = "INSERT INTO TAGS(TagText) VALUES(?)";
+            this.executePreparedUpdate(query,tag);
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseController.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -694,8 +694,8 @@ public class DatabaseController {
         ArrayList<String> tags = new ArrayList<>();
         try {
             ResultSet results = this.executePreparedQuery("SELECT DISTINCT t.TagText FROM FILES f, FILE_TAGS ft, TAGS t WHERE f.FilePath=? AND f.FileID=ft.FileID AND t.TagID=ft.TagID", docPath);
-            if (results.next()) {
-                String tag = results.getString(0);
+            while (results.next()) {
+                String tag = results.getString(1);
                 tags.add(tag);
             }
         } catch (SQLException ex) {
@@ -712,9 +712,9 @@ public class DatabaseController {
     public ArrayList<String> getTags() throws ConnectionNotStartedException {
         ArrayList<String> tags = new ArrayList<>();
         try {
-            ResultSet results = this.executePreparedQuery("SELECT TagName FROM TAGS");
-            if (results.next()) {
-                String tag = results.getString(0);
+            ResultSet results = this.executePreparedQuery("SELECT TagText FROM TAGS");
+            while (results.next()) {
+                String tag = results.getString(1);
                 tags.add(tag);
             }
         } catch (SQLException ex) {

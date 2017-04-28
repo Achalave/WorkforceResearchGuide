@@ -1,5 +1,7 @@
 package utd.team6.workforceresearchguide.main;
 
+import java.util.HashSet;
+
 /**
  * This class stores a single document and the score it achieved over the query
  * it was found.
@@ -13,7 +15,7 @@ public class SearchResult implements Comparable<SearchResult> {
     private double aggregateScore;
     
     private final String filePath;
-
+    
     /**
      * Creates a new SearchResult object.
      *

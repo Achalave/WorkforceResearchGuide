@@ -7,11 +7,22 @@ package utd.team6.workforceresearchguide.gui;
 
 import java.awt.Desktop;
 import java.awt.FontMetrics;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.dnd.DragGestureEvent;
+import java.awt.dnd.DragGestureListener;
+import java.awt.dnd.DragSource;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.TransferHandler;
 import utd.team6.workforceresearchguide.main.DocumentData;
 import utd.team6.workforceresearchguide.main.SearchResult;
 
@@ -20,14 +31,17 @@ import utd.team6.workforceresearchguide.main.SearchResult;
  *
  * @author Michael
  */
-public class DocumentDisplay extends javax.swing.JPanel implements Comparable<DocumentDisplay> {
-
+public class DocumentDisplay extends javax.swing.JPanel implements Comparable<DocumentDisplay>, Transferable, MouseMotionListener{
+    private static final DataFlavor[] flavors = {DataFlavor.stringFlavor};
     private static final String EXTENDED_PATH_PREFIX = "...";
 
     DocumentData data;
     SearchResult result;
     
+    HashSet<String> tags;
+    
     boolean infoListener = false;
+    
 
     /**
      * Creates new form DocumentDisplay
@@ -39,7 +53,8 @@ public class DocumentDisplay extends javax.swing.JPanel implements Comparable<Do
         this();
         this.data = data;
         this.result = result;
-        pathLabel.setText(data.getPath());
+        data.fillName();
+        pathLabel.setText(data.getName());
     }
 
     /**
@@ -51,7 +66,8 @@ public class DocumentDisplay extends javax.swing.JPanel implements Comparable<Do
         this();
         this.result = result;
         data = new DocumentData(result.getFilePath());
-        pathLabel.setText(data.getPath());
+        data.fillName();
+        pathLabel.setText(data.getName());
     }
 
     /**
@@ -61,6 +77,31 @@ public class DocumentDisplay extends javax.swing.JPanel implements Comparable<Do
         initComponents();
     }
 
+    /**
+     * 
+     * @param tags 
+     */
+    public void setTags(HashSet<String> tags){
+        this.tags = tags;
+    }
+    
+    /**
+     * 
+     * @return True if the tags have been filled in this object.
+     */
+    public boolean tagsFilled(){
+        return tags != null;
+    }
+    
+    /**
+     * 
+     * @param tag
+     * @return True if the specified tag is associated with this document.
+     */
+    public boolean releventTag(String tag){
+        return tags.contains(tag);
+    }
+    
     /**
      * Adds an ActionListener to the info button of this panel.
      * @param act 
@@ -208,4 +249,30 @@ public class DocumentDisplay extends javax.swing.JPanel implements Comparable<Do
             return result.compareTo(o.getSearchResult());
         }
     }
+
+    @Override
+    public DataFlavor[] getTransferDataFlavors() {
+        return flavors;
+    }
+
+    @Override
+    public boolean isDataFlavorSupported(DataFlavor flavor) {
+        return (flavor.equals(DataFlavor.stringFlavor));
+    }
+
+    @Override
+    public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+        return data.getPath();
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
+        this.getTransferHandler().exportAsDrag(this, e, TransferHandler.COPY);
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {
+    }
+
+
 }

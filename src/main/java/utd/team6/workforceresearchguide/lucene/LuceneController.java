@@ -256,6 +256,9 @@ public class LuceneController {
         IndexSearcher search = new IndexSearcher(reader);
         Query query = new TermQuery(new Term("path", docPath));
         TopDocs docs = search.search(query, 1);
+        if(docs.scoreDocs.length == 0){
+            return null;
+        }
         return reader.document(docs.scoreDocs[0].doc);
     }
 
@@ -295,17 +298,20 @@ public class LuceneController {
             throw new IndexingSessionNotStartedException();
         }
         Document doc = getDocument(docPath);
+        Document docNew = new Document();
+        if(doc == null){
+            return;
+        }
         //Find and remove the specified tag
-        Iterator<IndexableField> it = doc.iterator();
-        while (it.hasNext()) {
-            IndexableField field = it.next();
-            if (field.name().equals("tag") && field.stringValue().equals(tag)) {
-                it.remove();
-                break;
+        for(IndexableField field:doc.getFields()){
+            if (!field.name().equals("tag") && !field.stringValue().equals(tag)) {
+                docNew.add(field);
+            }else{
+                System.out.println("FOUND");
             }
         }
         //Update the document
-        writer.updateDocument(new Term("path", docPath), doc);
+//        writer.updateDocument(new Term("path", docPath), docNew);
     }
 
     /**

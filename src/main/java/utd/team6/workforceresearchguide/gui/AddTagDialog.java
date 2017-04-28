@@ -7,9 +7,15 @@ package utd.team6.workforceresearchguide.gui;
 
 import java.awt.Component;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JCheckBox;
+import javax.swing.JOptionPane;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import utd.team6.workforceresearchguide.main.DocumentTagSource;
 import utd.team6.workforceresearchguide.sqlite.DatabaseFileDoesNotExistException;
 import utd.team6.workforceresearchguide.sqlite.DatabaseTagDoesNotExistException;
@@ -31,11 +37,14 @@ public class AddTagDialog extends javax.swing.JDialog {
     public static final int TAGS_ADDED = 1;
 
     DocumentTagSource tagSource;
-    ArrayList<String> newTags;
-    ArrayList<String> addedTags;
+    HashSet<String> newTags;
+    HashSet<String> addedTags;
+    HashSet<String> allTags;
+    HashSet<String> docTags;
+    HashMap<String,JCheckBox> validTags;
     String docPath;
 
-    private int closeState;
+    private int closeState = CANCELED;
 
     /**
      * Creates new form AddTagDialog
@@ -48,17 +57,63 @@ public class AddTagDialog extends javax.swing.JDialog {
 
         this.docPath = docPath;
 
-        newTags = new ArrayList<>();
-
+        newTags = new HashSet<>();
+        addedTags = new HashSet<>();
+        
         this.tagSource = tagSource;
 
         ArrayList<String> tags = tagSource.getTagList();
-        for (String tag : tags) {
-            tagListPanel.add(new JCheckBox(tag, false));
+        allTags = new HashSet<>(tags);
+        
+        ArrayList<String> dt = tagSource.getDocumentTags(docPath);
+        docTags = new HashSet<>(dt);
+        
+        validTags = new HashMap<>();
+        for(String tag:allTags){
+            if(!docTags.contains(tag)){
+                JCheckBox box = new JCheckBox(tag);
+                validTags.put(tag,box);
+                tagListPanel.add(box);
+            }
         }
+        pack();
+         
+        newTagTextBox.getDocument().addDocumentListener(new DocumentListener(){
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                populateTags();
+            }
 
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                populateTags();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+            }
+            
+        });
+        
+        populateTags();
     }
 
+    public final void populateTags(){
+        System.out.println("Populate Tags");
+        String constraint = newTagTextBox.getText();
+//        tagListPanel.removeAll();
+        for (Entry<String,JCheckBox> ent:validTags.entrySet()) {
+            if(constraint.isEmpty() || ent.getKey().startsWith(constraint)){
+                ent.getValue().setVisible(true);
+//                tagListPanel.add(ent.getValue());
+            }else{
+                ent.getValue().setVisible(false);
+            }
+        }
+//        tagListPanel.revalidate();
+//        pack();
+    }
+    
     /**
      *
      * @return The user action taken that caused this dialog to close.
@@ -79,7 +134,7 @@ public class AddTagDialog extends javax.swing.JDialog {
      *
      * @return A list of all tags selected to be added.
      */
-    public ArrayList<String> getAddedTags() {
+    public HashSet<String> getAddedTags() {
         return addedTags;
     }
 
@@ -114,6 +169,11 @@ public class AddTagDialog extends javax.swing.JDialog {
         });
 
         cancelButton.setText("Cancel");
+        cancelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cancelButtonActionPerformed(evt);
+            }
+        });
 
         tagListPanel.setLayout(new javax.swing.BoxLayout(tagListPanel, javax.swing.BoxLayout.Y_AXIS));
         jScrollPane2.setViewportView(tagListPanel);
@@ -154,21 +214,34 @@ public class AddTagDialog extends javax.swing.JDialog {
 
     private void createTagButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createTagButtonActionPerformed
         String tag = newTagTextBox.getText();
-        tagListPanel.add(new JCheckBox(tag, true), 0);
-        newTags.add(tag);
-        closeState = CANCELED;
-        setVisible(false);
+        if (!tag.isEmpty()) {
+            if(allTags.contains(tag)){
+                JOptionPane.showMessageDialog(rootPane, "Tag already exists.");
+                return;
+            }
+            newTagTextBox.setText("");
+            JCheckBox box = new JCheckBox(tag, true);
+            validTags.put(tag,box);
+            newTags.add(tag);
+            allTags.add(tag);
+            tagListPanel.add(box);
+            pack();
+            populateTags();
+        }
     }//GEN-LAST:event_createTagButtonActionPerformed
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         //Add the new tags
         for (String tag : newTags) {
+            System.out.println("Adding Tag: "+tag);
             tagSource.addTag(tag);
         }
+        //Apply the selected tags to the document
         for (Component c : tagListPanel.getComponents()) {
             if (c instanceof JCheckBox && ((JCheckBox) c).isSelected()) {
                 try {
                     String tag = ((JCheckBox) c).getText();
+                    System.out.println("Adding Tag to Document: "+tag);
                     tagSource.addDocumentTag(docPath, tag);
                     addedTags.add(tag);
                 } catch (DatabaseTagDoesNotExistException | DatabaseFileDoesNotExistException ex) {
@@ -179,6 +252,11 @@ public class AddTagDialog extends javax.swing.JDialog {
         closeState = TAGS_ADDED;
         setVisible(false);
     }//GEN-LAST:event_addButtonActionPerformed
+
+    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+        closeState = CANCELED;
+        setVisible(false);
+    }//GEN-LAST:event_cancelButtonActionPerformed
 
     /**
      * @param args the command line arguments

@@ -1,9 +1,7 @@
 package utd.team6.workforceresearchguide.gui;
 
-import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.io.IOException;
 import javax.swing.JComponent;
 import javax.swing.TransferHandler;
 
@@ -20,22 +18,8 @@ public class DocumentDisplayTransferHandler extends TransferHandler{
     
     @Override
     public Transferable createTransferable(JComponent c){
-        return new Transferable(){
-            @Override
-            public DataFlavor[] getTransferDataFlavors() {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            }
-
-            @Override
-            public boolean isDataFlavorSupported(DataFlavor flavor) {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            }
-
-            @Override
-            public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
-                throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-            }
-        };
+        System.out.println("CREATING TRANSFERABLE: "+((DocumentDisplay)c).getDocumentData().getPath());
+        return new StringSelection(((DocumentDisplay)c).getDocumentData().getPath());
     }
     
 }

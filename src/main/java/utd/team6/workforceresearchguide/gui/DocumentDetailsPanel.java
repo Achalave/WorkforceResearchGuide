@@ -76,14 +76,21 @@ public class DocumentDetailsPanel extends javax.swing.JPanel {
                     //The tabs tab is selected
                     //The tabs need to be loaded
                     ArrayList<String> tags = app.getDocumentTags(data.getPath());
+                    tagListModel.removeAllElements();
                     for (String tag : tags) {
                         tagListModel.addElement(tag);
                     }
                 } else if (tabPane.getSelectedIndex() == 2) {
                     //The suggested tabs tab is selected
                     //The suggested tabs need to be loaded
-                    ArrayList<String> sugTags = app.getSuggestedDocumentTags(data.getPath(), 10);
-
+                    ArrayList<String> sugTags = app.getSuggestedDocumentTags(data.getPath(), 0);
+                    ArrayList<String> existingTags = app.getDocumentTags(data.getPath());
+                    suggestedTagListModel.removeAllElements();
+                    for (String tag : sugTags) {
+                        if (!existingTags.contains(tag)) {
+                            suggestedTagListModel.addElement(tag);
+                        }
+                    }
                 }
             }
         });
@@ -207,7 +214,7 @@ public class DocumentDetailsPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(documentNameLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
@@ -224,7 +231,7 @@ public class DocumentDetailsPanel extends javax.swing.JPanel {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
                     .addComponent(hashLabel))
-                .addContainerGap(203, Short.MAX_VALUE))
+                .addContainerGap(183, Short.MAX_VALUE))
         );
 
         tabPane.addTab("Details", jPanel1);

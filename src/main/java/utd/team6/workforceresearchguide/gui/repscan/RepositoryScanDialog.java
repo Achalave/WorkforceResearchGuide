@@ -31,7 +31,7 @@ import utd.team6.workforceresearchguide.sqlite.DatabaseFileDoesNotExistException
  *
  * @author Michael
  */
-public class RepositoryScanDialog extends javax.swing.JFrame {
+public class RepositoryScanDialog extends javax.swing.JDialog {
 
     private static final int RESOLUTION_UPDATE_DELAY = 100;
 
@@ -123,6 +123,7 @@ public class RepositoryScanDialog extends javax.swing.JFrame {
      * @throws ConnectionNotStartedException
      */
     public void showDialog() throws ConnectionNotStartedException {
+        setModal(true);
         this.setVisible(true);
         startSync();
     }

@@ -6,6 +6,7 @@
 package utd.team6.workforceresearchguide.gui;
 
 import java.awt.Color;
+import java.awt.dnd.DropTarget;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -69,6 +70,8 @@ public final class ApplicationFrame extends javax.swing.JFrame {
 
     Timer searchUpdateTimer;
 
+    boolean tagsFilled = false;
+
     /**
      * Creates new form ApplicationFrame
      */
@@ -86,6 +89,14 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         searchResults = new HashMap<>();
         searchTags = new HashSet<>();
         displays = new ArrayList<>();
+
+        groupPanel.setTransferHandler(new GroupPanelTransferHandler(new DocumentDroppedAction() {
+            @Override
+            public void drop(String docPath) {
+                addDocumentToGroup(docPath);
+            }
+        }));
+
     }
 
     /**
@@ -200,17 +211,22 @@ public final class ApplicationFrame extends javax.swing.JFrame {
      *
      * @param disp
      */
-    public void addDocumentDisplayListener(final DocumentDisplay disp) {
+    public void addDocumentDisplayListener(final DocumentDisplay disp, boolean transferable) {
         disp.setInfoListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 System.out.println("Info");
                 documentDataPanel.removeAll();
+                System.out.println(disp.getDocumentData().getPath());
                 DocumentDetailsPanel pan = app.getInfoFactory().getDetailsPanel(disp.getDocumentData(), true);
                 documentDataPanel.add(pan);
                 documentDataPanel.revalidate();
             }
         });
+        if (transferable) {
+            disp.setTransferHandler(new DocumentDisplayTransferHandler());
+            disp.addMouseMotionListener(disp);
+        }
     }
 
     /**
@@ -219,7 +235,20 @@ public final class ApplicationFrame extends javax.swing.JFrame {
      * @param disp
      */
     public void addDocumentDisplay(DocumentDisplay disp) {
-        resultPanel.add(disp);
+        if (tagsFilled) {
+            boolean valid = true;
+            for (String tag : appliedTagFilters) {
+                if (!disp.releventTag(tag)) {
+                    valid = false;
+                    break;
+                }
+            }
+            if(valid){
+                resultPanel.add(disp);
+            }
+        } else {
+            resultPanel.add(disp);
+        }
     }
 
     /**
@@ -230,30 +259,43 @@ public final class ApplicationFrame extends javax.swing.JFrame {
     public void updateResultDisplay(HashMap<Integer, DocumentDisplay> map) {
         //Grab the value set
         //Sort the value set
-        displays.clear();
-        displays.addAll(map.values());
-        Collections.sort(displays);
+        //If the tags have been filled then the search is complete. No need to re-sort the values.
+        if (!tagsFilled) {
+            displays.clear();
+            displays.addAll(map.values());
+            Collections.sort(displays);
+        }
 
         //Re-add the values
         resultPanel.removeAll();
         for (DocumentDisplay display : displays) {
             if (display.getListeners(ActionListener.class).length == 0) {
-                addDocumentDisplayListener(display);
+                addDocumentDisplayListener(display, true);
             }
             addDocumentDisplay(display);
         }
         resultPanel.revalidate();
+        resultPanel.repaint();
     }
 
     public void updateTagFilterDisplay(HashSet<String> tags) {
+        tagFilterPanel.removeAll();
         for (String tag : tags) {
             this.addTagFilter(tag);
         }
+        tagFilterPanel.revalidate();
     }
 
     public void searchComplete() {
+        System.out.println("Search Complete!");
         cancelButton.setEnabled(false);
         app.searchComplete();
+        //Fill the tags and turn on search filtering
+        for (DocumentDisplay disp : searchResults.values()) {
+            disp.setTags(new HashSet<>(app.getDocumentTags(disp.getDocumentData().getPath())));
+        }
+        tagsFilled = true;
+        updateTagFilterDisplay(searchTags);
     }
 
     public void cancelSearch() {
@@ -267,6 +309,7 @@ public final class ApplicationFrame extends javax.swing.JFrame {
     public void startSearch() {
         //Check if there is any content
         String query = searchBar.getText();
+        tagsFilled = false;
         if (!query.isEmpty()) {
             try {
                 //Start the search
@@ -293,7 +336,6 @@ public final class ApplicationFrame extends javax.swing.JFrame {
                         if (!app.searchRunning()) {
                             searchComplete = true;
                             searchUpdateTimer.stop();
-                            System.out.println("Search Complete!");
                         }
                         //We clear this set because the additions have already 
                         //been taken into account. It is faster to only go 
@@ -301,7 +343,6 @@ public final class ApplicationFrame extends javax.swing.JFrame {
                         searchTags.clear();
                         app.updateSearchResults(searchResults, searchTags);
                         updateResultDisplay(searchResults);
-                        updateTagFilterDisplay(searchTags);
                         if (searchComplete) {
                             searchComplete();
                         }
@@ -338,9 +379,11 @@ public final class ApplicationFrame extends javax.swing.JFrame {
                     if (button.isSelected()) {
                         //Apply the filter
                         appliedTagFilters.add(button.getText());
+                        updateResultDisplay(searchResults);
                     } else {
                         //Remove the filter
                         appliedTagFilters.remove(button.getText());
+                        updateResultDisplay(searchResults);
                     }
                 }
             });
@@ -428,7 +471,7 @@ public final class ApplicationFrame extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 13, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(documentDataScrollPane)
+                .addComponent(documentDataScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 660, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -505,17 +548,8 @@ public final class ApplicationFrame extends javax.swing.JFrame {
 
         jScrollPane5.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
-        javax.swing.GroupLayout groupPanelLayout = new javax.swing.GroupLayout(groupPanel);
-        groupPanel.setLayout(groupPanelLayout);
-        groupPanelLayout.setHorizontalGroup(
-            groupPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 495, Short.MAX_VALUE)
-        );
-        groupPanelLayout.setVerticalGroup(
-            groupPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 200, Short.MAX_VALUE)
-        );
-
+        groupPanel.setToolTipText("");
+        groupPanel.setLayout(new javax.swing.BoxLayout(groupPanel, javax.swing.BoxLayout.Y_AXIS));
         jScrollPane5.setViewportView(groupPanel);
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
@@ -698,15 +732,18 @@ public final class ApplicationFrame extends javax.swing.JFrame {
      * Handles a change in the group selection.
      */
     public void groupChanged() {
+        groupPanel.removeAll();
         if (groupComboBox.getSelectedItem().equals(NEW_GROUP_TEXT)) {
-            groupPanel.removeAll();
             return;
         }
         //Load the group documents
         ArrayList<String> docs = app.getGroupDocuments((String) groupComboBox.getSelectedItem());
         for (String doc : docs) {
             DocumentDisplay display = new DocumentDisplay(new DocumentData(doc), null);
+            this.addDocumentDisplayListener(display, false);
+            groupPanel.add(display);
         }
+        groupPanel.revalidate();
     }
 
     /**
@@ -715,11 +752,13 @@ public final class ApplicationFrame extends javax.swing.JFrame {
      * @param docPath
      */
     public void addDocumentToGroup(String docPath) {
+        System.out.println("Adding to group: " + docPath);
         String selection = (String) groupComboBox.getSelectedItem();
         if (selection.equals(NEW_GROUP_TEXT)) {
             //Create a new group
             String groupName = JOptionPane.showInputDialog(this, "Name the new group.");
-            if (groupName != null && !groupName.isEmpty()) {
+            if (groupName == null || groupName.isEmpty() || groupName.equals(NEW_GROUP_TEXT)) {
+                System.out.println("EMPTY");
                 return;
             }
             app.addGroup(groupName);

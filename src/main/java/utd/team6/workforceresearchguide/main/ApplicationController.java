@@ -36,7 +36,6 @@ import utd.team6.workforceresearchguide.sqlite.DatabaseTagDoesNotExistException;
  */
 public class ApplicationController implements SessionManager, DocumentTagSource {
 
-
     Semaphore sessionSem;
 
     LuceneController lucene;
@@ -128,14 +127,18 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
      */
     public void cancelSearch() {
         search.cancelSearch();
-        searchComplete(); 
+        searchComplete();
     }
-    
-    public void searchComplete(){
+
+    /**
+     * Indicates that the search has been completed and the resources should be
+     * released.
+     */
+    public void searchComplete() {
         search = null;
         this.stopLuceneReadSession();
         this.stopDBConnection();
-        this.releaseSessionPermission(); 
+        this.releaseSessionPermission();
     }
 
     /**
@@ -149,12 +152,13 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
     /**
      * This function is called periodically in order to collect and update
      * search results during a search session.
+     *
      * @param results
      * @param resultTags
      */
-    public void updateSearchResults(HashMap<Integer,DocumentDisplay> results, HashSet<String> resultTags) {
+    public void updateSearchResults(HashMap<Integer, DocumentDisplay> results, HashSet<String> resultTags) {
         try {
-            aggregateResultSet(results,resultTags);
+            aggregateResultSet(results, resultTags);
         } catch (IOException ex) {
             Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -180,7 +184,7 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
                 results.put(score.doc, new DocumentDisplay(result));
                 try {
                     //Record the tags on the document
-                    for(String tag:db.getDocumentTags(result.getFilePath())){
+                    for (String tag : db.getDocumentTags(result.getFilePath())) {
                         tags.add(tag);
                     }
                 } catch (ConnectionNotStartedException ex) {
@@ -191,9 +195,9 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
                 result.updateTagScore(score.score);
             }
         }
-        
+
         //see if anything added to hashmap
-        System.out.println("Result Map Size: "+results.size());
+        System.out.println("Result Map Size: " + results.size());
 
         docs = search.getContentHits();
         for (ScoreDoc score : docs.scoreDocs) {
@@ -205,7 +209,7 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
                 results.put(score.doc, new DocumentDisplay(result));
                 try {
                     //Record the tags on the document
-                    for(String tag:db.getDocumentTags(result.getFilePath())){
+                    for (String tag : db.getDocumentTags(result.getFilePath())) {
                         tags.add(tag);
                     }
                 } catch (ConnectionNotStartedException ex) {
@@ -217,7 +221,6 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
             }
         }
     }
-
 
     /**
      * This is a thread safe method of starting a database connection.
@@ -328,17 +331,17 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
      * @throws DatabaseFileDoesNotExistException
      */
     public DocumentData getDocumentData(String filePath) throws DatabaseFileDoesNotExistException {
+        DocumentData data = null;
+        this.getSessionPermission();
+        this.startDBConnection();
         try {
-            this.getSessionPermission();
-            this.startDBConnection();
-            DocumentData data = db.getDocumentData(filePath);
-            this.stopDBConnection();
-            this.releaseSessionPermission();
-            return data;
+            data = db.getDocumentData(filePath);
         } catch (ConnectionNotStartedException | ParseException ex) {
             Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return null;
+        this.stopDBConnection();
+        this.releaseSessionPermission();
+        return data;
     }
 
     /**
@@ -352,17 +355,17 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
 
     @Override
     public ArrayList<String> getDocumentTags(String docPath) {
+        ArrayList<String> tags = null;
+        this.getSessionPermission();
+        this.startDBConnection();
         try {
-            this.getSessionPermission();
-            this.startDBConnection();
-            ArrayList<String> tags = db.getDocumentTags(docPath);
-            this.stopDBConnection();
-            this.releaseSessionPermission();
-            return tags;
+            tags = db.getDocumentTags(docPath);
         } catch (ConnectionNotStartedException ex) {
             Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return null;
+        this.stopDBConnection();
+        this.releaseSessionPermission();
+        return tags;
     }
 
     @Override
@@ -473,17 +476,17 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
 
     @Override
     public ArrayList<String> getTagList() {
+        ArrayList<String> tags = null;
         this.getSessionPermission();
         this.startDBConnection();
         try {
-            ArrayList<String> tags = db.getTags();
-            return tags;
+            tags = db.getTags();
         } catch (ConnectionNotStartedException ex) {
             Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
         }
         this.stopDBConnection();
         this.releaseSessionPermission();
-        return null;
+        return tags;
     }
 
     @Override
@@ -504,6 +507,7 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
     public void removeDocumentTag(String docPath, String tag) throws DatabaseTagDoesNotExistException, DatabaseFileDoesNotExistException {
         this.getSessionPermission();
         this.startDBConnection();
+        this.startLuceneReadSession();
         this.startLuceneIndexingSession();
         try {
             db.removeDocumentTag(docPath, tag);
@@ -512,6 +516,7 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
             Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
         }
         this.stopLuceneIndexingSession();
+        this.stopLuceneReadSession();
         this.stopDBConnection();
         this.releaseSessionPermission();
     }

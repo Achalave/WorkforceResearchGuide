@@ -20,18 +20,16 @@ public interface DocumentTagSource {
      *
      * @param docPath
      * @return A list of the tags associated with a document.
-     * @throws ConnectionNotStartedException
      */
-    public ArrayList<String> getDocumentTags(String docPath) throws ConnectionNotStartedException;
+    public ArrayList<String> getDocumentTags(String docPath);
 
     /**
      *
      * @param docPath
      * @param numTags
      * @return A list of the suggested document tags associated with a document.
-     * @throws ConnectionNotStartedException
      */
-    public ArrayList<String> getSuggestedDocumentTags(String docPath, int numTags) throws ConnectionNotStartedException;
+    public ArrayList<String> getSuggestedDocumentTags(String docPath, int numTags);
 
     /**
      * Adds the specified tag to the database.
