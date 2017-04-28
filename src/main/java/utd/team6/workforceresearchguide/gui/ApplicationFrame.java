@@ -6,7 +6,6 @@
 package utd.team6.workforceresearchguide.gui;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -20,21 +19,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.BorderFactory;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JLabel;
-import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JToggleButton;
+import javax.swing.Timer;
 import utd.team6.workforceresearchguide.gui.repscan.RepositoryScanDialog;
 import utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException;
-import javax.swing.ListCellRenderer;
-import javax.swing.Timer;
 import utd.team6.workforceresearchguide.lucene.ReadSessionNotStartedException;
 import utd.team6.workforceresearchguide.main.ApplicationController;
 import utd.team6.workforceresearchguide.main.DocumentData;
@@ -243,6 +235,7 @@ public final class ApplicationFrame extends javax.swing.JFrame {
      */
     public void addDocumentDisplay(DocumentDisplay disp) {
         resultPanel.add(disp);
+        System.out.println("Display added..");
     }
 
     /**
@@ -278,6 +271,11 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         app.searchComplete();
     }
 
+    public void cancelSearch(){
+        searchUpdateTimer.stop();
+        app.cancelSearch();
+    }
+    
     /**
      * This function is called when the user initiates a search.
      */
@@ -708,7 +706,7 @@ public final class ApplicationFrame extends javax.swing.JFrame {
 
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         //Cancel the search
-
+        cancelSearch();
         //Disable the cancel button
         cancelButton.setEnabled(false);
     }//GEN-LAST:event_cancelButtonActionPerformed
