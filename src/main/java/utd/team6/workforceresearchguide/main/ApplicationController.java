@@ -161,9 +161,10 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
      * search results during a search session.
      */
     public void updateSearchResults() {
+        System.out.println("UPDATING RESULTS");
         try {
             //Get the fresh result set
-            results.clear();
+            
             aggregateResultSet(results);
 
             //Update the view with the results

@@ -13,6 +13,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
@@ -173,6 +174,20 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         }
 
     }
+    
+    public void addDocumentDiaplay(DocumentDisplay disp){
+        resultPanel.add(disp);
+    }
+    
+    public void updateResultDisplay(HashMap<Integer,DocumentDisplay> map){
+        //Grab the value set
+        
+        //Sort the value set
+        
+        //Re-add the values
+        resultPanel.removeAll();
+        
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -195,7 +210,7 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         searchBar = new javax.swing.JTextField();
         jSeparator1 = new javax.swing.JSeparator();
         jScrollPane2 = new javax.swing.JScrollPane();
-        jList1 = new javax.swing.JList<>();
+        resultPanel = new javax.swing.JPanel();
         cancelButton = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         groupComboBox = new javax.swing.JComboBox<>();
@@ -277,13 +292,18 @@ public final class ApplicationFrame extends javax.swing.JFrame {
 
         jScrollPane2.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
-        jList1.setModel(new javax.swing.AbstractListModel<String>() {
-            String[] strings = {"Results..."};
-            public int getSize() { return strings.length; }
-            public String getElementAt(int i) { return strings[i]; }
-        });
-        jList1.setCellRenderer(cellRenderer());
-        jScrollPane2.setViewportView(jList1);
+        javax.swing.GroupLayout resultPanelLayout = new javax.swing.GroupLayout(resultPanel);
+        resultPanel.setLayout(resultPanelLayout);
+        resultPanelLayout.setHorizontalGroup(
+            resultPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 470, Short.MAX_VALUE)
+        );
+        resultPanelLayout.setVerticalGroup(
+            resultPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 425, Short.MAX_VALUE)
+        );
+
+        jScrollPane2.setViewportView(resultPanel);
 
         cancelButton.setText("x");
         cancelButton.setEnabled(false);
@@ -525,8 +545,8 @@ public final class ApplicationFrame extends javax.swing.JFrame {
             cancelButton.setEnabled(true);
             try {
                 //Start the search
-                generateSearchResults(query);
-            } catch (InterruptedException ex) {
+                app.beginSearch(query);
+            } catch (IOException | ReadSessionNotStartedException ex) {
                 Logger.getLogger(ApplicationFrame.class.getName()).log(Level.SEVERE, null, ex);
             }
 
@@ -540,64 +560,36 @@ public final class ApplicationFrame extends javax.swing.JFrame {
      */
     private void generateSearchResults(String query) throws InterruptedException {
 
-        try {
-            app.beginSearch(query);
-
-            //TO DO: get search results in array form??
-            //3. Clicking on JList item should return the index# of the 
-            //   DocumentData.
-            //4. Selected JList documents should be stored in another List and 
-            //   placed on the bottom panel to keep running List of relevant
-            //   search documents for later viewing.
-            //5. Unselecting a JList item should remove that item from secondary
-            //   List.
-            //temporary pause waiting for search to finish
-            while (app.searchRunning()) {
-                TimeUnit.SECONDS.sleep(1);
-            }
-
-            results = app.getDocResults();
-
-            String[] resultsList = new String[results.size()];
-            int i = 0;
-            for (DocumentData data : results) {
-                resultsList[i] = (i + 1) + ". \t" + data.getName() + "\t"
-                        + data.getResultScore();
-                i++;
-            }
-
-            displaySearchResults(resultsList);
-
-        } catch (IOException | ReadSessionNotStartedException ex) {
-            Logger.getLogger(ApplicationFrame.class.getName()).log(Level.SEVERE, null, ex);
+        //TO DO: get search results in array form??
+        //3. Clicking on JList item should return the index# of the
+        //   DocumentData.
+        //4. Selected JList documents should be stored in another List and
+        //   placed on the bottom panel to keep running List of relevant
+        //   search documents for later viewing.
+        //5. Unselecting a JList item should remove that item from secondary
+        //   List.
+        //temporary pause waiting for search to finish
+        //while (app.searchRunning()) {
+        //    TimeUnit.SECONDS.sleep(1);
+        //}
+        
+        results = app.getDocResults();
+        String[] resultsList = new String[results.size()];
+        int i = 0;
+        for (DocumentData data : results) {
+            resultsList[i] = (i + 1) + ". \t" + data.getName() + "\t"
+                    + data.getResultScore();
+            i++;
         }
+        displaySearchResults(resultsList);
 
     }
 
     private void displaySearchResults(final String[] newResults) {
-
-        //build search results JList
-        jList1.setModel(new javax.swing.AbstractListModel<String>() {
-
-            String[] strings = newResults;
-
-            @Override
-            public int getSize() {
-                return strings.length;
-            }
-
-            @Override
-            public String getElementAt(int i) {
-                return strings[i];
-            }
-        });
-
-        //draw list cells with line under each for readability
-        jList1.setCellRenderer(cellRenderer());
-
-        //update list view
-        jScrollPane2.setViewportView(jList1);
+        
     }
+    
+    
 
     /**
      * Handles a change in the group selection.
@@ -681,7 +673,6 @@ public final class ApplicationFrame extends javax.swing.JFrame {
     private javax.swing.JList<String> groupList;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JList<String> jList1;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;
@@ -708,6 +699,7 @@ public final class ApplicationFrame extends javax.swing.JFrame {
     private javax.swing.JMenu openMenu;
     private javax.swing.JMenuItem openTagMenuItem;
     private javax.swing.JMenu propertiesMenu;
+    private javax.swing.JPanel resultPanel;
     private javax.swing.JMenuItem scanRepositoryMenuItem;
     private javax.swing.JTextField searchBar;
     // End of variables declaration//GEN-END:variables

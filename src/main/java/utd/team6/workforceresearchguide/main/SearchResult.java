@@ -93,9 +93,9 @@ public class SearchResult implements Comparable<SearchResult> {
         if (d == 0) {
             return 0;
         } else if (d > 0) {
-            return 1;
-        } else {
             return -1;
+        } else {
+            return 1;
         }
     }
 
