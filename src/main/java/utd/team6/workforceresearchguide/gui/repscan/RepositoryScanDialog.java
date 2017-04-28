@@ -6,6 +6,7 @@
 package utd.team6.workforceresearchguide.gui.repscan;
 
 import java.awt.CardLayout;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -147,7 +148,7 @@ public class RepositoryScanDialog extends javax.swing.JDialog {
      *
      */
     public void startSync() {
-        Thread thread = new Thread() {
+        EventQueue.invokeLater(new Runnable(){
             @Override
             public void run() {
                 try {
@@ -169,8 +170,32 @@ public class RepositoryScanDialog extends javax.swing.JDialog {
                     close();
                 }
             }
-        };
-        thread.start();
+            
+        });
+//        Thread thread = new Thread() {
+//            @Override
+//            public void run() {
+//                try {
+//                    startAnimation();
+//                    FileSyncIssue[] issues = sync.examineDifferences();
+//                    if (issues == null || issues.length == 0) {
+//                        JOptionPane.showMessageDialog(rootPane, "The repository is synced.");
+//                        close();
+//                        return;
+//                    }
+//                    scanningComplete = true;
+//                    processIssues(issues);
+//                    stopAnimation();
+//                    showIssuePanel();
+//
+//                } catch (SQLException | DatabaseFileDoesNotExistException | IOException | ParseException | IssueTypeNotSupportedException | ConnectionNotStartedException ex) {
+//                    Logger.getLogger(RepositoryScanDialog.class.getName()).log(Level.SEVERE, null, ex);
+//                    JOptionPane.showMessageDialog(rootPane, "An exception was encountered. Please see the logs for more information.");
+//                    close();
+//                }
+//            }
+//        };
+//        thread.start();
     }
 
     /**

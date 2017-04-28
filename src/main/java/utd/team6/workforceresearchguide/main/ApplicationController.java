@@ -600,6 +600,34 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
         this.releaseSessionPermission();
     }
 
+    public void removeGroup(String group){
+        this.getSessionPermission();
+        this.startDBConnection();
+
+        try {
+            db.deleteGroup(group);
+        } catch (ConnectionNotStartedException ex) {
+            Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        this.stopDBConnection();
+        this.releaseSessionPermission();
+    }
+    
+    public void removeDocumentFromGroup(String group, String docPath){
+        this.getSessionPermission();
+        this.startDBConnection();
+
+        try {
+            db.deleteFileFromGroup(group, docPath);
+        } catch (ConnectionNotStartedException ex) {
+            Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        this.stopDBConnection();
+        this.releaseSessionPermission();
+    }
+    
     class TagNode {
 
         int count;

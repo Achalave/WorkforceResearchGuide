@@ -240,7 +240,7 @@ public final class ApplicationFrame extends javax.swing.JFrame {
                     break;
                 }
             }
-            if(valid){
+            if (valid) {
                 resultPanel.add(disp);
             }
         } else {
@@ -661,6 +661,11 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         editMenu.add(jMenuItem4);
 
         jMenuItem5.setText("Groups");
+        jMenuItem5.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem5ActionPerformed(evt);
+            }
+        });
         editMenu.add(jMenuItem5);
 
         jMenuBar1.add(editMenu);
@@ -731,16 +736,18 @@ public final class ApplicationFrame extends javax.swing.JFrame {
     public void groupChanged() {
         groupPanel.removeAll();
         if (groupComboBox.getSelectedItem().equals(NEW_GROUP_TEXT)) {
-            return;
-        }
-        //Load the group documents
-        ArrayList<String> docs = app.getGroupDocuments((String) groupComboBox.getSelectedItem());
-        for (String doc : docs) {
-            DocumentDisplay display = new DocumentDisplay(new DocumentData(doc), null);
-            this.addDocumentDisplayListener(display, false);
-            groupPanel.add(display);
+            
+        } else {
+            //Load the group documents
+            ArrayList<String> docs = app.getGroupDocuments((String) groupComboBox.getSelectedItem());
+            for (String doc : docs) {
+                DocumentDisplay display = new DocumentDisplay(new DocumentData(doc), null);
+                this.addDocumentDisplayListener(display, false);
+                groupPanel.add(display);
+            }
         }
         groupPanel.revalidate();
+        groupPanel.repaint();
     }
 
     /**
@@ -786,6 +793,12 @@ public final class ApplicationFrame extends javax.swing.JFrame {
     private void jLabel2MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel2MouseClicked
         System.out.println("Active Threads: " + Thread.activeCount());
     }//GEN-LAST:event_jLabel2MouseClicked
+
+    private void jMenuItem5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem5ActionPerformed
+        GroupManagerDialog gmd = new GroupManagerDialog(repPath, app);
+        gmd.setLocationRelativeTo(this);
+        gmd.showDialog();
+    }//GEN-LAST:event_jMenuItem5ActionPerformed
 
     /**
      * @param args the command line arguments
