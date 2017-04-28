@@ -200,6 +200,8 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
                 result.updateTagScore(score.score);
             }
         }
+        
+        //see if anything added to hashmap
         System.out.println(results.size());
 
         docs = search.getContentHits();
@@ -214,6 +216,7 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
             }
         }
         
+        //see if anything added to hashmap
         System.out.println(results.size());
     }
 
