@@ -12,26 +12,30 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import utd.team6.workforceresearchguide.main.DocumentData;
+import utd.team6.workforceresearchguide.main.SearchResult;
 
 /**
  * Displays basic information over a document. Allows documents to be opened.
  *
  * @author Michael
  */
-public class DocumentDisplay extends javax.swing.JPanel {
+public class DocumentDisplay extends javax.swing.JPanel implements Comparable<DocumentDisplay> {
 
     private static final String EXTENDED_PATH_PREFIX = "...";
 
     DocumentData data;
+    SearchResult result;
 
     /**
      * Creates new form DocumentDisplay
      *
      * @param data
+     * @param result
      */
-    public DocumentDisplay(DocumentData data) {
+    public DocumentDisplay(DocumentData data, SearchResult result) {
         this();
         this.data = data;
+        this.result = result;
     }
 
     /**
@@ -41,6 +45,10 @@ public class DocumentDisplay extends javax.swing.JPanel {
         initComponents();
     }
 
+    public SearchResult getSearchResult(){
+        return result;
+    }
+    
     /**
      * Adjusted the displayed text in the pathLabel such that the latter end of
      * the path string is always shown.
@@ -64,6 +72,8 @@ public class DocumentDisplay extends javax.swing.JPanel {
         }
     }
 
+    
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -157,4 +167,13 @@ public class DocumentDisplay extends javax.swing.JPanel {
     private javax.swing.JButton openFolderButton;
     private javax.swing.JLabel pathLabel;
     // End of variables declaration//GEN-END:variables
+
+    @Override
+    public int compareTo(DocumentDisplay o) {
+        if(result == null || o.getSearchResult() == null){
+            return 0;
+        }else{
+            return result.compareTo(o.getSearchResult());
+        }
+    }
 }

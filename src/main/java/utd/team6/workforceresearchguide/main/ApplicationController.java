@@ -569,6 +569,62 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
         return groups;
     }
 
+    /**
+     * 
+     * @param group
+     * @return A list of all documents belonging to a group.
+     */
+    public ArrayList<String> getGroupDocuments(String group){
+        ArrayList<String> files = null;
+        
+        this.getSessionPermission();
+        this.startDBConnection();
+        
+        try {
+            files = db.getGroupFiles(group);
+        } catch (ConnectionNotStartedException ex) {
+            Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        this.stopDBConnection();
+        this.releaseSessionPermission();
+        
+        return files;
+    }
+    
+    /**
+     * Adds the document to the specified group.
+     * @param group
+     * @param docPath 
+     */
+    public void addDocumentToGroup(String group, String docPath){
+        this.getSessionPermission();
+        this.startDBConnection();
+        
+        try {
+            db.addFileToGroup(group, docPath);
+        } catch (ConnectionNotStartedException ex) {
+            Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        this.stopDBConnection();
+        this.releaseSessionPermission();
+    }
+    
+    public void addGroup(String group){
+        this.getSessionPermission();
+        this.startDBConnection();
+        
+        try {
+            db.addGroup(group);
+        } catch (ConnectionNotStartedException ex) {
+            Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        this.stopDBConnection();
+        this.releaseSessionPermission();
+    }
+    
     class TagNode {
 
         int count;
