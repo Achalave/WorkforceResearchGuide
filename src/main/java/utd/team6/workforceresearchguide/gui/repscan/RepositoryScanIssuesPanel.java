@@ -5,6 +5,7 @@
  */
 package utd.team6.workforceresearchguide.gui.repscan;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
@@ -60,7 +61,8 @@ public class RepositoryScanIssuesPanel extends javax.swing.JPanel {
 
         JPanel labelPanel = new JPanel();
         labelPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-        labelPanel.add(new JLabel("Selected files will be added to the system."));
+        JLabel label = new JLabel("Selected files will be added to the system.");
+        labelPanel.add(label);
         addedFilesPanel.add(labelPanel);
 
         JPanel selectPanel = new JPanel();
@@ -84,6 +86,7 @@ public class RepositoryScanIssuesPanel extends javax.swing.JPanel {
             }
         });
 
+//        addedFilesPanel.add(jcb);
         addedFilesPanel.add(selectPanel);
     }
 

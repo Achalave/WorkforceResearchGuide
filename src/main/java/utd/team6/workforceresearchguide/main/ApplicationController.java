@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -35,7 +36,6 @@ import utd.team6.workforceresearchguide.sqlite.DatabaseTagDoesNotExistException;
  */
 public class ApplicationController implements SessionManager, DocumentTagSource {
 
-    private static final long SEARCH_RESULT_UPDATE_DELAY = 500;
 
     Semaphore sessionSem;
 
@@ -46,9 +46,6 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
 
     boolean searchInProgress = false;
     LuceneSearchSession search;
-    TimerTask searchUpdater;
-    HashMap<Integer, DocumentDisplay> results;
-    List<DocumentData> docResults;
 
     Timer applicationTimer;
 
@@ -120,33 +117,25 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
     public void beginSearch(String query) throws IOException, ReadSessionNotStartedException {
         this.getSessionPermission();
         this.startLuceneReadSession();
+        this.startDBConnection();
 
         search = lucene.search(query, 100);
         search.startSearch();
-        //Instantiate the result set
-        results = new HashMap<>();
-        //Start the update timer
-        searchUpdater = new TimerTask() {
-            @Override
-            public void run() {
-                updateSearchResults();
-            }
-        };
-        applicationTimer.scheduleAtFixedRate(searchUpdater, SEARCH_RESULT_UPDATE_DELAY, SEARCH_RESULT_UPDATE_DELAY);
     }
 
     /**
      * Cancels the current ongoing search session.
      */
     public void cancelSearch() {
-        //Stop periodic updates
-        searchUpdater.cancel();
         search.cancelSearch();
+        searchComplete(); 
+    }
+    
+    public void searchComplete(){
         search = null;
         this.stopLuceneReadSession();
-        this.releaseSessionPermission();
-        //Change the GUI to reflect the cancelation
-
+        this.stopDBConnection();
+        this.releaseSessionPermission(); 
     }
 
     /**
@@ -160,20 +149,12 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
     /**
      * This function is called periodically in order to collect and update
      * search results during a search session.
+     * @param results
+     * @param resultTags
      */
-    public void updateSearchResults() {
-        System.out.println("UPDATING RESULTS");
+    public void updateSearchResults(HashMap<Integer,DocumentDisplay> results, HashSet<String> resultTags) {
         try {
-            //Get the fresh result set
-
-            aggregateResultSet(results);
-
-            //Update the view with the results
-            //Check if the search is complete
-            if (!search.searchInProgress()) {
-                //Remove the "in progress" indicator
-
-            }
+            aggregateResultSet(results,resultTags);
         } catch (IOException ex) {
             Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -185,65 +166,55 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
      * sessions.
      *
      * @param results
+     * @param tags
      * @throws IOException
      */
-    public void aggregateResultSet(HashMap<Integer, DocumentDisplay> results) throws IOException {
+    protected void aggregateResultSet(HashMap<Integer, DocumentDisplay> results, HashSet<String> tags) throws IOException {
         TopDocs docs = search.getTagHits();
         for (ScoreDoc score : docs.scoreDocs) {
-            SearchResult result = results.get(score.doc).getSearchResult();
-            if (result == null) {
+            DocumentDisplay disp = results.get(score.doc);
+            SearchResult result;
+            if (disp == null) {
                 Document doc = search.getDocument(score.doc);
                 result = new SearchResult(doc.get("path"), score.score, 0);
                 results.put(score.doc, new DocumentDisplay(result));
+                try {
+                    //Record the tags on the document
+                    for(String tag:db.getDocumentTags(result.getFilePath())){
+                        tags.add(tag);
+                    }
+                } catch (ConnectionNotStartedException ex) {
+                    Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
+                }
             } else {
+                result = disp.getSearchResult();
                 result.updateTagScore(score.score);
             }
         }
 
         docs = search.getContentHits();
         for (ScoreDoc score : docs.scoreDocs) {
-            SearchResult result = results.get(score.doc).getSearchResult();
-            if (result == null) {
+            DocumentDisplay disp = results.get(score.doc);
+            SearchResult result;
+            if (disp == null) {
                 Document doc = search.getDocument(score.doc);
                 result = new SearchResult(doc.get("path"), 0, score.score);
                 results.put(score.doc, new DocumentDisplay(result));
+                try {
+                    //Record the tags on the document
+                    for(String tag:db.getDocumentTags(result.getFilePath())){
+                        tags.add(tag);
+                    }
+                } catch (ConnectionNotStartedException ex) {
+                    Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
+                }
             } else {
+                result = disp.getSearchResult();
                 result.updateContentScore(score.score);
             }
         }
     }
 
-    private void setDocResults(HashMap<Integer, SearchResult> results) throws DatabaseFileDoesNotExistException, ConnectionNotStartedException, ParseException {
-        docResults = new ArrayList<>();
-
-        this.getSessionPermission();
-        this.startDBConnection();
-
-        for (HashMap.Entry<Integer, SearchResult> entry : results.entrySet()) {
-
-            SearchResult doc = entry.getValue();
-            double aggregateScore = doc.getAggregateScore();
-            String path = doc.getFilePath();
-
-            DocumentData docData = db.getDocumentData(path);
-            docData.setResultScore(aggregateScore);
-
-            docResults.add(docData);
-
-        }
-
-        this.stopDBConnection();
-        this.releaseSessionPermission();
-
-    }
-
-    /**
-     *
-     * @return A list of the document results for a search.
-     */
-    public List<DocumentData> getDocResults() {
-        return docResults;
-    }
 
     /**
      * This is a thread safe method of starting a database connection.

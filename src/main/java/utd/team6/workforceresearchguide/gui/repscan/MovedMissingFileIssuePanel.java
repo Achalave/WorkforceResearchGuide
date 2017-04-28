@@ -274,14 +274,14 @@ public class MovedMissingFileIssuePanel extends javax.swing.JPanel {
 
     private void infoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_infoButtonActionPerformed
         if (info1 == null) {
-            info1 = info.getDetailsDialog(this.oldFilePathLabel.getText(), false);
+            info1 = info.getDetailsDialog(this.oldFilePathLabel.getText(), true);
         }
         info1.setVisible(true);
     }//GEN-LAST:event_infoButtonActionPerformed
 
     private void infoButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_infoButton2ActionPerformed
         if (info1 == null) {
-            info1 = info.getDetailsDialog(this.newFilePathLabel.getText(), true);
+            info1 = info.getDetailsDialog(this.newFilePathLabel.getText(), false);
         }
         info1.setVisible(true);
     }//GEN-LAST:event_infoButton2ActionPerformed

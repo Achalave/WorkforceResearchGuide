@@ -17,6 +17,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -33,6 +34,7 @@ import javax.swing.JToggleButton;
 import utd.team6.workforceresearchguide.gui.repscan.RepositoryScanDialog;
 import utd.team6.workforceresearchguide.sqlite.ConnectionNotStartedException;
 import javax.swing.ListCellRenderer;
+import javax.swing.Timer;
 import utd.team6.workforceresearchguide.lucene.ReadSessionNotStartedException;
 import utd.team6.workforceresearchguide.main.ApplicationController;
 import utd.team6.workforceresearchguide.main.DocumentData;
@@ -48,6 +50,8 @@ public final class ApplicationFrame extends javax.swing.JFrame {
     private static final String LUCENE_FILE_PATH = "_lucene_files_";
     private static final String DATABASE_PATH = "lucene.db";
 
+    private static final int SEARCH_RESULT_UPDATE_DELAY = 500;
+
     /**
      * This is the key used to store the repository path in the properties file.
      */
@@ -62,12 +66,16 @@ public final class ApplicationFrame extends javax.swing.JFrame {
     private final Properties properties;
 
     private String repPath;
-    private List<DocumentData> results;
+    private HashMap<Integer, DocumentDisplay> searchResults;
+    private HashSet<String> searchTags;
+    private ArrayList<DocumentDisplay> displays;
 
     private final ApplicationController app;
 
     HashSet<String> existingTagFilters;
     HashSet<String> appliedTagFilters;
+
+    Timer searchUpdateTimer;
 
     /**
      * Creates new form ApplicationFrame
@@ -82,6 +90,10 @@ public final class ApplicationFrame extends javax.swing.JFrame {
 
         existingTagFilters = new HashSet<>();
         appliedTagFilters = new HashSet<>();
+
+        searchResults = new HashMap<>();
+        searchTags = new HashSet<>();
+        displays = new ArrayList<>();
     }
 
     /**
@@ -226,7 +238,8 @@ public final class ApplicationFrame extends javax.swing.JFrame {
 
     /**
      * Adds a DocumentDisplay to the search result panel.
-     * @param disp 
+     *
+     * @param disp
      */
     public void addDocumentDisplay(DocumentDisplay disp) {
         resultPanel.add(disp);
@@ -234,21 +247,85 @@ public final class ApplicationFrame extends javax.swing.JFrame {
 
     /**
      * Updates the search results panel.
-     * @param map 
+     *
+     * @param map
      */
     public void updateResultDisplay(HashMap<Integer, DocumentDisplay> map) {
         //Grab the value set
-
         //Sort the value set
+        displays.clear();
+        displays.addAll(map.values());
+        Collections.sort(displays);
+        
         //Re-add the values
         resultPanel.removeAll();
+        for(DocumentDisplay display:displays){
+            if(display.getListeners(ActionListener.class).length==0){
+                addDocumentDisplayListener(display);
+            }
+            resultPanel.add(display);
+        }
+    }
 
+    public void updateTagFilterDisplay(HashSet<String> tags) {
+        for(String tag:tags){
+            this.addTagFilter(tag);
+        }
+    }
+    
+    public void searchComplete(){
+        cancelButton.setEnabled(false);
+        app.searchComplete();
     }
 
     /**
      * This function is called when the user initiates a search.
      */
     public void startSearch() {
+        //Check if there is any content
+        String query = searchBar.getText();
+        if (!query.isEmpty()) {
+            try {
+                //Start the search
+                app.beginSearch(query);
+            } catch (IOException | ReadSessionNotStartedException ex) {
+                Logger.getLogger(ApplicationFrame.class.getName()).log(Level.SEVERE, null, ex);
+                JOptionPane.showMessageDialog(rootPane, "There was an error starting the search.\nPlease consult the log files.");
+                return;
+            }
+            
+            clearAllTagFilters();
+            
+            //Enable the cancelation buttion
+            cancelButton.setEnabled(true);
+            
+            //Start up the update timer
+            searchUpdateTimer = new Timer(SEARCH_RESULT_UPDATE_DELAY, new ActionListener() {
+                boolean searchComplete = false;
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (!searchComplete) {
+                        //Check if the search is done
+                        if (!app.searchRunning()) {
+                            searchComplete = true;
+                            searchUpdateTimer.stop();
+                            System.out.println("Search Complete!");
+                        }
+                        //We clear this set because the additions have already 
+                        //been taken into account. It is faster to only go 
+                        //through the new additions.
+                        searchTags.clear();
+                        app.updateSearchResults(searchResults, searchTags);
+                        updateResultDisplay(searchResults);
+                        updateTagFilterDisplay(searchTags);
+                        if(searchComplete){
+                            searchComplete();
+                        }
+                    }
+                }
+            });
+            searchUpdateTimer.start();
+        }
 
     }
 
@@ -263,7 +340,8 @@ public final class ApplicationFrame extends javax.swing.JFrame {
 
     /**
      * Adds a tag filter to the GUI.
-     * @param tag 
+     *
+     * @param tag
      */
     public void addTagFilter(String tag) {
         boolean inserted = existingTagFilters.add(tag);
@@ -365,7 +443,7 @@ public final class ApplicationFrame extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(documentDataScrollPane)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jSeparator2, javax.swing.GroupLayout.Alignment.LEADING))
                 .addContainerGap())
         );
@@ -377,7 +455,7 @@ public final class ApplicationFrame extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 13, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(documentDataScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 660, Short.MAX_VALUE)
+                .addComponent(documentDataScrollPane)
                 .addContainerGap())
         );
 
@@ -494,6 +572,11 @@ public final class ApplicationFrame extends javax.swing.JFrame {
 
         jLabel2.setFont(new java.awt.Font("Times New Roman", 0, 18)); // NOI18N
         jLabel2.setText("Filter By Tag");
+        jLabel2.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                jLabel2MouseClicked(evt);
+            }
+        });
 
         tagFilterPanel.setLayout(new javax.swing.BoxLayout(tagFilterPanel, javax.swing.BoxLayout.Y_AXIS));
         jScrollPane1.setViewportView(tagFilterPanel);
@@ -635,55 +718,9 @@ public final class ApplicationFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_jMenuItem4ActionPerformed
 
     private void searchBarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchBarActionPerformed
-        //Check if there is any content
-        String query = searchBar.getText();
-        if (!query.isEmpty()) {
-            //Enable the cancelation buttion
-            cancelButton.setEnabled(true);
-            try {
-                //Start the search
-                app.beginSearch(query);
-            } catch (IOException | ReadSessionNotStartedException ex) {
-                Logger.getLogger(ApplicationFrame.class.getName()).log(Level.SEVERE, null, ex);
-            }
-
-        }
+        startSearch();
     }//GEN-LAST:event_searchBarActionPerformed
 
-    /**
-     * Get the search results of query and display in JList
-     *
-     * @param query
-     */
-    private void generateSearchResults(String query) throws InterruptedException {
-
-        //TO DO: get search results in array form??
-        //3. Clicking on JList item should return the index# of the
-        //   DocumentData.
-        //4. Selected JList documents should be stored in another List and
-        //   placed on the bottom panel to keep running List of relevant
-        //   search documents for later viewing.
-        //5. Unselecting a JList item should remove that item from secondary
-        //   List.
-        //temporary pause waiting for search to finish
-        //while (app.searchRunning()) {
-        //    TimeUnit.SECONDS.sleep(1);
-        //}
-        results = app.getDocResults();
-        String[] resultsList = new String[results.size()];
-        int i = 0;
-        for (DocumentData data : results) {
-            resultsList[i] = (i + 1) + ". \t" + data.getName() + "\t"
-                    + data.getResultScore();
-            i++;
-        }
-        displaySearchResults(resultsList);
-
-    }
-
-    private void displaySearchResults(final String[] newResults) {
-
-    }
 
     /**
      * Handles a change in the group selection.
@@ -737,6 +774,10 @@ public final class ApplicationFrame extends javax.swing.JFrame {
     private void groupComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_groupComboBoxActionPerformed
         groupChanged();
     }//GEN-LAST:event_groupComboBoxActionPerformed
+
+    private void jLabel2MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel2MouseClicked
+        System.out.println("Active Threads: "+Thread.activeCount());
+    }//GEN-LAST:event_jLabel2MouseClicked
 
     /**
      * @param args the command line arguments

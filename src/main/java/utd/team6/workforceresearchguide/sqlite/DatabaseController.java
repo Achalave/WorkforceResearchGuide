@@ -693,7 +693,7 @@ public class DatabaseController {
     public ArrayList<String> getDocumentTags(String docPath) throws ConnectionNotStartedException {
         ArrayList<String> tags = new ArrayList<>();
         try {
-            ResultSet results = this.executePreparedQuery("SELECT ft.TagID FROM FILES f, FILE_TAGS, TAGS t tf WHERE f.FilePath=? AND f.FileID=ft.FileID AND t.TagID=ft.TagID", docPath);
+            ResultSet results = this.executePreparedQuery("SELECT DISTINCT t.TagText FROM FILES f, FILE_TAGS ft, TAGS t WHERE f.FilePath=? AND f.FileID=ft.FileID AND t.TagID=ft.TagID", docPath);
             if (results.next()) {
                 String tag = results.getString(0);
                 tags.add(tag);

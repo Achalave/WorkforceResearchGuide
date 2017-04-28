@@ -18,8 +18,8 @@
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="pathLabel" pref="293" max="32767" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <Component id="pathLabel" min="-2" pref="168" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="openFolderButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
               <Component id="openButton" min="-2" max="-2" attributes="0"/>
@@ -32,9 +32,9 @@
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="pathLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="openButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="openFolderButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="pathLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="32767" attributes="0"/>
           </Group>
@@ -42,15 +42,6 @@
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Component class="javax.swing.JLabel" name="pathLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="Document Path"/>
-      </Properties>
-      <Events>
-        <EventHandler event="componentResized" listener="java.awt.event.ComponentListener" parameters="java.awt.event.ComponentEvent" handler="pathLabelComponentResized"/>
-        <EventHandler event="propertyChange" listener="java.beans.PropertyChangeListener" parameters="java.beans.PropertyChangeEvent" handler="pathLabelPropertyChange"/>
-      </Events>
-    </Component>
     <Component class="javax.swing.JButton" name="openButton">
       <Properties>
         <Property name="text" type="java.lang.String" value="Open"/>
@@ -66,6 +57,8 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="openFolderButtonActionPerformed"/>
       </Events>
+    </Component>
+    <Component class="javax.swing.JTextField" name="pathLabel">
     </Component>
   </SubComponents>
 </Form>

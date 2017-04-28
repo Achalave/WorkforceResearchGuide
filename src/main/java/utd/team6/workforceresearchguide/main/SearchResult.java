@@ -11,7 +11,7 @@ public class SearchResult implements Comparable<SearchResult> {
     private double tagScore;
     private double contentScore;
     private double aggregateScore;
-
+    
     private final String filePath;
 
     /**
@@ -54,7 +54,7 @@ public class SearchResult implements Comparable<SearchResult> {
         this.contentScore = score;
         this.calculateAggregate();
     }
-
+    
     /**
      *
      * @return
