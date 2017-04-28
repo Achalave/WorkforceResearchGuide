@@ -7,7 +7,6 @@ package utd.team6.workforceresearchguide.gui.repscan;
 
 import utd.team6.workforceresearchguide.gui.DocumentDetailsDialog;
 import utd.team6.workforceresearchguide.gui.DocumentInfoDialogFactory;
-import utd.team6.workforceresearchguide.main.issues.AddedFileIssue;
 import utd.team6.workforceresearchguide.main.issues.SingleFileIssue;
 
 /**
@@ -32,7 +31,7 @@ public class SingleFileIssuePanel extends javax.swing.JPanel {
     public SingleFileIssuePanel(DocumentInfoDialogFactory infoFactory, SingleFileIssue iss, boolean fillFromDB) {
         initComponents();
         issue = iss;
-        documentCheckbox.setText(issue.getDocumentData().getPath());
+        pathField.setText(issue.getDocumentData().getPath());
         this.infoFactory = infoFactory;
         this.fillFromDB = fillFromDB;
     }
@@ -73,6 +72,7 @@ public class SingleFileIssuePanel extends javax.swing.JPanel {
 
         infoButton = new javax.swing.JButton();
         documentCheckbox = new javax.swing.JCheckBox();
+        pathField = new javax.swing.JTextField();
 
         infoButton.setText("Info");
         infoButton.addActionListener(new java.awt.event.ActionListener() {
@@ -82,7 +82,8 @@ public class SingleFileIssuePanel extends javax.swing.JPanel {
         });
 
         documentCheckbox.setSelected(true);
-        documentCheckbox.setText("Document Path");
+
+        pathField.setEditable(false);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -91,13 +92,16 @@ public class SingleFileIssuePanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(infoButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(documentCheckbox, javax.swing.GroupLayout.DEFAULT_SIZE, 271, Short.MAX_VALUE))
+                .addComponent(documentCheckbox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(pathField, javax.swing.GroupLayout.DEFAULT_SIZE, 248, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                 .addComponent(documentCheckbox)
                 .addComponent(infoButton))
+            .addComponent(pathField, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -111,5 +115,6 @@ public class SingleFileIssuePanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox documentCheckbox;
     private javax.swing.JButton infoButton;
+    private javax.swing.JTextField pathField;
     // End of variables declaration//GEN-END:variables
 }

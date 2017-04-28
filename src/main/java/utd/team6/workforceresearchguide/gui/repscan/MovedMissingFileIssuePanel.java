@@ -137,14 +137,14 @@ public class MovedMissingFileIssuePanel extends javax.swing.JPanel {
 
         buttonGroup = new javax.swing.ButtonGroup();
         infoButton = new javax.swing.JButton();
-        oldFilePathLabel = new javax.swing.JLabel();
         infoButton2 = new javax.swing.JButton();
-        newFilePathLabel = new javax.swing.JLabel();
         relocateButton = new javax.swing.JButton();
         notifyLabel = new javax.swing.JLabel();
         relocateRadioButton = new javax.swing.JRadioButton();
         removeRadioButton = new javax.swing.JRadioButton();
         keepRadioButton = new javax.swing.JRadioButton();
+        oldFilePathLabel = new javax.swing.JTextField();
+        newFilePathLabel = new javax.swing.JTextField();
 
         infoButton.setText("Info");
         infoButton.addActionListener(new java.awt.event.ActionListener() {
@@ -153,16 +153,12 @@ public class MovedMissingFileIssuePanel extends javax.swing.JPanel {
             }
         });
 
-        oldFilePathLabel.setText("old/file/path");
-
         infoButton2.setText("Info");
         infoButton2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 infoButton2ActionPerformed(evt);
             }
         });
-
-        newFilePathLabel.setText("new/file/path");
 
         relocateButton.setText("Set Relocation Path");
         relocateButton.addActionListener(new java.awt.event.ActionListener() {
@@ -195,6 +191,10 @@ public class MovedMissingFileIssuePanel extends javax.swing.JPanel {
             }
         });
 
+        oldFilePathLabel.setEditable(false);
+
+        newFilePathLabel.setEditable(false);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -204,21 +204,21 @@ public class MovedMissingFileIssuePanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(notifyLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(newFilePathLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(oldFilePathLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(infoButton, javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(infoButton2, javax.swing.GroupLayout.Alignment.TRAILING)))
-                    .addGroup(layout.createSequentialGroup()
                         .addComponent(relocateRadioButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(removeRadioButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(keepRadioButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(relocateButton)))
+                        .addComponent(relocateButton))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(newFilePathLabel)
+                            .addComponent(oldFilePathLabel))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(infoButton, javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(infoButton2, javax.swing.GroupLayout.Alignment.TRAILING))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -227,11 +227,11 @@ public class MovedMissingFileIssuePanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(infoButton)
-                    .addComponent(oldFilePathLabel))
+                    .addComponent(oldFilePathLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(infoButton2)
-                    .addComponent(newFilePathLabel))
+                    .addComponent(newFilePathLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(notifyLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -291,9 +291,9 @@ public class MovedMissingFileIssuePanel extends javax.swing.JPanel {
     private javax.swing.JButton infoButton;
     private javax.swing.JButton infoButton2;
     private javax.swing.JRadioButton keepRadioButton;
-    private javax.swing.JLabel newFilePathLabel;
+    private javax.swing.JTextField newFilePathLabel;
     private javax.swing.JLabel notifyLabel;
-    private javax.swing.JLabel oldFilePathLabel;
+    private javax.swing.JTextField oldFilePathLabel;
     private javax.swing.JButton relocateButton;
     private javax.swing.JRadioButton relocateRadioButton;
     private javax.swing.JRadioButton removeRadioButton;

@@ -19,7 +19,9 @@
           <Group type="102" alignment="0" attributes="0">
               <Component id="infoButton" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="documentCheckbox" pref="271" max="32767" attributes="0"/>
+              <Component id="documentCheckbox" min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="pathField" pref="248" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -29,6 +31,7 @@
               <Component id="documentCheckbox" alignment="3" min="-2" max="-2" attributes="0"/>
               <Component id="infoButton" alignment="3" min="-2" max="-2" attributes="0"/>
           </Group>
+          <Component id="pathField" alignment="1" min="-2" pref="23" max="-2" attributes="0"/>
       </Group>
     </DimensionLayout>
   </Layout>
@@ -44,7 +47,11 @@
     <Component class="javax.swing.JCheckBox" name="documentCheckbox">
       <Properties>
         <Property name="selected" type="boolean" value="true"/>
-        <Property name="text" type="java.lang.String" value="Document Path"/>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="pathField">
+      <Properties>
+        <Property name="editable" type="boolean" value="false"/>
       </Properties>
     </Component>
   </SubComponents>

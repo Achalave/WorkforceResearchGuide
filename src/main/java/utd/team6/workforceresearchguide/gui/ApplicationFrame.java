@@ -235,7 +235,6 @@ public final class ApplicationFrame extends javax.swing.JFrame {
      */
     public void addDocumentDisplay(DocumentDisplay disp) {
         resultPanel.add(disp);
-        System.out.println("Display added..");
     }
 
     /**
