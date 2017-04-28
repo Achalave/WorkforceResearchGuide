@@ -126,13 +126,14 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
         //Instantiate the result set
         results = new HashMap<>();
         //Start the update timer
-        searchUpdater = new TimerTask() {
-            @Override
-            public void run() {
-                updateSearchResults();
-            }
-        };
-        applicationTimer.scheduleAtFixedRate(searchUpdater, SEARCH_RESULT_UPDATE_DELAY, SEARCH_RESULT_UPDATE_DELAY);
+        updateSearchResults();
+//        searchUpdater = new TimerTask() {
+//            @Override
+//            public void run() {
+//                updateSearchResults();
+//            }
+//        };
+//        applicationTimer.scheduleAtFixedRate(searchUpdater, SEARCH_RESULT_UPDATE_DELAY, SEARCH_RESULT_UPDATE_DELAY);
     }
 
     /**
