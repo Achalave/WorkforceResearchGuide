@@ -423,18 +423,11 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         tagFilterPanel = new javax.swing.JPanel();
         jMenuBar1 = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
-        openMenu = new javax.swing.JMenu();
-        openFileMenuItem = new javax.swing.JMenuItem();
-        openGroupMenuItem = new javax.swing.JMenuItem();
-        openTagMenuItem = new javax.swing.JMenuItem();
         scanRepositoryMenuItem = new javax.swing.JMenuItem();
         editMenu = new javax.swing.JMenu();
-        jMenuItem3 = new javax.swing.JMenuItem();
-        jMenuItem4 = new javax.swing.JMenuItem();
         jMenuItem5 = new javax.swing.JMenuItem();
         propertiesMenu = new javax.swing.JMenu();
         jMenuItem2 = new javax.swing.JMenuItem();
-        jMenuItem6 = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Workforce Research Guide");
@@ -624,19 +617,6 @@ public final class ApplicationFrame extends javax.swing.JFrame {
 
         fileMenu.setText("File");
 
-        openMenu.setText("Open");
-
-        openFileMenuItem.setText("File");
-        openMenu.add(openFileMenuItem);
-
-        openGroupMenuItem.setText("Group");
-        openMenu.add(openGroupMenuItem);
-
-        openTagMenuItem.setText("Tag");
-        openMenu.add(openTagMenuItem);
-
-        fileMenu.add(openMenu);
-
         scanRepositoryMenuItem.setText("Scan Repository");
         scanRepositoryMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -648,17 +628,6 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         jMenuBar1.add(fileMenu);
 
         editMenu.setText("Edit");
-
-        jMenuItem3.setText("Documents");
-        editMenu.add(jMenuItem3);
-
-        jMenuItem4.setText("Tags");
-        jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem4ActionPerformed(evt);
-            }
-        });
-        editMenu.add(jMenuItem4);
 
         jMenuItem5.setText("Groups");
         jMenuItem5.addActionListener(new java.awt.event.ActionListener() {
@@ -679,9 +648,6 @@ public final class ApplicationFrame extends javax.swing.JFrame {
             }
         });
         propertiesMenu.add(jMenuItem2);
-
-        jMenuItem6.setText("Sync Options");
-        propertiesMenu.add(jMenuItem6);
 
         jMenuBar1.add(propertiesMenu);
 
@@ -721,10 +687,6 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         //Disable the cancel button
         cancelButton.setEnabled(false);
     }//GEN-LAST:event_cancelButtonActionPerformed
-
-    private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem4ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jMenuItem4ActionPerformed
 
     private void searchBarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchBarActionPerformed
         startSearch();
@@ -850,10 +812,7 @@ public final class ApplicationFrame extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem2;
-    private javax.swing.JMenuItem jMenuItem3;
-    private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JMenuItem jMenuItem5;
-    private javax.swing.JMenuItem jMenuItem6;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -868,10 +827,6 @@ public final class ApplicationFrame extends javax.swing.JFrame {
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JSplitPane jSplitPane3;
-    private javax.swing.JMenuItem openFileMenuItem;
-    private javax.swing.JMenuItem openGroupMenuItem;
-    private javax.swing.JMenu openMenu;
-    private javax.swing.JMenuItem openTagMenuItem;
     private javax.swing.JMenu propertiesMenu;
     private javax.swing.JPanel resultPanel;
     private javax.swing.JMenuItem scanRepositoryMenuItem;
