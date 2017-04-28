@@ -234,6 +234,7 @@ public final class ApplicationFrame extends javax.swing.JFrame {
      */
     public void addDocumentDisplay(DocumentDisplay disp) {
         resultPanel.add(disp);
+        System.out.println("Display added..");
     }
 
     /**
@@ -254,7 +255,7 @@ public final class ApplicationFrame extends javax.swing.JFrame {
 
         }
         
-        
+        System.out.println("finish map iterate");
         //Sort the value set
         Collections.sort(docDisplay);
         
@@ -665,15 +666,24 @@ public final class ApplicationFrame extends javax.swing.JFrame {
                 //Start the search
                 app.beginSearch(query);
                 
-                Timer displayTimer = new Timer(true);
-                TimerTask displayUpdater = new TimerTask() {
-                    @Override
+                final Timer displayTimer = new Timer(true);
+                displayTimer.scheduleAtFixedRate(new TimerTask() { 
+                    //@Override
                     public void run() {
+                        System.out.println("Timer start");
                         HashMap<Integer, DocumentDisplay> results = app.getDocResults();
-                        updateResultDisplay(results);
+                        System.out.println(results.size());
+                        if (!results.isEmpty()){
+                            app.updateSearchResults();
+                            System.out.println("calling display");
+                            updateResultDisplay(results);
+                        } else {
+                            System.out.println("Timer Ending");
+                            displayTimer.cancel();
+                        } 
                     }
-                };
-                displayTimer.scheduleAtFixedRate(displayUpdater, 500, 500);
+                }, 500, 500);
+                
                 
                 
             } catch (IOException | ReadSessionNotStartedException ex) {

@@ -200,6 +200,7 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
                 result.updateTagScore(score.score);
             }
         }
+        System.out.println(results.size());
 
         docs = search.getContentHits();
         for (ScoreDoc score : docs.scoreDocs) {
@@ -212,6 +213,8 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
                 result.updateContentScore(score.score);
             }
         }
+        
+        System.out.println(results.size());
     }
 
     /**
