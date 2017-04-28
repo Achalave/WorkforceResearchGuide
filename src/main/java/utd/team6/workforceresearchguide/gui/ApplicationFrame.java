@@ -256,8 +256,9 @@ public final class ApplicationFrame extends javax.swing.JFrame {
             if(display.getListeners(ActionListener.class).length==0){
                 addDocumentDisplayListener(display);
             }
-            resultPanel.add(display);
+            addDocumentDisplay(display);
         }
+        this.pack();
     }
 
     public void updateTagFilterDisplay(HashSet<String> tags) {

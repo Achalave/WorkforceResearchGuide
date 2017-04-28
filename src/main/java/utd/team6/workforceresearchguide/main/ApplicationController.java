@@ -193,7 +193,7 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
         }
         
         //see if anything added to hashmap
-        System.out.println(results.size());
+        System.out.println("Result Map Size: "+results.size());
 
         docs = search.getContentHits();
         for (ScoreDoc score : docs.scoreDocs) {

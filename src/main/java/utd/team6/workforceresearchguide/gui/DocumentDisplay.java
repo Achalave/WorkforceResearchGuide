@@ -36,6 +36,7 @@ public class DocumentDisplay extends javax.swing.JPanel implements Comparable<Do
         this();
         this.data = data;
         this.result = result;
+        pathLabel.setText(data.getPath());
     }
 
     /**
@@ -47,6 +48,7 @@ public class DocumentDisplay extends javax.swing.JPanel implements Comparable<Do
         this();
         this.result = result;
         data = new DocumentData(result.getFilePath());
+        pathLabel.setText(data.getPath());
     }
 
     /**
@@ -122,14 +124,16 @@ public class DocumentDisplay extends javax.swing.JPanel implements Comparable<Do
             }
         });
 
+        pathLabel.setEditable(false);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(pathLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 168, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(pathLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 181, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(openFolderButton)
                 .addGap(10, 10, 10)
                 .addComponent(openButton)
