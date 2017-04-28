@@ -14,6 +14,7 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.tika.exception.TikaException;
+import utd.team6.workforceresearchguide.gui.DocumentDisplay;
 import utd.team6.workforceresearchguide.gui.DocumentInfoDialogFactory;
 import utd.team6.workforceresearchguide.lucene.IndexingSessionNotStartedException;
 import utd.team6.workforceresearchguide.lucene.LuceneController;
@@ -46,7 +47,7 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
     boolean searchInProgress = false;
     LuceneSearchSession search;
     TimerTask searchUpdater;
-    HashMap<Integer, SearchResult> results;
+    HashMap<Integer, DocumentDisplay> results;
     List<DocumentData> docResults;
 
     Timer applicationTimer;
@@ -161,18 +162,14 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
      * search results during a search session.
      */
     public void updateSearchResults() {
+        System.out.println("UPDATING RESULTS");
         try {
             //Get the fresh result set
-            results.clear();
+            
             aggregateResultSet(results);
 
             //Update the view with the results
-            try {
-                setDocResults(results);
-            } catch (DatabaseFileDoesNotExistException | ConnectionNotStartedException | ParseException ex) {
-                Logger.getLogger(ApplicationController.class.getName())
-                        .log(Level.SEVERE, null, ex);
-            }
+            
 
             //Check if the search is complete
             if (!search.searchInProgress()) {
@@ -192,14 +189,14 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
      * @param results
      * @throws IOException
      */
-    public void aggregateResultSet(HashMap<Integer, SearchResult> results) throws IOException {
+    public void aggregateResultSet(HashMap<Integer, DocumentDisplay> results) throws IOException {
         TopDocs docs = search.getTagHits();
         for (ScoreDoc score : docs.scoreDocs) {
-            SearchResult result = results.get(score.doc);
+            SearchResult result = results.get(score.doc).getSearchResult();
             if (result == null) {
                 Document doc = search.getDocument(score.doc);
                 result = new SearchResult(doc.get("path"), score.score, 0);
-                results.put(score.doc, result);
+                results.put(score.doc, new DocumentDisplay(result));
             } else {
                 result.updateTagScore(score.score);
             }
@@ -207,11 +204,11 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
 
         docs = search.getContentHits();
         for (ScoreDoc score : docs.scoreDocs) {
-            SearchResult result = results.get(score.doc);
+            SearchResult result = results.get(score.doc).getSearchResult();
             if (result == null) {
                 Document doc = search.getDocument(score.doc);
                 result = new SearchResult(doc.get("path"), 0, score.score);
-                results.put(score.doc, result);
+                results.put(score.doc, new DocumentDisplay(result));
             } else {
                 result.updateContentScore(score.score);
             }

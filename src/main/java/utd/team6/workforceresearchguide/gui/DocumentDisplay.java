@@ -38,6 +38,12 @@ public class DocumentDisplay extends javax.swing.JPanel implements Comparable<Do
         this.result = result;
     }
 
+    public DocumentDisplay(SearchResult result){
+        this();
+        this.result = result;
+        data = new DocumentData(result.getFilePath());
+    }
+    
     /**
      * Creates a new form DocumentDisplay without any data to display.
      */
