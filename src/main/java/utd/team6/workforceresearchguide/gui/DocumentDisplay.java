@@ -38,12 +38,17 @@ public class DocumentDisplay extends javax.swing.JPanel implements Comparable<Do
         this.result = result;
     }
 
-    public DocumentDisplay(SearchResult result){
+    /**
+     * Creates new form DocumentDisplay
+     *
+     * @param result
+     */
+    public DocumentDisplay(SearchResult result) {
         this();
         this.result = result;
         data = new DocumentData(result.getFilePath());
     }
-    
+
     /**
      * Creates a new form DocumentDisplay without any data to display.
      */
@@ -51,10 +56,22 @@ public class DocumentDisplay extends javax.swing.JPanel implements Comparable<Do
         initComponents();
     }
 
-    public SearchResult getSearchResult(){
+    /**
+     *
+     * @return
+     */
+    public SearchResult getSearchResult() {
         return result;
     }
-    
+
+    /**
+     *
+     * @return
+     */
+    public DocumentData getDocumentData() {
+        return data;
+    }
+
     /**
      * Adjusted the displayed text in the pathLabel such that the latter end of
      * the path string is always shown.
@@ -78,8 +95,6 @@ public class DocumentDisplay extends javax.swing.JPanel implements Comparable<Do
         }
     }
 
-    
-    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -176,9 +191,9 @@ public class DocumentDisplay extends javax.swing.JPanel implements Comparable<Do
 
     @Override
     public int compareTo(DocumentDisplay o) {
-        if(result == null || o.getSearchResult() == null){
+        if (result == null || o.getSearchResult() == null) {
             return 0;
-        }else{
+        } else {
             return result.compareTo(o.getSearchResult());
         }
     }

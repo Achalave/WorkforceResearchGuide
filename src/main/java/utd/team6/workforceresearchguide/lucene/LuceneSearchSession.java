@@ -179,7 +179,7 @@ public class LuceneSearchSession {
         contentCollector = TopScoreDocCollector.create(numTopScores);
 
         System.out.println("THE SEARCH IS STARTING");
-        
+
         tagThread = new Thread() {
             @Override
             public void run() {

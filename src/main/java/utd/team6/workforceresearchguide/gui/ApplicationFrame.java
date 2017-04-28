@@ -9,6 +9,8 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -187,19 +189,60 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         }
 
     }
-    
-    public void addDocumentDiaplay(DocumentDisplay disp){
+
+    /**
+     * Adds a listener to a DocumentDisplay than displays details about its
+     * document when the panel is clicked.
+     *
+     * @param disp
+     */
+    public void addDocumentDisplayListener(final DocumentDisplay disp) {
+        disp.addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                documentDataPanel.removeAll();
+                DocumentDetailsPanel pan = app.getInfoFactory().getDetailsPanel(disp.getDocumentData(), true);
+                documentDataPanel.add(pan);
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+            }
+
+        });
+    }
+
+    /**
+     * Adds a DocumentDisplay to the search result panel.
+     * @param disp 
+     */
+    public void addDocumentDisplay(DocumentDisplay disp) {
         resultPanel.add(disp);
     }
-    
-    public void updateResultDisplay(HashMap<Integer,DocumentDisplay> map){
+
+    /**
+     * Updates the search results panel.
+     * @param map 
+     */
+    public void updateResultDisplay(HashMap<Integer, DocumentDisplay> map) {
         //Grab the value set
-        
+
         //Sort the value set
-        
         //Re-add the values
         resultPanel.removeAll();
-        
+
     }
 
     /**
@@ -209,11 +252,19 @@ public final class ApplicationFrame extends javax.swing.JFrame {
 
     }
 
+    /**
+     * Clears all the tag filters from the GUI.
+     */
     public void clearAllTagFilters() {
         existingTagFilters.clear();
         appliedTagFilters.clear();
+        tagFilterPanel.removeAll();
     }
 
+    /**
+     * Adds a tag filter to the GUI.
+     * @param tag 
+     */
     public void addTagFilter(String tag) {
         boolean inserted = existingTagFilters.add(tag);
         if (inserted) {
@@ -250,7 +301,8 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         jPanel4 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jSeparator2 = new javax.swing.JSeparator();
-        jScrollPane3 = new javax.swing.JScrollPane();
+        documentDataScrollPane = new javax.swing.JScrollPane();
+        documentDataPanel = new javax.swing.JPanel();
         jSplitPane3 = new javax.swing.JSplitPane();
         jPanel2 = new javax.swing.JPanel();
         searchBar = new javax.swing.JTextField();
@@ -292,6 +344,19 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         jLabel1.setFont(new java.awt.Font("Times New Roman", 0, 18)); // NOI18N
         jLabel1.setText("Document Data");
 
+        javax.swing.GroupLayout documentDataPanelLayout = new javax.swing.GroupLayout(documentDataPanel);
+        documentDataPanel.setLayout(documentDataPanelLayout);
+        documentDataPanelLayout.setHorizontalGroup(
+            documentDataPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 197, Short.MAX_VALUE)
+        );
+        documentDataPanelLayout.setVerticalGroup(
+            documentDataPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 658, Short.MAX_VALUE)
+        );
+
+        documentDataScrollPane.setViewportView(documentDataPanel);
+
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
@@ -299,7 +364,7 @@ public final class ApplicationFrame extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jScrollPane3)
+                    .addComponent(documentDataScrollPane)
                     .addComponent(jLabel1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 199, Short.MAX_VALUE)
                     .addComponent(jSeparator2, javax.swing.GroupLayout.Alignment.LEADING))
                 .addContainerGap())
@@ -312,7 +377,7 @@ public final class ApplicationFrame extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 13, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 660, Short.MAX_VALUE)
+                .addComponent(documentDataScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 660, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -339,17 +404,7 @@ public final class ApplicationFrame extends javax.swing.JFrame {
 
         jScrollPane2.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
-        javax.swing.GroupLayout resultPanelLayout = new javax.swing.GroupLayout(resultPanel);
-        resultPanel.setLayout(resultPanelLayout);
-        resultPanelLayout.setHorizontalGroup(
-            resultPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 470, Short.MAX_VALUE)
-        );
-        resultPanelLayout.setVerticalGroup(
-            resultPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 425, Short.MAX_VALUE)
-        );
-
+        resultPanel.setLayout(new javax.swing.BoxLayout(resultPanel, javax.swing.BoxLayout.Y_AXIS));
         jScrollPane2.setViewportView(resultPanel);
 
         cancelButton.setText("x");
@@ -396,6 +451,8 @@ public final class ApplicationFrame extends javax.swing.JFrame {
                 groupComboBoxActionPerformed(evt);
             }
         });
+
+        jScrollPane5.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
         javax.swing.GroupLayout groupPanelLayout = new javax.swing.GroupLayout(groupPanel);
         groupPanel.setLayout(groupPanelLayout);
@@ -552,7 +609,6 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-
     private void searchBarFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_searchBarFocusGained
         if (searchBar.getForeground().equals(SEARCH_BAR_INACTIVE_COLOR)) {
             searchBar.setForeground(SEARCH_BAR_ACTIVE_COLOR);
@@ -613,7 +669,6 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         //while (app.searchRunning()) {
         //    TimeUnit.SECONDS.sleep(1);
         //}
-        
         results = app.getDocResults();
         String[] resultsList = new String[results.size()];
         int i = 0;
@@ -627,30 +682,28 @@ public final class ApplicationFrame extends javax.swing.JFrame {
     }
 
     private void displaySearchResults(final String[] newResults) {
-        
+
     }
-    
-    
 
     /**
      * Handles a change in the group selection.
      */
     public void groupChanged() {
-        if(groupComboBox.getSelectedItem().equals(NEW_GROUP_TEXT)){
+        if (groupComboBox.getSelectedItem().equals(NEW_GROUP_TEXT)) {
             groupPanel.removeAll();
             return;
         }
         //Load the group documents
-        ArrayList<String> docs = app.getGroupDocuments((String)groupComboBox.getSelectedItem());
+        ArrayList<String> docs = app.getGroupDocuments((String) groupComboBox.getSelectedItem());
         for (String doc : docs) {
-            DocumentDisplay display = new DocumentDisplay(new DocumentData(doc),null);
+            DocumentDisplay display = new DocumentDisplay(new DocumentData(doc), null);
         }
     }
 
     /**
      * Handles adding a document to the specified group.
      *
-     * @param group
+     * @param docPath
      */
     public void addDocumentToGroup(String docPath) {
         String selection = (String) groupComboBox.getSelectedItem();
@@ -667,7 +720,7 @@ public final class ApplicationFrame extends javax.swing.JFrame {
             groupComboBox.setSelectedItem(groupName);
         } else {
             //Add to the selected group
-            app.addDocumentToGroup((String)groupComboBox.getSelectedItem(), docPath);
+            app.addDocumentToGroup((String) groupComboBox.getSelectedItem(), docPath);
         }
         //Add the document to the panel
         groupChanged();
@@ -725,6 +778,8 @@ public final class ApplicationFrame extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;
+    private javax.swing.JPanel documentDataPanel;
+    private javax.swing.JScrollPane documentDataScrollPane;
     private javax.swing.JMenu editMenu;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JComboBox<String> groupComboBox;
@@ -744,7 +799,6 @@ public final class ApplicationFrame extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel5;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;

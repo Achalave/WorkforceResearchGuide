@@ -17,7 +17,7 @@ public class DocumentDisplayTest {
      */
     public static void main(String[] args) {
         JFrame frame = new JFrame();
-        frame.add(new DocumentDisplay(new DocumentData("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxtest.pdf"),null));
+        frame.add(new DocumentDisplay(new DocumentData("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxtest.pdf"), null));
         frame.pack();
         frame.setVisible(true);
     }
