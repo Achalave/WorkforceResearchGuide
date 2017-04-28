@@ -7,6 +7,7 @@ package utd.team6.workforceresearchguide.gui;
 
 import java.awt.Desktop;
 import java.awt.FontMetrics;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
@@ -25,6 +26,8 @@ public class DocumentDisplay extends javax.swing.JPanel implements Comparable<Do
 
     DocumentData data;
     SearchResult result;
+    
+    boolean infoListener = false;
 
     /**
      * Creates new form DocumentDisplay
@@ -58,6 +61,23 @@ public class DocumentDisplay extends javax.swing.JPanel implements Comparable<Do
         initComponents();
     }
 
+    /**
+     * Adds an ActionListener to the info button of this panel.
+     * @param act 
+     */
+    public void setInfoListener(ActionListener act){
+        infoListener = true;
+        infoButton.addActionListener(act);
+    }
+    
+    /**
+     * 
+     * @return True if an info listener has been added to the info button.
+     */
+    public boolean hasInfoListener(){
+        return infoListener;
+    }
+    
     /**
      *
      * @return
@@ -109,6 +129,7 @@ public class DocumentDisplay extends javax.swing.JPanel implements Comparable<Do
         openButton = new javax.swing.JButton();
         openFolderButton = new javax.swing.JButton();
         pathLabel = new javax.swing.JTextField();
+        infoButton = new javax.swing.JButton();
 
         openButton.setText("Open");
         openButton.addActionListener(new java.awt.event.ActionListener() {
@@ -126,17 +147,21 @@ public class DocumentDisplay extends javax.swing.JPanel implements Comparable<Do
 
         pathLabel.setEditable(false);
 
+        infoButton.setText("Info");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(pathLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 181, Short.MAX_VALUE)
+                .addComponent(pathLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 175, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(openFolderButton)
-                .addGap(10, 10, 10)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(openButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(infoButton)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -146,7 +171,8 @@ public class DocumentDisplay extends javax.swing.JPanel implements Comparable<Do
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(openButton)
                     .addComponent(openFolderButton)
-                    .addComponent(pathLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(pathLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(infoButton))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -168,6 +194,7 @@ public class DocumentDisplay extends javax.swing.JPanel implements Comparable<Do
     }//GEN-LAST:event_openFolderButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton infoButton;
     private javax.swing.JButton openButton;
     private javax.swing.JButton openFolderButton;
     private javax.swing.JTextField pathLabel;

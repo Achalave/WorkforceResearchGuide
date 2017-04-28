@@ -7,6 +7,7 @@ package utd.team6.workforceresearchguide.gui;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
@@ -58,7 +59,12 @@ public class DocumentDetailsPanel extends javax.swing.JPanel {
             documentNameLabel.setText(data.getName());
             documentPathArea.setText(data.getPath());
             lastModDateLabel.setText(data.getLastModDate().toString());
-            dateAddedLabel.setText(data.getDateAdded().toString());
+            Date date = data.getDateAdded();
+            if (date != null) {
+                dateAddedLabel.setText(date.toString());
+            } else {
+                dateAddedLabel.setText("");
+            }
             hitsLabel.setText(data.getHits() + "");
             hashLabel.setText(data.getHash());
         }

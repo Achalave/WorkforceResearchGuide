@@ -201,30 +201,15 @@ public final class ApplicationFrame extends javax.swing.JFrame {
      * @param disp
      */
     public void addDocumentDisplayListener(final DocumentDisplay disp) {
-        disp.addMouseListener(new MouseListener() {
+        disp.setInfoListener(new ActionListener() {
             @Override
-            public void mouseClicked(MouseEvent e) {
+            public void actionPerformed(ActionEvent e) {
+                System.out.println("Info");
                 documentDataPanel.removeAll();
                 DocumentDetailsPanel pan = app.getInfoFactory().getDetailsPanel(disp.getDocumentData(), true);
                 documentDataPanel.add(pan);
+                documentDataPanel.revalidate();
             }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
-            }
-
         });
     }
 
@@ -248,34 +233,34 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         displays.clear();
         displays.addAll(map.values());
         Collections.sort(displays);
-        
+
         //Re-add the values
         resultPanel.removeAll();
-        for(DocumentDisplay display:displays){
-            if(display.getListeners(ActionListener.class).length==0){
+        for (DocumentDisplay display : displays) {
+            if (display.getListeners(ActionListener.class).length == 0) {
                 addDocumentDisplayListener(display);
             }
             addDocumentDisplay(display);
         }
-        this.pack();
+        resultPanel.revalidate();
     }
 
     public void updateTagFilterDisplay(HashSet<String> tags) {
-        for(String tag:tags){
+        for (String tag : tags) {
             this.addTagFilter(tag);
         }
     }
-    
-    public void searchComplete(){
+
+    public void searchComplete() {
         cancelButton.setEnabled(false);
         app.searchComplete();
     }
 
-    public void cancelSearch(){
+    public void cancelSearch() {
         searchUpdateTimer.stop();
         app.cancelSearch();
     }
-    
+
     /**
      * This function is called when the user initiates a search.
      */
@@ -291,15 +276,16 @@ public final class ApplicationFrame extends javax.swing.JFrame {
                 JOptionPane.showMessageDialog(rootPane, "There was an error starting the search.\nPlease consult the log files.");
                 return;
             }
-            
+
             clearAllTagFilters();
-            
+
             //Enable the cancelation buttion
             cancelButton.setEnabled(true);
-            
+
             //Start up the update timer
             searchUpdateTimer = new Timer(SEARCH_RESULT_UPDATE_DELAY, new ActionListener() {
                 boolean searchComplete = false;
+
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     if (!searchComplete) {
@@ -316,7 +302,7 @@ public final class ApplicationFrame extends javax.swing.JFrame {
                         app.updateSearchResults(searchResults, searchTags);
                         updateResultDisplay(searchResults);
                         updateTagFilterDisplay(searchTags);
-                        if(searchComplete){
+                        if (searchComplete) {
                             searchComplete();
                         }
                     }
@@ -419,17 +405,6 @@ public final class ApplicationFrame extends javax.swing.JFrame {
 
         jLabel1.setFont(new java.awt.Font("Times New Roman", 0, 18)); // NOI18N
         jLabel1.setText("Document Data");
-
-        javax.swing.GroupLayout documentDataPanelLayout = new javax.swing.GroupLayout(documentDataPanel);
-        documentDataPanel.setLayout(documentDataPanelLayout);
-        documentDataPanelLayout.setHorizontalGroup(
-            documentDataPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 197, Short.MAX_VALUE)
-        );
-        documentDataPanelLayout.setVerticalGroup(
-            documentDataPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 658, Short.MAX_VALUE)
-        );
 
         documentDataScrollPane.setViewportView(documentDataPanel);
 
@@ -719,7 +694,6 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         startSearch();
     }//GEN-LAST:event_searchBarActionPerformed
 
-
     /**
      * Handles a change in the group selection.
      */
@@ -774,7 +748,7 @@ public final class ApplicationFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_groupComboBoxActionPerformed
 
     private void jLabel2MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel2MouseClicked
-        System.out.println("Active Threads: "+Thread.activeCount());
+        System.out.println("Active Threads: " + Thread.activeCount());
     }//GEN-LAST:event_jLabel2MouseClicked
 
     /**
