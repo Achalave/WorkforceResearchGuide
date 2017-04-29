@@ -13,7 +13,6 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
-import org.apache.lucene.search.TopDocs;
 import org.apache.lucene.search.TopScoreDocCollector;
 import org.apache.lucene.store.FSDirectory;
 
@@ -23,6 +22,12 @@ import org.apache.lucene.store.FSDirectory;
  */
 public class LuceneTest {
 
+    /**
+     *
+     * @param args
+     * @throws IOException
+     * @throws InterruptedException
+     */
     public static void main(String[] args) throws IOException, InterruptedException {
         FSDirectory dir = FSDirectory.open(FileSystems.getDefault().getPath("_lucene_files_"));
         DirectoryReader reader = DirectoryReader.open(dir);

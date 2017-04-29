@@ -41,7 +41,7 @@ public class AddTagDialog extends javax.swing.JDialog {
     HashSet<String> addedTags;
     HashSet<String> allTags;
     HashSet<String> docTags;
-    HashMap<String,JCheckBox> validTags;
+    HashMap<String, JCheckBox> validTags;
     String docPath;
 
     private int closeState = CANCELED;
@@ -59,26 +59,26 @@ public class AddTagDialog extends javax.swing.JDialog {
 
         newTags = new HashSet<>();
         addedTags = new HashSet<>();
-        
+
         this.tagSource = tagSource;
 
         ArrayList<String> tags = tagSource.getTagList();
         allTags = new HashSet<>(tags);
-        
+
         ArrayList<String> dt = tagSource.getDocumentTags(docPath);
         docTags = new HashSet<>(dt);
-        
+
         validTags = new HashMap<>();
-        for(String tag:allTags){
-            if(!docTags.contains(tag)){
+        for (String tag : allTags) {
+            if (!docTags.contains(tag)) {
                 JCheckBox box = new JCheckBox(tag);
-                validTags.put(tag,box);
+                validTags.put(tag, box);
                 tagListPanel.add(box);
             }
         }
         pack();
-         
-        newTagTextBox.getDocument().addDocumentListener(new DocumentListener(){
+
+        newTagTextBox.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
                 populateTags();
@@ -92,28 +92,31 @@ public class AddTagDialog extends javax.swing.JDialog {
             @Override
             public void changedUpdate(DocumentEvent e) {
             }
-            
+
         });
-        
+
         populateTags();
     }
 
-    public final void populateTags(){
-        System.out.println("Populate Tags");
+    /**
+     * Sets tags to be visible or not based on if they follow constraints.
+     */
+    public final void populateTags() {
+//        System.out.println("Populate Tags");
         String constraint = newTagTextBox.getText();
 //        tagListPanel.removeAll();
-        for (Entry<String,JCheckBox> ent:validTags.entrySet()) {
-            if(constraint.isEmpty() || ent.getKey().startsWith(constraint)){
+        for (Entry<String, JCheckBox> ent : validTags.entrySet()) {
+            if (constraint.isEmpty() || ent.getKey().startsWith(constraint)) {
                 ent.getValue().setVisible(true);
 //                tagListPanel.add(ent.getValue());
-            }else{
+            } else {
                 ent.getValue().setVisible(false);
             }
         }
 //        tagListPanel.revalidate();
 //        pack();
     }
-    
+
     /**
      *
      * @return The user action taken that caused this dialog to close.
@@ -215,13 +218,13 @@ public class AddTagDialog extends javax.swing.JDialog {
     private void createTagButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createTagButtonActionPerformed
         String tag = newTagTextBox.getText();
         if (!tag.isEmpty()) {
-            if(allTags.contains(tag)){
+            if (allTags.contains(tag)) {
                 JOptionPane.showMessageDialog(rootPane, "Tag already exists.");
                 return;
             }
             newTagTextBox.setText("");
             JCheckBox box = new JCheckBox(tag, true);
-            validTags.put(tag,box);
+            validTags.put(tag, box);
             newTags.add(tag);
             allTags.add(tag);
             tagListPanel.add(box);
@@ -233,7 +236,7 @@ public class AddTagDialog extends javax.swing.JDialog {
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         //Add the new tags
         for (String tag : newTags) {
-            System.out.println("Adding Tag: "+tag);
+            System.out.println("Adding Tag: " + tag);
             tagSource.addTag(tag);
         }
         //Apply the selected tags to the document
@@ -241,7 +244,7 @@ public class AddTagDialog extends javax.swing.JDialog {
             if (c instanceof JCheckBox && ((JCheckBox) c).isSelected()) {
                 try {
                     String tag = ((JCheckBox) c).getText();
-                    System.out.println("Adding Tag to Document: "+tag);
+                    System.out.println("Adding Tag to Document: " + tag);
                     tagSource.addDocumentTag(docPath, tag);
                     addedTags.add(tag);
                 } catch (DatabaseTagDoesNotExistException | DatabaseFileDoesNotExistException ex) {

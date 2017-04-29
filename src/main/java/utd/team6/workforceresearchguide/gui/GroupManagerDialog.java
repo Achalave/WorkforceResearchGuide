@@ -20,27 +20,28 @@ public class GroupManagerDialog extends javax.swing.JDialog {
     ApplicationController app;
     DefaultListModel<String> listModel;
     String repPath;
-    
+
     JFileChooser chooser;
-    
+
     /**
      * Creates new form GroupManagerDialog
+     *
      * @param repPath
      * @param app
      */
     public GroupManagerDialog(String repPath, ApplicationController app) {
         initComponents();
         this.app = app;
-        
+
         listModel = new DefaultListModel<>();
         docList.setModel(listModel);
         this.repPath = repPath;
-        
+
         chooser = new JFileChooser(repPath);
         chooser.setMultiSelectionEnabled(true);
-        
+
         //Get the groups
-        for(String group:app.getGroups()){
+        for (String group : app.getGroups()) {
             groupDropdown.addItem(group);
         }
     }
@@ -48,22 +49,22 @@ public class GroupManagerDialog extends javax.swing.JDialog {
     /**
      * Refreshes the document list.
      */
-    public void groupChanged(){
+    public void groupChanged() {
         listModel.removeAllElements();
-        String group = (String)groupDropdown.getSelectedItem();
-        for(String path:app.getGroupDocuments(group)){
+        String group = (String) groupDropdown.getSelectedItem();
+        for (String path : app.getGroupDocuments(group)) {
             listModel.addElement(path);
         }
     }
-    
+
     /**
      * Shows this dialog.
      */
-    public void showDialog(){
+    public void showDialog() {
         setModal(true);
         setVisible(true);
     }
-    
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -172,7 +173,7 @@ public class GroupManagerDialog extends javax.swing.JDialog {
 
     private void addGroupButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addGroupButtonActionPerformed
         String group = JOptionPane.showInputDialog(rootPane, "Name the group.");
-        if(group != null && !group.isEmpty()){
+        if (group != null && !group.isEmpty()) {
             app.addGroup(group);
             listModel.addElement(group);
             groupDropdown.setSelectedItem(group);
@@ -181,14 +182,14 @@ public class GroupManagerDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_addGroupButtonActionPerformed
 
     private void deleteGroupButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteGroupButtonActionPerformed
-        String group = (String)groupDropdown.getSelectedItem();
+        String group = (String) groupDropdown.getSelectedItem();
         app.removeGroup(group);
         groupDropdown.removeItem(group);
         groupChanged();
     }//GEN-LAST:event_deleteGroupButtonActionPerformed
 
     private void docListMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_docListMouseClicked
-        if(evt.getClickCount()>1){
+        if (evt.getClickCount() > 1) {
             DocumentDetailsDialog details = app.getInfoFactory().getDetailsDialog(docList.getSelectedValue(), true);
             details.setModal(true);
             details.setLocationRelativeTo(this);
@@ -198,10 +199,10 @@ public class GroupManagerDialog extends javax.swing.JDialog {
 
     private void addFilesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addFilesButtonActionPerformed
         int result = chooser.showDialog(this, "Add File");
-        if(result == JFileChooser.APPROVE_OPTION){
+        if (result == JFileChooser.APPROVE_OPTION) {
             File[] files = chooser.getSelectedFiles();
-            String group = (String)groupDropdown.getSelectedItem();
-            for(File f:files){
+            String group = (String) groupDropdown.getSelectedItem();
+            for (File f : files) {
                 String docPath = f.getAbsolutePath();
                 //Add the file to the group
                 app.addDocumentToGroup(group, docPath);
@@ -211,8 +212,8 @@ public class GroupManagerDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_addFilesButtonActionPerformed
 
     private void removeFilesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeFilesButtonActionPerformed
-        String group = (String)groupDropdown.getSelectedItem();
-        for(String selection:docList.getSelectedValuesList()){
+        String group = (String) groupDropdown.getSelectedItem();
+        for (String selection : docList.getSelectedValuesList()) {
             app.removeDocumentFromGroup(group, selection);
             listModel.removeElement(selection);
         }
@@ -249,7 +250,7 @@ public class GroupManagerDialog extends javax.swing.JDialog {
         java.awt.EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                new GroupManagerDialog("",null).setVisible(true);
+                new GroupManagerDialog("", null).setVisible(true);
             }
         });
     }

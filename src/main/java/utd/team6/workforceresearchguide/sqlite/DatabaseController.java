@@ -584,7 +584,7 @@ public class DatabaseController {
     public void addTag(String tag) throws ConnectionNotStartedException {
         try {
             String query = "INSERT INTO TAGS(TagText) VALUES(?)";
-            this.executePreparedUpdate(query,tag);
+            this.executePreparedUpdate(query, tag);
         } catch (SQLException ex) {
             Logger.getLogger(DatabaseController.class.getName()).log(Level.SEVERE, null, ex);
         }

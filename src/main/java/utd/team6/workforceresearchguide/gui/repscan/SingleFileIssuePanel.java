@@ -108,6 +108,8 @@ public class SingleFileIssuePanel extends javax.swing.JPanel {
     private void infoButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_infoButtonActionPerformed
         if (docDetails == null) {
             docDetails = infoFactory.getDetailsDialog(issue.getDocumentData(), fillFromDB);
+            docDetails.setLocationRelativeTo(this);
+            docDetails.setModal(true);
         }
         docDetails.setVisible(true);
     }//GEN-LAST:event_infoButtonActionPerformed

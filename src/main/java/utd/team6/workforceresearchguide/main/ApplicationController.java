@@ -5,9 +5,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -586,6 +584,11 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
         this.releaseSessionPermission();
     }
 
+    /**
+     * Adds a group to the database.
+     *
+     * @param group
+     */
     public void addGroup(String group) {
         this.getSessionPermission();
         this.startDBConnection();
@@ -600,7 +603,12 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
         this.releaseSessionPermission();
     }
 
-    public void removeGroup(String group){
+    /**
+     * Removes a group from the database.
+     *
+     * @param group
+     */
+    public void removeGroup(String group) {
         this.getSessionPermission();
         this.startDBConnection();
 
@@ -613,8 +621,14 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
         this.stopDBConnection();
         this.releaseSessionPermission();
     }
-    
-    public void removeDocumentFromGroup(String group, String docPath){
+
+    /**
+     * Removes a document from a group.
+     *
+     * @param group
+     * @param docPath
+     */
+    public void removeDocumentFromGroup(String group, String docPath) {
         this.getSessionPermission();
         this.startDBConnection();
 
@@ -627,7 +641,7 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
         this.stopDBConnection();
         this.releaseSessionPermission();
     }
-    
+
     class TagNode {
 
         int count;

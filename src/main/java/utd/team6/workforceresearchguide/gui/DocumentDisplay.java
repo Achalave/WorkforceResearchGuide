@@ -8,12 +8,8 @@ package utd.team6.workforceresearchguide.gui;
 import java.awt.Desktop;
 import java.awt.FontMetrics;
 import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.StringSelection;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
-import java.awt.dnd.DragGestureEvent;
-import java.awt.dnd.DragGestureListener;
-import java.awt.dnd.DragSource;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
@@ -31,17 +27,17 @@ import utd.team6.workforceresearchguide.main.SearchResult;
  *
  * @author Michael
  */
-public class DocumentDisplay extends javax.swing.JPanel implements Comparable<DocumentDisplay>, Transferable, MouseMotionListener{
+public class DocumentDisplay extends javax.swing.JPanel implements Comparable<DocumentDisplay>, Transferable, MouseMotionListener {
+
     private static final DataFlavor[] flavors = {DataFlavor.stringFlavor};
     private static final String EXTENDED_PATH_PREFIX = "...";
 
     DocumentData data;
     SearchResult result;
-    
+
     HashSet<String> tags;
-    
+
     boolean infoListener = false;
-    
 
     /**
      * Creates new form DocumentDisplay
@@ -78,47 +74,48 @@ public class DocumentDisplay extends javax.swing.JPanel implements Comparable<Do
     }
 
     /**
-     * 
-     * @param tags 
+     *
+     * @param tags
      */
-    public void setTags(HashSet<String> tags){
+    public void setTags(HashSet<String> tags) {
         this.tags = tags;
     }
-    
+
     /**
-     * 
+     *
      * @return True if the tags have been filled in this object.
      */
-    public boolean tagsFilled(){
+    public boolean tagsFilled() {
         return tags != null;
     }
-    
+
     /**
-     * 
+     *
      * @param tag
      * @return True if the specified tag is associated with this document.
      */
-    public boolean releventTag(String tag){
+    public boolean releventTag(String tag) {
         return tags.contains(tag);
     }
-    
+
     /**
      * Adds an ActionListener to the info button of this panel.
-     * @param act 
+     *
+     * @param act
      */
-    public void setInfoListener(ActionListener act){
+    public void setInfoListener(ActionListener act) {
         infoListener = true;
         infoButton.addActionListener(act);
     }
-    
+
     /**
-     * 
+     *
      * @return True if an info listener has been added to the info button.
      */
-    public boolean hasInfoListener(){
+    public boolean hasInfoListener() {
         return infoListener;
     }
-    
+
     /**
      *
      * @return
@@ -273,6 +270,5 @@ public class DocumentDisplay extends javax.swing.JPanel implements Comparable<Do
     @Override
     public void mouseMoved(MouseEvent e) {
     }
-
 
 }

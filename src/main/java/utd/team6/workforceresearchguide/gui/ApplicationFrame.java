@@ -207,6 +207,7 @@ public final class ApplicationFrame extends javax.swing.JFrame {
      * document when the panel is clicked.
      *
      * @param disp
+     * @param transferable
      */
     public void addDocumentDisplayListener(final DocumentDisplay disp, boolean transferable) {
         disp.setInfoListener(new ActionListener() {
@@ -214,10 +215,11 @@ public final class ApplicationFrame extends javax.swing.JFrame {
             public void actionPerformed(ActionEvent e) {
 //                System.out.println("Info");
                 documentDataPanel.removeAll();
-                System.out.println(disp.getDocumentData().getPath());
+//                System.out.println(disp.getDocumentData().getPath());
                 DocumentDetailsPanel pan = app.getInfoFactory().getDetailsPanel(disp.getDocumentData(), true);
                 documentDataPanel.add(pan);
                 documentDataPanel.revalidate();
+                documentDataPanel.repaint();
             }
         });
         if (transferable) {
@@ -275,14 +277,24 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         resultPanel.repaint();
     }
 
+    /**
+     * Updates the tag filter display panel.
+     *
+     * @param tags
+     */
     public void updateTagFilterDisplay(HashSet<String> tags) {
         tagFilterPanel.removeAll();
         for (String tag : tags) {
             this.addTagFilter(tag);
         }
         tagFilterPanel.revalidate();
+        tagFilterPanel.repaint();
     }
 
+    /**
+     * Called when a search has been completed. This cleans up search resources
+     * and enables the tag filters.
+     */
     public void searchComplete() {
 //        System.out.println("Search Complete!");
         cancelButton.setEnabled(false);
@@ -295,9 +307,13 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         updateTagFilterDisplay(searchTags);
     }
 
+    /**
+     * Cancels the current search.
+     */
     public void cancelSearch() {
         searchUpdateTimer.stop();
         app.cancelSearch();
+        cancelButton.setEnabled(false);
     }
 
     /**
@@ -307,6 +323,21 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         //Check if there is any content
         String query = searchBar.getText();
         tagsFilled = false;
+
+        //Clear the previous GUI results
+        resultPanel.removeAll();
+        resultPanel.revalidate();
+
+        //Clear the previous result data
+        searchResults.clear();
+
+        //Clear the previous tags
+        searchTags.clear();
+
+        existingTagFilters.clear();
+        appliedTagFilters.clear();
+        displays.clear();
+
         if (!query.isEmpty()) {
             try {
                 //Start the search
@@ -698,7 +729,7 @@ public final class ApplicationFrame extends javax.swing.JFrame {
     public void groupChanged() {
         groupPanel.removeAll();
         if (groupComboBox.getSelectedItem().equals(NEW_GROUP_TEXT)) {
-            
+
         } else {
             //Load the group documents
             ArrayList<String> docs = app.getGroupDocuments((String) groupComboBox.getSelectedItem());

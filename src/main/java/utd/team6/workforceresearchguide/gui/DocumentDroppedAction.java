@@ -6,9 +6,17 @@
 package utd.team6.workforceresearchguide.gui;
 
 /**
+ * This is used by the GroupPanelTransferHandler to notify the application of a
+ * drop event.
  *
  * @author Michael
  */
 public interface DocumentDroppedAction {
+
+    /**
+     * This is called when a document has been dropped.
+     *
+     * @param docPath
+     */
     public void drop(String docPath);
 }

@@ -5,7 +5,6 @@
  */
 package utd.team6.workforceresearchguide.gui.repscan;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;

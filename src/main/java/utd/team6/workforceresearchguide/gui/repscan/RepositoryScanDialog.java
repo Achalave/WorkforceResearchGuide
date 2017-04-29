@@ -148,7 +148,7 @@ public class RepositoryScanDialog extends javax.swing.JDialog {
      *
      */
     public void startSync() {
-        EventQueue.invokeLater(new Runnable(){
+        EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
                 try {
@@ -170,7 +170,7 @@ public class RepositoryScanDialog extends javax.swing.JDialog {
                     close();
                 }
             }
-            
+
         });
 //        Thread thread = new Thread() {
 //            @Override
