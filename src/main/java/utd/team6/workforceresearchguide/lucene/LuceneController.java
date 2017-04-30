@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.document.Document;
@@ -41,11 +42,6 @@ public class LuceneController {
 
     DirectoryReader reader;
 
-    /**
-     * Used to determine if we are creating a new index or updating existing. If
-     * set to true, the index files will be overwritten.
-     */
-    boolean createOnly = false;
 
     /**
      * Creates a new LuceneController.
@@ -92,17 +88,6 @@ public class LuceneController {
      */
     public void startIndexingSession() throws IOException {
         IndexWriterConfig config = new IndexWriterConfig(analyzer);
-
-//        //testing index updating
-//      create = false;    
-        if (createOnly) {
-            //create new index (drops any existing index)
-            config.setOpenMode(IndexWriterConfig.OpenMode.CREATE);
-        } else {
-            //add to existing index
-            config.setOpenMode(IndexWriterConfig.OpenMode.CREATE_OR_APPEND);
-        }
-
         writer = new IndexWriter(dir, config);
     }
 
@@ -114,7 +99,7 @@ public class LuceneController {
      */
     public void stopIndexingSession() throws IOException {
         if (writer != null) {
-            writer.commit();
+//            writer.commit();
             writer.close();
             writer = null;
         }
@@ -275,12 +260,17 @@ public class LuceneController {
      * utd.team6.workforceresearchguide.lucene.ReadSessionNotStartedException
      */
     public void tagDocument(String docPath, String tag) throws IOException, IndexingSessionNotStartedException, ReadSessionNotStartedException {
+        System.out.println("Tag document called: "+docPath);
         if (!indexingSessionActive()) {
             throw new IndexingSessionNotStartedException();
         }
         Document doc = getDocument(docPath);
+        for(IndexableField field:doc.getFields()){
+            System.out.println(field.name());
+        }
         doc.add(new TextField("tag", tag, Store.YES));
-        writer.updateDocument(new Term("path", docPath), doc);
+
+        writer.updateDocument(new Term("path",docPath), doc);
     }
 
     /**

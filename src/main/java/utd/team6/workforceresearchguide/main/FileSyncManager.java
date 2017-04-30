@@ -239,8 +239,8 @@ public class FileSyncManager {
         }
 
         sess.getSessionPermission();
-        sess.startLuceneReadSession();
         sess.startLuceneIndexingSession();
+        sess.startLuceneReadSession();
         sess.startDBConnection();
 
         int startIndex = 0;

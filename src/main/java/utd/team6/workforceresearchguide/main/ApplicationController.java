@@ -463,11 +463,18 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
     public void addDocumentTag(String docPath, String tag) throws DatabaseTagDoesNotExistException, DatabaseFileDoesNotExistException {
         this.getSessionPermission();
         this.startDBConnection();
+//        this.startLuceneIndexingSession();
+//        this.startLuceneReadSession();
+        
         try {
             db.tagDocument(docPath, tag);
+//            lucene.tagDocument(docPath, tag);
         } catch (ConnectionNotStartedException ex) {
             Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
         }
+        
+//        this.stopLuceneIndexingSession();
+//        this.stopLuceneReadSession();
         this.stopDBConnection();
         this.releaseSessionPermission();
     }
@@ -505,16 +512,16 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
     public void removeDocumentTag(String docPath, String tag) throws DatabaseTagDoesNotExistException, DatabaseFileDoesNotExistException {
         this.getSessionPermission();
         this.startDBConnection();
-        this.startLuceneReadSession();
-        this.startLuceneIndexingSession();
+//        this.startLuceneReadSession();
+//        this.startLuceneIndexingSession();
         try {
             db.removeDocumentTag(docPath, tag);
-            lucene.removeDocumentTag(docPath, tag);
-        } catch (ConnectionNotStartedException | IOException | ReadSessionNotStartedException | IndexingSessionNotStartedException ex) {
+//            lucene.removeDocumentTag(docPath, tag);
+        } catch (ConnectionNotStartedException ex) {
             Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
         }
-        this.stopLuceneIndexingSession();
-        this.stopLuceneReadSession();
+//        this.stopLuceneIndexingSession();
+//        this.stopLuceneReadSession();
         this.stopDBConnection();
         this.releaseSessionPermission();
     }
@@ -641,7 +648,7 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
         this.stopDBConnection();
         this.releaseSessionPermission();
     }
-
+  
     class TagNode {
 
         int count;
