@@ -10,6 +10,7 @@ import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.tika.exception.TikaException;
@@ -195,7 +196,7 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
         }
 
         //see if anything added to hashmap
-        System.out.println("Result Map Size: " + results.size());
+//        System.out.println("Result Map Size: " + results.size());
 
         docs = search.getContentHits();
         for (ScoreDoc score : docs.scoreDocs) {
@@ -463,18 +464,24 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
     public void addDocumentTag(String docPath, String tag) throws DatabaseTagDoesNotExistException, DatabaseFileDoesNotExistException {
         this.getSessionPermission();
         this.startDBConnection();
-//        this.startLuceneIndexingSession();
-//        this.startLuceneReadSession();
+        this.startLuceneIndexingSession();
+        this.startLuceneReadSession();
         
         try {
             db.tagDocument(docPath, tag);
-//            lucene.tagDocument(docPath, tag);
+            lucene.tagDocument(docPath, tag);
         } catch (ConnectionNotStartedException ex) {
+            Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IOException ex) {
+            Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (IndexingSessionNotStartedException ex) {
+            Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ReadSessionNotStartedException ex) {
             Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-//        this.stopLuceneIndexingSession();
-//        this.stopLuceneReadSession();
+        this.stopLuceneIndexingSession();
+        this.stopLuceneReadSession();
         this.stopDBConnection();
         this.releaseSessionPermission();
     }

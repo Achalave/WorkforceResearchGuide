@@ -112,13 +112,15 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         } catch (IOException ex) {
             Logger.getLogger(ApplicationFrame.class.getName()).log(Level.SEVERE, null, ex);
         }
+        
+        //Make sure the database tables are created
+        app.updateDatabaseSchema();
+        
         //Get the repository path
         loadRepositoryPath();
         if (repPath == null) {
             beginUserRepositorySelection();
         }
-        //Make sure the database tables are created
-        app.updateDatabaseSchema();
 
         //Load the groups
         ArrayList<String> groups = app.getGroups();
@@ -602,11 +604,6 @@ public final class ApplicationFrame extends javax.swing.JFrame {
 
         jLabel2.setFont(new java.awt.Font("Times New Roman", 0, 18)); // NOI18N
         jLabel2.setText("Filter By Tag");
-        jLabel2.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                jLabel2MouseClicked(evt);
-            }
-        });
 
         tagFilterPanel.setLayout(new javax.swing.BoxLayout(tagFilterPanel, javax.swing.BoxLayout.Y_AXIS));
         jScrollPane1.setViewportView(tagFilterPanel);
@@ -751,13 +748,13 @@ public final class ApplicationFrame extends javax.swing.JFrame {
      * @param docPath
      */
     public void addDocumentToGroup(String docPath) {
-        System.out.println("Adding to group: " + docPath);
+//        System.out.println("Adding to group: " + docPath);
         String selection = (String) groupComboBox.getSelectedItem();
         if (selection.equals(NEW_GROUP_TEXT)) {
             //Create a new group
             String groupName = JOptionPane.showInputDialog(this, "Name the new group.");
             if (groupName == null || groupName.isEmpty() || groupName.equals(NEW_GROUP_TEXT)) {
-                System.out.println("EMPTY");
+//                System.out.println("EMPTY");
                 return;
             }
             app.addGroup(groupName);
@@ -784,10 +781,6 @@ public final class ApplicationFrame extends javax.swing.JFrame {
     private void groupComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_groupComboBoxActionPerformed
         groupChanged();
     }//GEN-LAST:event_groupComboBoxActionPerformed
-
-    private void jLabel2MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel2MouseClicked
-        System.out.println("Active Threads: " + Thread.activeCount());
-    }//GEN-LAST:event_jLabel2MouseClicked
 
     private void jMenuItem5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem5ActionPerformed
         GroupManagerDialog gmd = new GroupManagerDialog(repPath, app);

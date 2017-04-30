@@ -42,7 +42,6 @@ public class LuceneController {
 
     DirectoryReader reader;
 
-
     /**
      * Creates a new LuceneController.
      */
@@ -260,17 +259,17 @@ public class LuceneController {
      * utd.team6.workforceresearchguide.lucene.ReadSessionNotStartedException
      */
     public void tagDocument(String docPath, String tag) throws IOException, IndexingSessionNotStartedException, ReadSessionNotStartedException {
-        System.out.println("Tag document called: "+docPath);
+//        System.out.println("Tag document called: " + docPath);
         if (!indexingSessionActive()) {
             throw new IndexingSessionNotStartedException();
         }
         Document doc = getDocument(docPath);
-        for(IndexableField field:doc.getFields()){
-            System.out.println(field.name());
-        }
         doc.add(new TextField("tag", tag, Store.YES));
+        //This somehow fixed an annoying bug where the path could no longer be searched
+        doc.removeField("path");
+        doc.add(new StringField("path", docPath, Store.YES));
 
-        writer.updateDocument(new Term("path",docPath), doc);
+        writer.updateDocument(new Term("path", docPath), doc);
     }
 
     /**
@@ -288,20 +287,23 @@ public class LuceneController {
             throw new IndexingSessionNotStartedException();
         }
         Document doc = getDocument(docPath);
-        Document docNew = new Document();
         if (doc == null) {
             return;
         }
         //Find and remove the specified tag
-        for (IndexableField field : doc.getFields()) {
-            if (!field.name().equals("tag") && !field.stringValue().equals(tag)) {
-                docNew.add(field);
-            } else {
-                System.out.println("FOUND");
+        Iterator<IndexableField> it = doc.iterator();
+        while (it.hasNext()) {
+            IndexableField field = it.next();
+            if (field.name().equals("tag") && field.stringValue().equals(tag)) {
+                it.remove();
+                break;
             }
         }
+        //This somehow fixed an annoying bug where the path could no longer be searched
+        doc.removeField("path");
+        doc.add(new StringField("path", docPath, Store.YES));
         //Update the document
-//        writer.updateDocument(new Term("path", docPath), docNew);
+        writer.updateDocument(new Term("path", docPath), doc);
     }
 
     /**
@@ -336,7 +338,10 @@ public class LuceneController {
                     docPath = field.stringValue();
                 }
             }
-
+            //This somehow fixed an annoying bug where the path could no longer be searched
+            doc.removeField("path");
+            doc.add(new StringField("path", docPath, Store.YES));
+            
             //Update the document
             writer.updateDocument(new Term("path", docPath), doc);
         }
