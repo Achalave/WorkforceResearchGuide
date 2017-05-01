@@ -6,6 +6,7 @@
 package utd.team6.workforceresearchguide.gui;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -34,6 +35,8 @@ import utd.team6.workforceresearchguide.main.DocumentData;
  * @author Michael
  */
 public final class ApplicationFrame extends javax.swing.JFrame {
+
+    private static final int RESULT_PANE_SCROLL_SPEED = 15;
 
     private static final String NEW_GROUP_TEXT = "New Group";
 
@@ -69,11 +72,15 @@ public final class ApplicationFrame extends javax.swing.JFrame {
 
     boolean tagsFilled = false;
 
+    Component selectedDisplay;
+
     /**
      * Creates new form ApplicationFrame
      */
     public ApplicationFrame() {
         initComponents();
+
+        jScrollPane2.getVerticalScrollBar().setUnitIncrement(RESULT_PANE_SCROLL_SPEED);
 
         //Load in the properties file
         properties = new Properties();
@@ -112,10 +119,10 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         } catch (IOException ex) {
             Logger.getLogger(ApplicationFrame.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         //Make sure the database tables are created
         app.updateDatabaseSchema();
-        
+
         //Get the repository path
         loadRepositoryPath();
         if (repPath == null) {
@@ -277,7 +284,7 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         }
         resultPanel.revalidate();
         resultPanel.repaint();
-        
+
     }
 
     /**
@@ -458,6 +465,7 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         jMenuBar1 = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         scanRepositoryMenuItem = new javax.swing.JMenuItem();
+        jMenuItem1 = new javax.swing.JMenuItem();
         editMenu = new javax.swing.JMenu();
         jMenuItem5 = new javax.swing.JMenuItem();
         propertiesMenu = new javax.swing.JMenu();
@@ -506,6 +514,7 @@ public final class ApplicationFrame extends javax.swing.JFrame {
 
         searchBar.setForeground(new java.awt.Color(102, 102, 102));
         searchBar.setText("Search");
+        searchBar.setDragEnabled(true);
         searchBar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 searchBarActionPerformed(evt);
@@ -655,6 +664,14 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         });
         fileMenu.add(scanRepositoryMenuItem);
 
+        jMenuItem1.setText("Delete Tags");
+        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem1ActionPerformed(evt);
+            }
+        });
+        fileMenu.add(jMenuItem1);
+
         jMenuBar1.add(fileMenu);
 
         editMenu.setText("Edit");
@@ -788,6 +805,12 @@ public final class ApplicationFrame extends javax.swing.JFrame {
         gmd.showDialog();
     }//GEN-LAST:event_jMenuItem5ActionPerformed
 
+    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
+        DeleteTagDialog dt = new DeleteTagDialog(app);
+        dt.setLocationRelativeTo(this);
+        dt.showDialog();
+    }//GEN-LAST:event_jMenuItem1ActionPerformed
+
     /**
      * @param args the command line arguments
      */
@@ -837,6 +860,7 @@ public final class ApplicationFrame extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem5;
     private javax.swing.JPanel jPanel1;

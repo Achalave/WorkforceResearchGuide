@@ -57,4 +57,16 @@ public interface SessionManager {
      * Releases permission to start sessions.
      */
     public void releaseSessionPermission();
+
+    /**
+     * Removes all changes made in the current Lucene indexing session and
+     * closes the session.
+     */
+    public void rollbackIndexingSession();
+
+    /**
+     * Removes all changes made in the current database connection and closes
+     * the connection.
+     */
+    public void rollbackDBConnection();
 }

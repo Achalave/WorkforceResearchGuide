@@ -43,6 +43,12 @@ public class LuceneTest {
         t2();
     }
 
+    /**
+     * Testing for the Lucene add tag bug.
+     *
+     * @throws IOException
+     * @throws InterruptedException
+     */
     public static void t1() throws IOException, InterruptedException {
         FSDirectory dir = FSDirectory.open(FileSystems.getDefault().getPath("_lucene_test_"));
 
@@ -90,7 +96,13 @@ public class LuceneTest {
         reader.close();
     }
 
-    public static void printAll(FSDirectory dir) throws IOException{
+    /**
+     * Testing for the Lucene add tag bug.
+     *
+     * @param dir
+     * @throws IOException
+     */
+    public static void printAll(FSDirectory dir) throws IOException {
         try (DirectoryReader r = DirectoryReader.open(dir)) {
             IndexSearcher search = new IndexSearcher(r);
             TopScoreDocCollector collect = TopScoreDocCollector.create(10);
@@ -117,19 +129,24 @@ public class LuceneTest {
             }
         }
     }
-    
+
+    /**
+     * Testing for the Lucene add tag bug.
+     *
+     * @throws IOException
+     */
     public static void t2() throws IOException {
         FSDirectory dir = FSDirectory.open(FileSystems.getDefault().getPath("_lucene_files_"));
-        
+
         printAll(dir);
-        
+
         IndexSearcher search;
         Query q;
         Document doc;
         String path = "C:.Users.Michael.Documents.NetBeansProjects.WorkforceResearchGuide.testdocs.Pets.dog.txt";
         String altPath = "doge";
         //Add the tag
-        try (DirectoryReader reader = DirectoryReader.open(dir); 
+        try (DirectoryReader reader = DirectoryReader.open(dir);
                 IndexWriter writer = new IndexWriter(dir, new IndexWriterConfig(new StandardAnalyzer()))) {
             search = new IndexSearcher(reader);
             q = new TermQuery(new Term("path", path));
@@ -137,12 +154,12 @@ public class LuceneTest {
             doc = reader.document(docs.scoreDocs[0].doc);
             doc.add(new TextField("tag", "tag test", Field.Store.YES));
             doc.removeField("path");
-            doc.add(new StringField("path",path,Field.Store.YES));
+            doc.add(new StringField("path", path, Field.Store.YES));
 //            doc.removeField("path");
 //            doc.add(new TextField("path",altPath,Field.Store.YES));
             writer.updateDocument(new Term("path", path), doc);
         }
-        
+
         //Check for the tag
         try (DirectoryReader r = DirectoryReader.open(dir)) {
             search = new IndexSearcher(r);

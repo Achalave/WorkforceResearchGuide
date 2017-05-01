@@ -347,8 +347,10 @@ public class FileSyncManager {
         for (IssueResolutionThread t : resolutionThreads) {
             t.interrupt();
         }
-        lucene.rollbackIndexingSession();
-        lucene.stopIndexingSession();
+        sess.rollbackDBConnection();
+        sess.rollbackIndexingSession();
+        sess.stopLuceneReadSession();
+        sess.releaseSessionPermission();
     }
 
     class IssueResolutionThread extends Thread {

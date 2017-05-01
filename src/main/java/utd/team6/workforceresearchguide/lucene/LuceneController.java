@@ -324,24 +324,32 @@ public class LuceneController {
             throw new IndexingSessionNotStartedException();
         }
 
-        for (int i = 0; i < writer.maxDoc(); i++) {
+        for (int i = 0; i < reader.maxDoc(); i++) {
             Document doc = reader.document(i);
             //Find and remove the specified tag
             Iterator<IndexableField> it = doc.iterator();
-            String docPath = "";
+            String docPath = null;
+            boolean modified = false;
             while (it.hasNext()) {
                 IndexableField field = it.next();
                 if (field.name().equals("tag") && field.stringValue().equals(tag)) {
                     it.remove();
+                    modified = true;
+                    if (docPath != null) {
+                        break;
+                    }
                 } else if (field.name().equals("path")) {
                     //Get the document path
                     docPath = field.stringValue();
+                    if (modified) {
+                        break;
+                    }
                 }
             }
             //This somehow fixed an annoying bug where the path could no longer be searched
             doc.removeField("path");
             doc.add(new StringField("path", docPath, Store.YES));
-            
+
             //Update the document
             writer.updateDocument(new Term("path", docPath), doc);
         }

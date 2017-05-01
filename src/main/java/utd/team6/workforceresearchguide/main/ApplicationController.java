@@ -10,7 +10,6 @@ import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 import org.apache.tika.exception.TikaException;
@@ -197,7 +196,6 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
 
         //see if anything added to hashmap
 //        System.out.println("Result Map Size: " + results.size());
-
         docs = search.getContentHits();
         for (ScoreDoc score : docs.scoreDocs) {
             DocumentDisplay disp = results.get(score.doc);
@@ -466,7 +464,7 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
         this.startDBConnection();
         this.startLuceneIndexingSession();
         this.startLuceneReadSession();
-        
+
         try {
             db.tagDocument(docPath, tag);
             lucene.tagDocument(docPath, tag);
@@ -479,7 +477,7 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
         } catch (ReadSessionNotStartedException ex) {
             Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         this.stopLuceneIndexingSession();
         this.stopLuceneReadSession();
         this.stopDBConnection();
@@ -505,6 +503,9 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
     public void removeTag(String tag) {
         this.getSessionPermission();
         this.startDBConnection();
+        this.startLuceneIndexingSession();
+        this.startLuceneReadSession();
+
         try {
             db.deleteTag(tag);
             lucene.removeTag(tag);
@@ -512,6 +513,8 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
             Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
         }
         this.stopDBConnection();
+        this.stopLuceneIndexingSession();
+        this.stopLuceneReadSession();
         this.releaseSessionPermission();
     }
 
@@ -655,7 +658,21 @@ public class ApplicationController implements SessionManager, DocumentTagSource 
         this.stopDBConnection();
         this.releaseSessionPermission();
     }
-  
+
+    @Override
+    public void rollbackIndexingSession() {
+        try {
+            lucene.rollbackIndexingSession();
+        } catch (IOException ex) {
+            Logger.getLogger(ApplicationController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+
+    @Override
+    public void rollbackDBConnection() {
+        db.rollbackConnection();
+    }
+
     class TagNode {
 
         int count;

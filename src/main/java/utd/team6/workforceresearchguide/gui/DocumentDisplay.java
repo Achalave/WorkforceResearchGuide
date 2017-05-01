@@ -5,6 +5,7 @@
  */
 package utd.team6.workforceresearchguide.gui;
 
+import java.awt.Color;
 import java.awt.Desktop;
 import java.awt.FontMetrics;
 import java.awt.datatransfer.DataFlavor;
